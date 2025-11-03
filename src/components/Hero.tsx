@@ -55,7 +55,7 @@ const Hero = () => {
           <p>(+12) 808 130 1190</p>
         </div>
         
-        <h1 className="text-2xl font-bold italic">momento.</h1>
+        <h1 className="text-2xl font-bold italic">inspire.</h1>
         
         <div className="flex items-center gap-4">
           <span className="text-sm">Follow us</span>
@@ -74,38 +74,40 @@ const Hero = () => {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 lg:px-12 pt-32 pb-20 min-h-screen flex flex-col justify-center">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 lg:px-12 pt-24 lg:pt-32 pb-12 lg:pb-20 min-h-screen flex flex-col justify-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div>
             <h2 ref={headingRef} className="text-display font-bold mb-8">
-              where <span className="block">- a style</span>
-              <span className="block italic">moment</span>
+              Ne jamais
+              <span className="block italic">abandonner</span>
             </h2>
             
-            <div className="flex items-center gap-8 mb-12">
+            <div className="flex flex-wrap items-center gap-4 lg:gap-8 mb-8 lg:mb-12">
               <div className="flex -space-x-4">
-                <div className="w-12 h-12 rounded-full bg-muted border-2 border-background" />
-                <div className="w-12 h-12 rounded-full bg-muted border-2 border-background" />
-                <div className="w-12 h-12 rounded-full bg-accent border-2 border-background flex items-center justify-center text-white text-xl">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-accent/80 to-accent border-2 border-background" />
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-primary/60 to-primary border-2 border-background" />
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-accent border-2 border-background flex items-center justify-center text-white text-lg lg:text-xl font-bold">
                   +
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">[©2015]</p>
+                <p className="text-xs lg:text-sm text-muted-foreground">[©2025]</p>
               </div>
             </div>
 
-            <p className="text-lg max-w-md mb-8">
-              From everyday essentials to statement pieces, our curated collection is designed to celebrate your style, wherever life takes you.
+            <p className="text-base lg:text-lg max-w-md mb-6 lg:mb-8 leading-relaxed">
+              Dépassement de soi. Confiance en soi. Persévérance. Nos vêtements incarnent les valeurs de ceux qui visent l'excellence.
             </p>
 
-            <div className="text-6xl font-bold">
-              <div className="flex items-baseline gap-4">
-                <span className="icon-accent">✱</span>
-                <span className="text-muted-foreground text-3xl">// FASHION</span>
+            <div className="space-y-4 lg:space-y-0 lg:flex lg:items-center lg:gap-8">
+              <div className="text-4xl lg:text-6xl font-bold">
+                <div className="flex items-baseline gap-3 lg:gap-4">
+                  <span className="icon-accent">✱</span>
+                  <span className="text-muted-foreground text-xl lg:text-3xl">// INSPIRE</span>
+                </div>
+                <div className="mt-2 lg:mt-4">50K+</div>
+                <p className="text-xs lg:text-sm font-normal text-muted-foreground mt-1 lg:mt-2">BATTANTS INSPIRÉS</p>
               </div>
-              <div className="mt-4">320K</div>
-              <p className="text-sm font-normal text-muted-foreground mt-2">INFLUENCED PEOPLE</p>
             </div>
           </div>
 
@@ -113,7 +115,7 @@ const Hero = () => {
             <div className="relative rounded-[3rem] overflow-hidden aspect-[3/4]">
               <img 
                 src={heroImage} 
-                alt="Fashion momento collection"
+                alt="Collection inspire - Mode pour battants"
                 className="w-full h-full object-cover"
               />
               <button className="absolute bottom-8 right-8 w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
@@ -125,11 +127,11 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="mt-16 flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">[SCROLL DOWN]</div>
+        <div className="mt-8 lg:mt-16 flex items-center justify-between">
+          <div className="text-xs lg:text-sm text-muted-foreground">[SCROLL DOWN]</div>
           <div className="text-right">
-            <p className="font-bold">Step into effortless</p>
-            <p className="font-bold">elegance with Momento</p>
+            <p className="font-bold text-sm lg:text-base">Dépassez vos limites</p>
+            <p className="font-bold text-sm lg:text-base">avec inspire.</p>
           </div>
         </div>
       </div>

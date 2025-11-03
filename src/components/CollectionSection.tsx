@@ -33,8 +33,8 @@ const CollectionSection = () => {
           <div className="flex items-center gap-8 mb-12">
             <span className="icon-accent text-6xl">✱</span>
             <div>
-              <p className="text-sm text-muted-foreground mb-2">©Everyday Essentials</p>
-              <p className="text-4xl font-bold">2025</p>
+              <p className="text-sm text-muted-foreground mb-2">©Valeurs Essentielles</p>
+              <p className="text-3xl lg:text-4xl font-bold">2025</p>
             </div>
             <button className="ml-auto w-16 h-16 rounded-full border-2 border-foreground flex items-center justify-center hover:bg-foreground hover:text-background transition-colors group">
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -42,12 +42,12 @@ const CollectionSection = () => {
           </div>
 
           <div ref={textRef} className="space-y-6">
-            <p className="text-lg">
-              From timeless classics to bold statement pieces, our collections are thoughtfully
-              designed to celebrate your unique style.
+            <p className="text-base lg:text-lg leading-relaxed">
+              Nos collections incarnent le dépassement de soi, la confiance et la persévérance. 
+              Chaque pièce est pensée pour accompagner les battants qui refusent d'abandonner leurs rêves.
             </p>
             <p className="text-sm text-muted-foreground">
-              ©Statement Pieces - 2025
+              ©Pour les battants - 2025
             </p>
           </div>
         </div>

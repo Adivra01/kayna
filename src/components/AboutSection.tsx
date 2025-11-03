@@ -71,7 +71,7 @@ const AboutSection = () => {
           {/* Left - Images */}
           <div className="lg:col-span-5 relative">
             <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8">
-              <img src={sweater1} alt="About momento" className="w-full h-full object-cover" />
+              <img src={sweater1} alt="Collection inspire - Confiance" className="w-full h-full object-cover" />
               <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center">
                 <ArrowRight className="w-6 h-6" />
               </div>
@@ -86,13 +86,15 @@ const AboutSection = () => {
                 <div className="w-2 h-2 rounded-full bg-muted" />
               </div>
               <h2 className="text-display font-bold leading-none mb-8">
-                It's -about
-                <span className="block italic">moments</span>
-                <span className="block">©24</span>
+                Confiance
+                <span className="block italic">en soi</span>
+                <span className="block">©25</span>
               </h2>
-              <p className="text-sm text-muted-foreground mb-8">(45%)</p>
-              <button className="px-8 py-4 rounded-full border-2 border-foreground hover:bg-foreground hover:text-background transition-colors flex items-center gap-3 group">
-                <span className="font-bold">LEARN MORE</span>
+              <p className="text-base lg:text-lg mb-8 leading-relaxed">
+                Chaque vêtement est conçu pour vous rappeler votre force intérieure et votre potentiel illimité.
+              </p>
+              <button className="px-6 lg:px-8 py-3 lg:py-4 rounded-full border-2 border-foreground hover:bg-foreground hover:text-background transition-all duration-300 flex items-center gap-3 group">
+                <span className="font-bold text-sm lg:text-base">DÉCOUVRIR</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -101,15 +103,15 @@ const AboutSection = () => {
           {/* Right - Second Image */}
           <div className="lg:col-span-3">
             <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4]">
-              <img src={tshirt2} alt="Momento style" className="w-full h-full object-cover" />
+              <img src={tshirt2} alt="inspire. - Dépassement" className="w-full h-full object-cover" />
               <div className="absolute bottom-8 left-8">
-                <p className="text-white font-bold text-lg mb-1">©international - just do it</p>
-                <p className="text-white/80 text-sm">2024</p>
+                <p className="text-white font-bold text-base lg:text-lg mb-1">©Dépassement de soi</p>
+                <p className="text-white/80 text-sm">2025</p>
               </div>
             </div>
             <div className="mt-8 text-right">
-              <p className="font-bold">To Celebrate</p>
-              <p className="font-bold">Your Moments</p>
+              <p className="font-bold text-sm lg:text-base">Ne jamais</p>
+              <p className="font-bold text-sm lg:text-base">Abandonner</p>
             </div>
           </div>
         </div>
