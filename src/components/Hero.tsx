@@ -77,36 +77,41 @@ const Hero = () => {
       <div className="container mx-auto px-4 lg:px-12 pt-24 lg:pt-32 pb-12 lg:pb-20 min-h-screen flex flex-col justify-center">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div>
-            <h2 ref={headingRef} className="text-display font-bold mb-8">
-              Ne jamais
-              <span className="block italic">abandonner</span>
-            </h2>
-            
-            <div className="flex flex-wrap items-center gap-4 lg:gap-8 mb-8 lg:mb-12">
-              <div className="flex -space-x-4">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-accent/80 to-accent border-2 border-background" />
-                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-primary/60 to-primary border-2 border-background" />
-                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-accent border-2 border-background flex items-center justify-center text-white text-lg lg:text-xl font-bold">
-                  +
-                </div>
-              </div>
-              <div>
-                <p className="text-xs lg:text-sm text-muted-foreground">[©2025]</p>
-              </div>
+            <div className="inline-block px-4 py-2 border border-accent/30 rounded-full mb-6 lg:mb-8">
+              <span className="text-xs lg:text-sm text-accent font-bold tracking-wider">COLLECTION 2025</span>
             </div>
+            
+            <h2 ref={headingRef} className="text-display font-bold mb-6 lg:mb-8">
+              Transcende
+              <span className="block italic text-accent">tes limites</span>
+            </h2>
 
-            <p className="text-base lg:text-lg max-w-md mb-6 lg:mb-8 leading-relaxed">
-              Dépassement de soi. Confiance en soi. Persévérance. Nos vêtements incarnent les valeurs de ceux qui visent l'excellence.
+            <p className="text-lg lg:text-2xl max-w-xl mb-8 lg:mb-12 leading-relaxed font-light">
+              Porte ta <span className="font-bold text-accent">détermination</span>. Chaque pièce raconte l'histoire de ceux qui 
+              <span className="italic"> refusent l'ordinaire</span> et embrassent le dépassement.
             </p>
 
-            <div className="space-y-4 lg:space-y-0 lg:flex lg:items-center lg:gap-8">
-              <div className="text-4xl lg:text-6xl font-bold">
-                <div className="flex items-baseline gap-3 lg:gap-4">
-                  <span className="icon-accent">✱</span>
-                  <span className="text-muted-foreground text-xl lg:text-3xl">// INSPIRE</span>
-                </div>
-                <div className="mt-2 lg:mt-4">50K+</div>
-                <p className="text-xs lg:text-sm font-normal text-muted-foreground mt-1 lg:mt-2">BATTANTS INSPIRÉS</p>
+            <div className="flex flex-wrap items-center gap-4 lg:gap-6 mb-8 lg:mb-12">
+              <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent/90 transition-all hover:scale-105 shadow-lg">
+                SHOP NOW
+              </button>
+              <button className="px-8 py-4 border-2 border-foreground rounded-full font-bold hover:bg-foreground hover:text-background transition-all">
+                NOTRE VISION
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 lg:gap-8 max-w-2xl">
+              <div>
+                <div className="text-3xl lg:text-5xl font-bold mb-2">50K+</div>
+                <p className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">Battants inspirés</p>
+              </div>
+              <div>
+                <div className="text-3xl lg:text-5xl font-bold mb-2">98%</div>
+                <p className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">Satisfaction</p>
+              </div>
+              <div>
+                <div className="text-3xl lg:text-5xl font-bold mb-2 icon-accent">★</div>
+                <p className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">Qualité premium</p>
               </div>
             </div>
           </div>
@@ -115,23 +120,35 @@ const Hero = () => {
             <div className="relative rounded-[3rem] overflow-hidden aspect-[3/4]">
               <img 
                 src={heroImage} 
-                alt="Collection inspire - Mode pour battants"
+                alt="inspire. - Vêtements pour dépassement de soi"
                 className="w-full h-full object-cover"
               />
-              <button className="absolute bottom-8 right-8 w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                <span className="text-sm font-bold">[CHECK]</span>
-                <ArrowDown className="w-6 h-6 absolute bottom-4" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute top-8 left-8 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+                <span className="text-white font-bold text-sm">NOUVEAU ★</span>
+              </div>
+              <button className="absolute bottom-8 right-8 w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-accent text-white flex flex-col items-center justify-center shadow-2xl hover:scale-110 transition-all hover:rotate-12">
+                <ArrowDown className="w-6 h-6 animate-bounce" />
+                <span className="text-xs font-bold mt-1">SHOP</span>
               </button>
             </div>
             <div className="absolute -bottom-10 -right-10 icon-accent text-6xl">✱</div>
           </div>
         </div>
 
-        <div className="mt-8 lg:mt-16 flex items-center justify-between">
-          <div className="text-xs lg:text-sm text-muted-foreground">[SCROLL DOWN]</div>
-          <div className="text-right">
-            <p className="font-bold text-sm lg:text-base">Dépassez vos limites</p>
-            <p className="font-bold text-sm lg:text-base">avec inspire.</p>
+        <div className="mt-8 lg:mt-16 flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center">
+              <ArrowDown className="w-4 h-4 animate-bounce" />
+            </div>
+            <div className="text-xs lg:text-sm text-muted-foreground tracking-widest">DÉCOUVRIR LA COLLECTION</div>
+          </div>
+          <div className="flex items-center gap-6 text-right">
+            <div className="text-4xl lg:text-6xl icon-accent">✱</div>
+            <div>
+              <p className="font-bold text-sm lg:text-base">Plus qu'un vêtement,</p>
+              <p className="font-bold text-sm lg:text-base italic">un état d'esprit.</p>
+            </div>
           </div>
         </div>
       </div>
