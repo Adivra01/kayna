@@ -8,11 +8,9 @@ import hoodie1 from "@/assets/hoodie-1.jpg";
 gsap.registerPlugin(ScrollTrigger);
 
 const categories = [
-  { id: "01", name: "Jacket", count: 361, active: false },
-  { id: "02", name: "Shirt", count: 174, active: true },
-  { id: "03", name: "Jeans", count: 368, active: false },
-  { id: "04", name: "Outer", count: 117, active: false },
-  { id: "05", name: "Shoes", count: 78, active: false },
+  { id: "01", name: "T-Shirts", count: 24, active: true, desc: "Confort et style au quotidien" },
+  { id: "02", name: "Hoodies", count: 18, active: false, desc: "Chaleur et attitude" },
+  { id: "03", name: "Sweaters", count: 15, active: false, desc: "Élégance décontractée" },
 ];
 
 const CategorySection = () => {
@@ -66,63 +64,97 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 bg-secondary">
+    <section ref={sectionRef} className="py-24 lg:py-32 bg-background relative">
       <div className="container mx-auto px-6 lg:px-12">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left - Categories */}
-          <div>
-            <div className="mb-12">
-              <span className="icon-accent text-5xl">✱</span>
-              <p className="text-sm text-muted-foreground mt-4 mb-2">[EBST PART]</p>
-              <div className="relative">
-                <p className="text-sm text-muted-foreground absolute left-0 top-0">[CATEGORIES]</p>
+        {/* Vertical Layout */}
+        <div className="max-w-4xl mx-auto text-center mb-20">
+          <div className="inline-flex items-center gap-3 px-5 py-2 bg-secondary rounded-full mb-8">
+            <span className="text-accent text-xl">★</span>
+            <span className="text-sm font-bold tracking-wider">NOS CATÉGORIES</span>
+          </div>
+          <h2 className="text-display font-bold leading-none mb-6">
+            Trouve ton
+            <span className="block italic text-accent">style</span>
+          </h2>
+          <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Trois catégories essentielles. Une seule mission : exprimer ta détermination.
+          </p>
+        </div>
+
+        {/* Horizontal Cards */}
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          {categories.map((category, index) => (
+            <div
+              key={category.id}
+              ref={(el) => (categoriesRef.current[index] = el)}
+              className="group cursor-pointer"
+            >
+              <div className="relative bg-secondary rounded-3xl p-8 lg:p-10 hover:bg-accent hover:text-white transition-all duration-500 hover:scale-105 hover:shadow-2xl overflow-hidden">
+                {/* Background Number */}
+                <div className="absolute top-4 right-4 text-[120px] font-bold opacity-5 group-hover:opacity-10 transition-opacity">
+                  {category.id}
+                </div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-sm font-bold opacity-60">{category.id}</span>
+                    {category.active && (
+                      <div className="w-3 h-3 rounded-full bg-accent group-hover:bg-white animate-pulse" />
+                    )}
+                  </div>
+
+                  <h3 className="text-4xl lg:text-5xl font-bold mb-4 group-hover:scale-105 transition-transform">
+                    {category.name}
+                  </h3>
+
+                  <p className="text-base lg:text-lg mb-6 opacity-70 group-hover:opacity-100">
+                    {category.desc}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold">
+                      {category.count} produits
+                    </span>
+                    <div className="w-12 h-12 rounded-full border-2 border-current flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+                      <ArrowRight className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Feature Image Below */}
+        <div ref={imageRef} className="mt-20 relative max-w-5xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group">
+              <img 
+                src={hoodie1} 
+                alt="Collection inspire" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8">
+                <h3 className="text-white text-3xl font-bold mb-2">Collection Élite</h3>
+                <p className="text-white/90 text-lg">Disponible maintenant</p>
               </div>
             </div>
 
             <div className="space-y-8">
-              {categories.map((category, index) => (
-                <div
-                  key={category.id}
-                  ref={(el) => (categoriesRef.current[index] = el)}
-                  className={`group cursor-pointer transition-all ${
-                    category.active ? "opacity-100" : "opacity-40 hover:opacity-70"
-                  }`}
-                >
-                  <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-sm text-muted-foreground">[{category.id}]</span>
-                    <h3 className="text-heading font-bold group-hover:translate-x-2 transition-transform">
-                      {category.name}{" "}
-                      <span className="text-muted-foreground">({category.count})</span>
-                    </h3>
-                    {category.active && (
-                      <div className="ml-auto w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center">
-                        <Eye className="w-4 h-4" />
-                      </div>
-                    )}
-                  </div>
-                  {category.active && (
-                    <div className="mt-6">
-                      <p className="text-muted-foreground mb-6 max-w-md">
-                        From everyday essentials to statement pieces, our curated collection is
-                        designed to celebrate your style, wherever life takes you.
-                      </p>
-                      <Button variant="outline" className="rounded-full">
-                        SEE PRODUCT <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
+              <div className="text-6xl icon-accent">★</div>
+              <h3 className="text-heading font-bold">
+                Chaque détail compte
+              </h3>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Du choix des tissus à la coupe finale, nous ne faisons aucun compromis. 
+                Parce que tu mérites le meilleur.
+              </p>
+              <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent/90 transition-all hover:scale-105 shadow-lg flex items-center gap-3 group">
+                <span>Découvrir</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
-          </div>
-
-          {/* Right - Image */}
-          <div ref={imageRef} className="relative">
-            <div className="relative rounded-[3rem] overflow-hidden aspect-[3/4]">
-              <img src={hoodie1} alt="Featured product" className="w-full h-full object-cover" />
-              <div className="absolute bottom-8 right-8 icon-accent text-5xl">✱</div>
-            </div>
-            <div className="absolute -top-8 -right-8 icon-accent text-6xl rotate-12">✱</div>
           </div>
         </div>
       </div>
