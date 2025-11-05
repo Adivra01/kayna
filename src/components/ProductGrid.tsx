@@ -29,16 +29,32 @@ const products: Product[] = [
 const ProductGrid = () => {
   const gridRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Animate header
+      gsap.from(headerRef.current?.children || [], {
+        y: 80,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: headerRef.current,
+          start: "top bottom-=100",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      // Animate cards with 3D rotation
       cardsRef.current.forEach((card, index) => {
         if (!card) return;
 
         gsap.from(card, {
           y: 100,
+          rotateY: -15,
           opacity: 0,
-          duration: 1,
+          duration: 1.2,
           delay: index * 0.1,
           scrollTrigger: {
             trigger: card,
@@ -47,14 +63,21 @@ const ProductGrid = () => {
           },
         });
 
-        // Image scale on hover
+        // Enhanced hover animations
         const image = card.querySelector("img");
+        const overlay = card.querySelector(".overlay");
+        const content = card.querySelector(".hover-content");
+        
         if (image) {
           card.addEventListener("mouseenter", () => {
-            gsap.to(image, { scale: 1.05, duration: 0.6, ease: "power2.out" });
+            gsap.to(image, { scale: 1.1, rotation: 2, duration: 0.8, ease: "power2.out" });
+            gsap.to(overlay, { opacity: 1, duration: 0.5 });
+            gsap.to(content, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" });
           });
           card.addEventListener("mouseleave", () => {
-            gsap.to(image, { scale: 1, duration: 0.6, ease: "power2.out" });
+            gsap.to(image, { scale: 1, rotation: 0, duration: 0.8, ease: "power2.out" });
+            gsap.to(overlay, { opacity: 0, duration: 0.5 });
+            gsap.to(content, { y: 20, opacity: 0, duration: 0.3 });
           });
         }
       });
@@ -70,19 +93,20 @@ const ProductGrid = () => {
       
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
+        <div ref={headerRef} className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
           <div>
             <div className="inline-flex items-center gap-3 px-5 py-2 gradient-accent rounded-full mb-6 shadow-accent animate-float">
               <span className="text-white text-2xl animate-glow">★</span>
-              <span className="text-sm font-bold text-white tracking-wider">BESTSELLERS</span>
+              <span className="text-sm font-bold text-white tracking-wider">TOP VENTES</span>
             </div>
             <h2 className="text-display font-bold leading-none">
-              Nos
-              <span className="block italic gradient-text">essentiels</span>
+              Les pièces qui
+              <span className="block italic gradient-text">cartonnent</span>
             </h2>
           </div>
           <p className="text-lg lg:text-xl max-w-md text-muted-foreground text-balance">
-            Des pièces pensées pour durer. Qualité premium, style intemporel.
+            <span className="font-bold text-accent">+10 000 clients</span> ont déjà craqué. 
+            Qualité premium testée et approuvée par notre communauté.
           </p>
         </div>
 
@@ -109,10 +133,10 @@ const ProductGrid = () => {
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <div className="overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 transition-all duration-500" />
                   
                   {/* Hover Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                  <div className="hover-content absolute bottom-0 left-0 right-0 p-6 opacity-0 translate-y-5">
                     <h3 className="text-white text-xl lg:text-2xl font-bold mb-2">{product.title}</h3>
                     <div className="flex items-center justify-between">
                       <span className="text-white/80 text-sm">{product.year}</span>
