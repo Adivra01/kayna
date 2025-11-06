@@ -1,21 +1,22 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import valueGrowth from "@/assets/value-growth.jpg";
-import valueConfidence from "@/assets/value-confidence.jpg";
-import valueDiscipline from "@/assets/value-discipline.jpg";
+import { ArrowRight } from "lucide-react";
+import sweater1 from "@/assets/sweater-1.jpg";
+import tshirt2 from "@/assets/tshirt-2.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const AboutSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const valuesRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const image1Ref = useRef<HTMLDivElement>(null);
+  const image2Ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero animation
-      gsap.from(heroRef.current, {
+      // Animate heading
+      gsap.from(textRef.current, {
         y: 100,
         opacity: 0,
         duration: 1.2,
@@ -26,124 +27,123 @@ const AboutSection = () => {
         },
       });
 
-      // Values cards animation
-      const cards = valuesRef.current?.querySelectorAll(".value-card");
-      if (cards) {
-        gsap.from(cards, {
-          y: 80,
-          opacity: 0,
-          duration: 1,
-          stagger: 0.2,
-          scrollTrigger: {
-            trigger: valuesRef.current,
-            start: "top center+=100",
-            toggleActions: "play none none reverse",
-          },
-        });
-      }
+      // Animate images with parallax
+      gsap.from([image1Ref.current, image2Ref.current], {
+        scale: 0.8,
+        opacity: 0,
+        duration: 1.2,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top center",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.to(image1Ref.current, {
+        yPercent: -20,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
+
+      gsap.to(image2Ref.current, {
+        yPercent: 20,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  const values = [
-    {
-      icon: "⚡️",
-      title: "Inclusion",
-      description: "Grandir intérieurement, mentalement et émotionnellement",
-      image: valueGrowth,
-    },
-    {
-      icon: "💪",
-      title: "Confiance en soi",
-      description: "Pour ceux qui ont l'engagement et la détermination",
-      image: valueConfidence,
-    },
-    {
-      icon: "🎯",
-      title: "Discipline",
-      description: "Persévérer même quand personne ne regarde",
-      image: valueDiscipline,
-    },
-    {
-      icon: "✨",
-      title: "Développement personnel",
-      description: "Rester fidèle à soi-même, sans compromis",
-      image: valueGrowth,
-    },
-  ];
-
   return (
-    <section ref={sectionRef} className="py-16 sm:py-24 lg:py-32 bg-background relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-        {/* Hero Section */}
-        <div ref={heroRef} className="text-center max-w-4xl mx-auto mb-12 sm:mb-16 lg:mb-24">
-          <div className="inline-flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 px-4 sm:px-6 py-2 sm:py-3 gradient-accent rounded-full shadow-accent animate-float">
-            <span className="text-xl sm:text-2xl">⚡️</span>
-            <span className="text-xs sm:text-sm font-bold text-white tracking-wider">NOS VALEURS</span>
-          </div>
-          
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 sm:mb-8">
-            Plus qu'une marque,
-            <span className="block gradient-text">un mouvement</span>
-          </h2>
-          
-          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Chaque vêtement porte nos valeurs. Chaque choix est un pas vers ton excellence.
-          </p>
-        </div>
-
-        {/* Values Grid */}
-        <div ref={valuesRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {values.map((value, index) => (
-            <div
-              key={index}
-              className="value-card group relative rounded-2xl sm:rounded-3xl overflow-hidden glass-effect border border-border/50 hover:border-accent/50 transition-all duration-500 hover:shadow-glow"
-            >
-              {/* Image Background */}
-              <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500">
-                <img 
-                  src={value.image} 
-                  alt={value.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-              </div>
-              
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-              
-              {/* Content */}
-              <div className="relative p-6 sm:p-8 h-full flex flex-col justify-end min-h-[280px] sm:min-h-[320px]">
-                <div className="mb-4 sm:mb-6 text-4xl sm:text-5xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
-                  {value.icon}
-                </div>
-                
-                <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 group-hover:text-accent transition-colors">
-                  {value.title}
-                </h3>
-                
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  {value.description}
-                </p>
-
-                {/* Decorative line */}
-                <div className="mt-4 sm:mt-6 w-12 h-1 gradient-accent rounded-full transform origin-left group-hover:w-full transition-all duration-500" />
+    <section ref={sectionRef} className="py-32 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-12">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          {/* Left - Images */}
+          <div className="lg:col-span-5 relative">
+            <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8">
+              <img src={sweater1} alt="Collection inspire - Confiance" className="w-full h-full object-cover" />
+              <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center">
+                <ArrowRight className="w-6 h-6" />
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Middle - Text */}
+          <div ref={textRef} className="lg:col-span-4 space-y-8">
+            <div>
+              <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 bg-accent/10 rounded-full">
+                <span className="icon-accent text-2xl">★</span>
+                <span className="text-sm font-bold text-accent tracking-wider">PHILOSOPHIE</span>
+              </div>
+              
+              <h2 className="text-display font-bold leading-none mb-8">
+                Ta force
+                <span className="block italic text-accent">commence ici</span>
+              </h2>
+              
+              <p className="text-xl lg:text-2xl mb-6 leading-relaxed font-light">
+                Chaque matin, tu fais un choix : <span className="font-bold">rester dans ta zone de confort</span> ou 
+                <span className="italic text-accent"> oser être exceptionnel</span>.
+              </p>
+              
+              <p className="text-base lg:text-lg mb-8 leading-relaxed text-muted-foreground">
+                Nos vêtements ne sont pas juste du tissu. Ce sont des <span className="font-bold text-foreground">rappels quotidiens</span> de 
+                ta capacité à tout surmonter. À chaque fois que tu les portes, tu incarnes la persévérance, 
+                la confiance, le dépassement.
+              </p>
+              
+              <button className="px-8 py-4 rounded-full bg-accent text-white font-bold hover:bg-accent/90 transition-all duration-300 flex items-center gap-3 group shadow-lg hover:shadow-xl hover:scale-105">
+                <span className="text-sm lg:text-base">REJOINS LE MOUVEMENT</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+              </button>
+            </div>
+          </div>
+
+          {/* Right - Second Image */}
+          <div className="lg:col-span-3">
+            <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] group">
+              <img src={tshirt2} alt="inspire. - Collection premium" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                  <span className="text-white/80 text-xs uppercase tracking-wider">En stock</span>
+                </div>
+                <p className="text-white font-bold text-lg lg:text-xl mb-2">Collection Élite</p>
+                <p className="text-white/90 text-sm mb-4">Qualité premium • Design unique</p>
+                <button className="text-white font-bold text-sm flex items-center gap-2 group/btn">
+                  <span>Voir plus</span>
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-8 flex items-center justify-end gap-4">
+              <div className="text-3xl icon-accent">✱</div>
+              <div className="text-right">
+                <p className="font-bold text-sm lg:text-base">Fabriqué pour</p>
+                <p className="font-bold text-sm lg:text-base italic">les battants</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-12 sm:mt-16 lg:mt-20 text-center">
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8">
-            Rejoins <span className="font-bold text-accent">50 000+ battants</span> qui incarnent ces valeurs chaque jour
-          </p>
-          <button className="px-8 sm:px-10 py-4 sm:py-5 rounded-full gradient-accent text-white font-bold text-sm sm:text-base hover:shadow-glow transition-all duration-300 group shadow-accent">
-            <span className="flex items-center gap-3">
-              DÉCOUVRE LA COLLECTION
-              <span className="group-hover:translate-x-2 transition-transform">→</span>
-            </span>
-          </button>
+        {/* Floating brand logos */}
+        <div className="mt-16 flex items-center justify-center gap-16 opacity-30">
+          <span className="text-lg">RotaShow</span>
+          <span className="text-lg">waves</span>
+          <span className="text-lg">travelers.</span>
+          <span className="text-lg">goldlines</span>
+          <span className="text-lg">velocity</span>
         </div>
       </div>
     </section>

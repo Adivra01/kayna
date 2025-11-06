@@ -21,12 +21,12 @@ const MarqueeText = () => {
   }, []);
 
   return (
-    <div className="py-4 sm:py-6 lg:py-8 border-y border-border overflow-hidden bg-secondary">
+    <div className="py-8 border-y border-border overflow-hidden bg-secondary">
       <div ref={marqueeRef} className="flex whitespace-nowrap">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="flex items-center px-4 sm:px-6 lg:px-8">
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-bold italic">inspire.</span>
-            <span className="icon-accent text-xl sm:text-2xl lg:text-3xl mx-2 sm:mx-3 lg:mx-4">✱</span>
+          <div key={i} className="flex items-center px-8">
+            <span className="text-4xl font-bold italic">inspire.</span>
+            <span className="icon-accent text-3xl mx-4">✱</span>
           </div>
         ))}
       </div>
