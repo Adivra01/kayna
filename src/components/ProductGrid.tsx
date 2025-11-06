@@ -86,57 +86,59 @@ const ProductGrid = () => {
           </p>
         </div>
 
-        {/* Asymmetric Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {/* Improved Masonry Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 auto-rows-[280px]">
           {products.map((product, index) => {
-            const sizes = [
-              "lg:col-span-2 lg:row-span-2", // Large
-              "lg:col-span-1 lg:row-span-1", // Small
-              "lg:col-span-1 lg:row-span-2", // Tall
-              "lg:col-span-2 lg:row-span-1", // Wide
-              "lg:col-span-1 lg:row-span-1", // Small
+            // Masonry pattern: 1-large, 2-small, 3-tall, 4-wide, 5-small
+            const gridClasses = [
+              "sm:col-span-2 lg:col-span-6 lg:row-span-2", // Large featured
+              "sm:col-span-1 lg:col-span-3 lg:row-span-1", // Small
+              "sm:col-span-1 lg:col-span-3 lg:row-span-2", // Tall
+              "sm:col-span-2 lg:col-span-6 lg:row-span-1", // Wide
+              "sm:col-span-1 lg:col-span-3 lg:row-span-1", // Small
             ];
             
             return (
               <div
                 key={product.id}
                 ref={(el) => (cardsRef.current[index] = el)}
-                className={`group cursor-pointer ${sizes[index]} ${index % 2 === 0 ? 'col-span-2' : 'col-span-1'}`}
+                className={`group cursor-pointer ${gridClasses[index]}`}
               >
-                <div className="relative rounded-3xl overflow-hidden bg-background h-full min-h-[300px] lg:min-h-[400px] shadow-md hover:shadow-xl transition-shadow">
+                <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-background h-full shadow-lg hover:shadow-2xl transition-all duration-500">
                   <img
                     src={product.image}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
                   
-                  {/* Hover Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                    <h3 className="text-white text-xl lg:text-2xl font-bold mb-2">{product.title}</h3>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+                  
+                  {/* Content - Always visible but enhanced on hover */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 transform translate-y-0 transition-transform duration-500">
+                    <h3 className="text-white text-lg lg:text-2xl font-bold mb-2 transform group-hover:scale-105 transition-transform">
+                      {product.title}
+                    </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80 text-sm">{product.year}</span>
-                      <button className="w-12 h-12 rounded-full gradient-accent text-white flex items-center justify-center hover:scale-110 transition-all shadow-glow">
-                        <ArrowRight className="w-5 h-5" />
+                      <span className="text-white/80 text-xs lg:text-sm font-medium">{product.year}</span>
+                      <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full gradient-accent text-white flex items-center justify-center hover:scale-110 transition-all shadow-glow">
+                        <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
                       </button>
                     </div>
                   </div>
 
                   {/* Tags */}
                   {product.tag && (
-                    <div className="absolute top-4 left-4 px-4 py-2 glass-effect border border-white/20 rounded-full shadow-lg animate-float">
+                    <div className="absolute top-3 left-3 lg:top-4 lg:left-4 px-3 py-1.5 lg:px-4 lg:py-2 glass-effect border border-white/20 rounded-full shadow-lg animate-float">
                       <span className="text-xs font-bold">NEW</span>
                     </div>
                   )}
                   
                   {index === 0 && (
-                    <div className="absolute top-4 right-4 w-16 h-16 rounded-full gradient-accent text-white flex items-center justify-center text-sm font-bold shadow-glow animate-glow">
+                    <div className="absolute top-3 right-3 lg:top-4 lg:right-4 w-12 h-12 lg:w-16 lg:h-16 rounded-full gradient-accent text-white flex items-center justify-center text-xs lg:text-sm font-bold shadow-glow animate-pulse">
                       TOP
                     </div>
                   )}
-                  
-                  {/* Decorative corner accent */}
-                  <div className="absolute bottom-0 right-0 w-24 h-24 bg-accent/20 rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
               </div>
             );
