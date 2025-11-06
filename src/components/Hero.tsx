@@ -57,12 +57,12 @@ const Hero = () => {
               Shop
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
             </a>
-            <a href="#" className="relative hover:text-accent transition-colors group">
-              About
+            <a href="/about" className="relative hover:text-accent transition-colors group">
+              Notre Histoire
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
             </a>
             <a href="#" className="relative hover:text-accent transition-colors group">
-              Values
+              Contact
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
             </a>
           </nav>
@@ -120,10 +120,10 @@ const Hero = () => {
                   <span className="relative z-10">Explorer</span>
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
                 </button>
-                <button className="px-10 py-5 border-2 border-foreground rounded-full font-bold text-lg hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-3 group hover:shadow-lg hover:scale-105">
+                <a href="/about" className="px-10 py-5 border-2 border-foreground rounded-full font-bold text-lg hover:bg-foreground hover:text-background transition-all flex items-center justify-center gap-3 group hover:shadow-lg hover:scale-105">
                   <span>Notre histoire</span>
                   <ArrowDown className="w-5 h-5 rotate-[-90deg] group-hover:translate-x-1 transition-transform" />
-                </button>
+                </a>
               </div>
 
               <div className="flex items-center gap-12 pt-8 border-t border-border">

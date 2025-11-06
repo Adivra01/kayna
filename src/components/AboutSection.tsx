@@ -102,10 +102,10 @@ const AboutSection = () => {
                 la confiance, le dépassement.
               </p>
               
-              <button className="px-8 py-4 rounded-full bg-accent text-white font-bold hover:bg-accent/90 transition-all duration-300 flex items-center gap-3 group shadow-lg hover:shadow-xl hover:scale-105">
-                <span className="text-sm lg:text-base">REJOINS LE MOUVEMENT</span>
+              <a href="/about" className="px-8 py-4 rounded-full bg-accent text-white font-bold hover:bg-accent/90 transition-all duration-300 flex items-center gap-3 group shadow-lg hover:shadow-xl hover:scale-105">
+                <span className="text-sm lg:text-base">DÉCOUVRE NOTRE HISTOIRE</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-              </button>
+              </a>
             </div>
           </div>
 
