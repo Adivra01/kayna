@@ -138,9 +138,9 @@ const About = () => {
       </header>
 
       {/* Hero Section - Enhanced */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24">
+      <section className="relative min-h-[85vh] lg:min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(var(--accent-rgb),0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--accent)/0.12),transparent_55%)]" />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10 py-12 sm:py-16 lg:py-20">
           <div ref={heroRef} className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-8 lg:space-y-12">
@@ -150,8 +150,8 @@ const About = () => {
             </div>
             
             <h1 className="font-bold leading-[1.1] mb-0">
-              <span className="block text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">Plus qu'une marque,</span>
-              <span className="block gradient-text italic text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mt-2 sm:mt-4">un mouvement</span>
+               <span className="block text-2xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">Plus qu'une marque,</span>
+               <span className="block gradient-text italic text-3xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mt-2 sm:mt-4">un mouvement</span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto px-4">
@@ -284,7 +284,7 @@ const About = () => {
       </section>
 
       {/* Values Section - Enhanced */}
-      <section className="py-16 sm:py-20 lg:py-32">
+      <section id="values" className="py-14 sm:py-20 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20">
             <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
@@ -305,12 +305,15 @@ const About = () => {
                 key={index}
                 className="value-card group relative rounded-2xl lg:rounded-3xl overflow-hidden glass-effect border border-border/50 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20"
               >
-                <div className="relative h-[350px] sm:h-[400px] lg:h-[500px]">
+                <div className="relative h-[260px] sm:h-[360px] lg:h-[500px]">
                   {/* Background Image */}
                   <div className="absolute inset-0 overflow-hidden">
-                    <img 
+                     <img 
                       src={value.image} 
                       alt={value.title}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(min-width: 1024px) 50vw, 100vw"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
