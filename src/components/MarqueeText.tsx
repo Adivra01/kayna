@@ -25,7 +25,7 @@ const MarqueeText = () => {
       <div ref={marqueeRef} className="flex whitespace-nowrap">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="flex items-center px-8">
-            <span className="text-4xl font-bold italic">inspire.</span>
+            <span className="text-4xl font-bold italic">KAYNA</span>
             <span className="icon-accent text-3xl mx-4">✱</span>
           </div>
         ))}

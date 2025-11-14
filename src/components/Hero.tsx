@@ -51,7 +51,7 @@ const Hero = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 sm:py-6 flex items-center justify-between glass-effect border-b border-border/50">
         <div className="flex items-center gap-4 sm:gap-8">
-          <h1 className="text-xl sm:text-2xl font-bold italic gradient-text">inspire.</h1>
+          <h1 className="text-xl sm:text-2xl font-bold italic gradient-text">KAYNA</h1>
           <nav className="hidden lg:flex items-center gap-6 text-sm">
             <a href="#" className="relative hover:text-accent transition-colors group">
               Shop
@@ -100,18 +100,17 @@ const Hero = () => {
               </div>
 
               <h2 className="text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] xl:text-[7rem] 2xl:text-[8rem] font-bold leading-[0.9]">
-                Vis
-                <span className="block">sans</span>
-                <span className="block italic gradient-text">limites</span>
+                Force
+                <span className="block">& </span>
+                <span className="block italic gradient-text">Élégance</span>
               </h2>
 
               <div className="space-y-3 sm:space-y-4">
                 <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-light leading-relaxed">
-                  La <span className="font-bold">confiance</span> se porte.
+                  La <span className="font-bold">maîtrise</span> se porte.
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-lg leading-relaxed">
-                  Rejoins le mouvement des battants qui transforment chaque jour en victoire. 
-                  Nos vêtements incarnent ta soif de dépassement.
+                  Style premium qui incarne l'<span className="font-semibold">authenticité</span> et la <span className="font-semibold">certitude</span>.
                 </p>
               </div>
 
@@ -149,7 +148,7 @@ const Hero = () => {
             <div className="absolute inset-0">
             <img 
               src={heroImage} 
-              alt="inspire. - Collection premium"
+              alt="KAYNA - Collection premium"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/20 to-accent/30" />

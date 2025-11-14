@@ -151,28 +151,27 @@ const About = () => {
             
             <h1 className="font-bold leading-[1.1] mb-0">
                <span className="block text-2xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">Plus qu'une marque,</span>
-               <span className="block gradient-text italic text-3xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mt-2 sm:mt-4">un mouvement</span>
+               <span className="block gradient-text italic text-3xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mt-2 sm:mt-4">un état d'esprit</span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto px-4">
-              Inspire. n'est pas né d'un désir de vendre des vêtements. 
-              C'est né d'une conviction profonde : <span className="font-bold text-foreground">tu as le pouvoir de devenir exceptionnel</span>.
+              KAYNA incarne la <span className="font-bold text-foreground">maîtrise</span>, l'<span className="font-bold text-foreground">authenticité</span> et la <span className="font-bold text-foreground">certitude</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-4 sm:pt-6">
               <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>50K+ Battants</span>
+                <span>Premium</span>
               </div>
               <div className="hidden sm:block w-1 h-1 rounded-full bg-border" />
               <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>97% Satisfaits</span>
+                <span>Authentique</span>
               </div>
               <div className="hidden sm:block w-1 h-1 rounded-full bg-border" />
               <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>4.9/5 Étoiles</span>
+                <span>Intemporel</span>
               </div>
             </div>
           </div>
@@ -188,38 +187,23 @@ const About = () => {
             <div className="text-center mb-10 sm:mb-16 lg:mb-20">
               <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-accent" />
-                <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE MANIFESTE</span>
+                <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE ESSENCE</span>
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 sm:mb-8 lg:mb-10 leading-tight">
-                Chaque jour est une <span className="gradient-text italic">opportunité</span>
+                <span className="gradient-text italic">Force</span> & Élégance
               </h2>
             </div>
 
             <div className="space-y-6 sm:space-y-8 lg:space-y-10 text-base sm:text-lg lg:text-xl leading-relaxed">
-              <p className="text-center md:text-left">
-                <span className="text-4xl sm:text-5xl lg:text-6xl font-bold gradient-text">"</span>
-                <span className="font-light">Chaque matin, tu te réveilles avec un choix. Tu peux </span>
-                <span className="font-bold text-foreground">rester là où tu es</span>
-                <span className="font-light">, dans ta zone de confort, ou tu peux </span>
-                <span className="font-bold gradient-text italic">décider d'être exceptionnel</span>
-                <span className="font-light">.</span>
-              </p>
-              
-              <p className="text-center md:text-left font-light text-muted-foreground">
-                Nos vêtements ne sont pas juste du tissu cousu ensemble. Ce sont des <span className="font-bold text-foreground">armures mentales</span>, 
-                des rappels constants que tu es capable de plus. Quand tu portes Inspire., tu ne portes pas qu'un vêtement — 
-                tu portes une <span className="font-bold gradient-text">déclaration d'intention</span>.
-              </p>
-
-              <p className="text-center md:text-left font-light text-muted-foreground">
-                La discipline n'est pas un fardeau. C'est <span className="font-bold text-foreground">ta liberté</span>. 
-                La confiance n'est pas innée. C'est <span className="font-bold text-foreground">le résultat de tes actions</span>. 
-                Le développement personnel n'est pas un luxe. C'est <span className="font-bold gradient-text italic">ta responsabilité</span>.
+              <p className="text-center font-light">
+                <span className="font-bold text-foreground">KAYNA</span> incarne la maîtrise. 
+                Chaque pièce reflète <span className="font-bold gradient-text">l'authenticité</span> et 
+                <span className="font-bold gradient-text"> la certitude</span>.
               </p>
 
               <div className="pt-6 sm:pt-8 lg:pt-10 text-center">
                 <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                  Bienvenue dans le mouvement <span className="gradient-text italic">Inspire.</span>
+                  Style <span className="gradient-text italic">Intemporel</span>
                 </p>
               </div>
             </div>
@@ -227,40 +211,30 @@ const About = () => {
         </div>
       </section>
 
-      {/* Timeline Section - New */}
+      {/* Timeline Section - Simplified */}
       <section ref={timelineRef} className="py-16 sm:py-20 lg:py-32 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20">
             <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-accent" />
-              <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE ÉVOLUTION</span>
+              <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE PARCOURS</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold">
-              L'histoire d'un <span className="gradient-text italic">rêve devenu réalité</span>
+              L'évolution de <span className="gradient-text italic">KAYNA</span>
             </h2>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 lg:space-y-12">
             {[
               {
-                year: "2021",
-                title: "La naissance d'une vision",
-                description: "Tout commence avec une idée simple : créer plus que des vêtements, créer un mouvement qui inspire les gens à devenir la meilleure version d'eux-mêmes."
-              },
-              {
-                year: "2022",
-                title: "Les premiers battants",
-                description: "1000 personnes nous font confiance. Chaque témoignage renforce notre conviction : nous sommes sur la bonne voie."
-              },
-              {
-                year: "2023",
-                title: "L'expansion du mouvement",
-                description: "La communauté explose. 25K membres partagent leur transformation. Nos vêtements deviennent des symboles de dépassement."
-              },
-              {
                 year: "2024",
-                title: "50K battants et au-delà",
-                description: "Aujourd'hui, nous sommes plus de 50 000 à porter ces valeurs. Demain, nous serons encore plus nombreux à inspirer le monde."
+                title: "La vision",
+                description: "Naissance d'une marque dédiée à la maîtrise et l'authenticité."
+              },
+              {
+                year: "2025",
+                title: "L'excellence",
+                description: "Collection premium qui incarne force, élégance et certitude."
               }
             ].map((item, index) => (
               <div key={index} className="timeline-item flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 group">
@@ -350,17 +324,17 @@ const About = () => {
         </div>
       </section>
 
-      {/* CTA Section - Enhanced */}
+      {/* CTA Section - Minimal */}
       <section className="py-16 sm:py-20 lg:py-32 bg-secondary/30 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent" />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
-              Prêt à <span className="gradient-text italic">rejoindre le mouvement</span> ?
+              Découvre <span className="gradient-text italic">KAYNA</span>
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-10 lg:mb-12 leading-relaxed">
-              Plus de 50 000 personnes ont déjà fait le choix de l'excellence quotidienne. Et toi, qu'attends-tu ?
+              Style premium. Authenticité garantie.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
@@ -368,7 +342,7 @@ const About = () => {
                 href="/"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 lg:px-12 py-4 sm:py-4.5 lg:py-5 rounded-full gradient-accent text-white font-bold text-sm sm:text-base lg:text-lg hover:shadow-glow transition-all duration-300 group shadow-lg hover:scale-105"
               >
-                <span>DÉCOUVRE LA COLLECTION</span>
+                <span>COLLECTION</span>
                 <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-2 transition-transform" />
               </a>
               
@@ -377,23 +351,8 @@ const About = () => {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 lg:px-12 py-4 sm:py-4.5 lg:py-5 rounded-full border-2 border-accent text-accent font-bold text-sm sm:text-base lg:text-lg hover:bg-accent hover:text-white transition-all duration-300 hover:scale-105"
               >
                 <Target className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>NOS VALEURS</span>
+                <span>VALEURS</span>
               </a>
-            </div>
-
-            <div className="mt-12 sm:mt-16 lg:mt-20 grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl glass-effect border border-border/50">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold gradient-text mb-1 sm:mb-2">50K+</div>
-                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground">Battants inspirés</div>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl glass-effect border border-border/50">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold gradient-text mb-1 sm:mb-2">97%</div>
-                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground">Recommandent</div>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl glass-effect border border-border/50">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold gradient-text mb-1 sm:mb-2">4.9/5</div>
-                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground">Avis clients</div>
-              </div>
             </div>
           </div>
         </div>
