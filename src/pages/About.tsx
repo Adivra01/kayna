@@ -1,118 +1,35 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight, Sparkles, Target, Heart, Zap, TrendingUp } from "lucide-react";
-import valueInclusion from "@/assets/value-inclusion.jpg";
-import valueConfidence from "@/assets/value-confidence.jpg";
-import valueDiscipline from "@/assets/value-discipline.jpg";
-import valueDevelopment from "@/assets/value-development.jpg";
+import { ArrowRight, Shield, Flame, Zap } from "lucide-react";
+import kaynaHero from "@/assets/kayna-hero.jpg";
+import kaynaHeritage from "@/assets/kayna-heritage.jpg";
+import kaynaConfidence from "@/assets/kayna-confidence.jpg";
+import kaynaBattle from "@/assets/kayna-battle.jpg";
 import logo from "@/assets/logo.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface Value {
-  icon: string;
-  title: string;
-  description: string;
-  image: string;
-  quote: string;
-}
-
-const values: Value[] = [
-  {
-    icon: "⚡️",
-    title: "Inclusion",
-    description: "Grandir intérieurement, mentalement et émotionnellement.",
-    image: valueInclusion,
-    quote: "Ensemble, on va plus loin"
-  },
-  {
-    icon: "💪",
-    title: "Confiance en soi",
-    description: "Seulement pour ceux qui ont l'engagement et la détermination.",
-    image: valueConfidence,
-    quote: "Crois en ta force"
-  },
-  {
-    icon: "🎯",
-    title: "Discipline",
-    description: "Persévérer même quand personne ne regarde.",
-    image: valueDiscipline,
-    quote: "L'excellence est un habit quotidien"
-  },
-  {
-    icon: "✨",
-    title: "Développement personnel",
-    description: "Rester fidèle à soi-même, sans compromis.",
-    image: valueDevelopment,
-    quote: "Deviens la meilleure version de toi"
-  }
-];
-
 const About = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const manifestoRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const valuesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero split text animation
-      const heroTitle = heroRef.current?.querySelector("h1");
-      if (heroTitle) {
-        gsap.from(heroTitle.children, {
-          y: 100,
+      // Fade in animations for all sections
+      const sections = document.querySelectorAll(".fade-section");
+      sections.forEach((section, index) => {
+        gsap.from(section, {
+          y: 60,
           opacity: 0,
           duration: 1,
-          stagger: 0.15,
-          ease: "power3.out"
-        });
-      }
-
-      // Manifesto parallax
-      gsap.to(manifestoRef.current, {
-        yPercent: 20,
-        ease: "none",
-        scrollTrigger: {
-          trigger: manifestoRef.current,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1
-        }
-      });
-
-      // Timeline items stagger
-      const timelineItems = timelineRef.current?.querySelectorAll(".timeline-item");
-      if (timelineItems) {
-        gsap.from(timelineItems, {
-          x: -100,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.2,
+          delay: index * 0.1,
           scrollTrigger: {
-            trigger: timelineRef.current,
-            start: "top center+=100",
+            trigger: section,
+            start: "top bottom-=100",
             toggleActions: "play none none reverse"
           }
         });
-      }
-
-      // Values cards with scale
-      const cards = valuesRef.current?.querySelectorAll(".value-card");
-      if (cards) {
-        cards.forEach((card) => {
-          gsap.from(card, {
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.8,
-            scrollTrigger: {
-              trigger: card,
-              start: "top center+=150",
-              toggleActions: "play none none reverse"
-            }
-          });
-        });
-      }
+      });
     });
 
     return () => ctx.revert();
@@ -120,12 +37,12 @@ const About = () => {
 
   return (
     <div className="overflow-x-hidden bg-background">
-      {/* Header with Logo */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-border/50 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-4 lg:py-6">
           <div className="flex items-center justify-between">
             <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <img src={logo} alt="INSPIRE" className="h-7 sm:h-8 lg:h-10 w-auto" />
+              <img src={logo} alt="KAYNA" className="h-8 sm:h-10 lg:h-12 w-auto object-contain" />
             </a>
             <a 
               href="/"
@@ -137,73 +54,134 @@ const About = () => {
         </div>
       </header>
 
-      {/* Hero Section - Enhanced */}
-      <section className="relative min-h-[85vh] lg:min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--accent)/0.12),transparent_55%)]" />
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div className="absolute inset-0">
+          <img src={kaynaHero} alt="KAYNA - La Certitude" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        </div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10 py-12 sm:py-16 lg:py-20">
-          <div ref={heroRef} className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-8 lg:space-y-12">
-            <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 gradient-accent rounded-full shadow-lg animate-float">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-              <span className="text-xs sm:text-sm font-bold text-white tracking-wider">NOTRE HISTOIRE</span>
-            </div>
-            
-            <h1 className="font-bold leading-[1.1] mb-0">
-               <span className="block text-2xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">Plus qu'une marque,</span>
-               <span className="block gradient-text italic text-3xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mt-2 sm:mt-4">un état d'esprit</span>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10 text-center text-white py-20">
+          <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight">
+              KAYNA
             </h1>
-            
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto px-4">
-              KAYNA incarne la <span className="font-bold text-foreground">maîtrise</span>, l'<span className="font-bold text-foreground">authenticité</span> et la <span className="font-bold text-foreground">certitude</span>.
+            <p className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl gradient-text italic font-light">
+              L'Histoire de notre Certitude
             </p>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-4 sm:pt-6">
-              <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>Premium</span>
-              </div>
-              <div className="hidden sm:block w-1 h-1 rounded-full bg-border" />
-              <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>Authentique</span>
-              </div>
-              <div className="hidden sm:block w-1 h-1 rounded-full bg-border" />
-              <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span>Intemporel</span>
-              </div>
+      {/* Philosophy Section - Plus qu'un mot */}
+      <section className="py-16 sm:py-20 lg:py-32 bg-secondary/30 fade-section">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <Shield className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-accent" />
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold">
+              KAYNA : Plus qu'un mot, <span className="gradient-text italic">une Philosophie</span>
+            </h2>
+            <div className="space-y-6 text-lg sm:text-xl lg:text-2xl leading-relaxed">
+              <p>
+                En Songhaï, KAYNA est un mot qui résonne au-delà de la simple traduction. 
+                Ce n'est pas seulement la <span className="font-bold">Certitude</span> ; 
+                c'est la convergence de la <span className="gradient-text font-bold">Confiance</span>, 
+                du <span className="gradient-text font-bold">Dépassement</span> et 
+                de la <span className="gradient-text font-bold">Persévérance</span>.
+              </p>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">
+                C'est l'état d'esprit inébranlable qui résulte d'un engagement total envers votre propre potentiel.
+              </p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold">
+                Nous croyons que la plus grande victoire commence par cette certitude intérieure.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Manifesto Section - New */}
-      <section ref={manifestoRef} className="relative py-20 sm:py-28 lg:py-40 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10 sm:mb-16 lg:mb-20">
-              <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-accent" />
-                <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE ESSENCE</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 sm:mb-8 lg:mb-10 leading-tight">
-                <span className="gradient-text italic">Force</span> & Élégance
+      {/* Battle Section */}
+      <section className="py-16 sm:py-20 lg:py-32 fade-section">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6">
+              <Flame className="w-10 h-10 sm:w-12 sm:h-12 text-accent" />
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+                La Bataille <span className="gradient-text italic">Silencieuse</span>
               </h2>
-            </div>
-
-            <div className="space-y-6 sm:space-y-8 lg:space-y-10 text-base sm:text-lg lg:text-xl leading-relaxed">
-              <p className="text-center font-light">
-                <span className="font-bold text-foreground">KAYNA</span> incarne la maîtrise. 
-                Chaque pièce reflète <span className="font-bold gradient-text">l'authenticité</span> et 
-                <span className="font-bold gradient-text"> la certitude</span>.
+              <p className="text-xl sm:text-2xl font-light leading-relaxed">
+                Nous avons tous été là.
               </p>
+              <div className="space-y-4 text-base sm:text-lg lg:text-xl leading-relaxed">
+                <p>
+                  Vous vous rappelez de la bataille silencieuse ? Ce n'est pas la difficulté de la tâche qui vous écrase, 
+                  mais la petite voix sournoise qui frappe dans le silence de l'aube. Elle vous parle de l'épuisement, 
+                  du cynisme des autres, ou de la tentation de tout laisser tomber après un échec.
+                </p>
+                <p className="text-muted-foreground">
+                  Le véritable ennemi n'est pas le manque de talent, mais la faiblesse de l'esprit qui cherche 
+                  une porte de sortie facile.
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  C'est là, dans cette solitude du combat, que le commun des mortels recule. 
+                  Mais vous, vous avez choisi <span className="gradient-text italic">une autre voie</span>.
+                </p>
+              </div>
+            </div>
+            <div className="order-first lg:order-last">
+              <img 
+                src={kaynaBattle} 
+                alt="La Bataille Silencieuse" 
+                className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <div className="pt-6 sm:pt-8 lg:pt-10 text-center">
-                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                  Style <span className="gradient-text italic">Intemporel</span>
+      {/* Choice Section */}
+      <section className="py-16 sm:py-20 lg:py-32 bg-secondary/30 fade-section">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
+              <img 
+                src={kaynaConfidence} 
+                alt="Le Choix Inébranlable" 
+                className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
+              />
+            </div>
+            <div className="space-y-6">
+              <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-accent" />
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+                Le Choix <span className="gradient-text italic">Inébranlable</span>
+              </h2>
+              <p className="text-xl sm:text-2xl font-light leading-relaxed">
+                C'est pour ce moment précis que KAYNA existe.
+              </p>
+              <div className="space-y-4 text-base sm:text-lg lg:text-xl leading-relaxed">
+                <p>
+                  Nous sommes là pour transformer le doute en élan. Le vêtement que vous enfilez est 
+                  le rappel physique que votre esprit a déjà fait le choix de la victoire.
+                </p>
+                <p className="font-bold">
+                  KAYNA est l'ancrage qui vous donne la certitude que :
+                </p>
+                <div className="space-y-3 pl-4 border-l-4 border-accent">
+                  <p>
+                    <span className="font-bold gradient-text">Le doute n'est qu'un bruit de fond</span> – 
+                    Car votre Confiance est la fondation de votre action.
+                  </p>
+                  <p>
+                    <span className="font-bold gradient-text">L'épuisement n'est qu'une étape</span> – 
+                    Car votre Dépassement est votre mode de vie.
+                  </p>
+                  <p>
+                    <span className="font-bold gradient-text">Votre objectif n'est pas négociable</span> – 
+                    Car votre Persévérance est la seule issue.
+                  </p>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold pt-4">
+                  Ce n'est pas un vêtement que vous mettez, c'est une <span className="gradient-text italic">armure spirituelle</span>.
                 </p>
               </div>
             </div>
@@ -211,147 +189,65 @@ const About = () => {
         </div>
       </section>
 
-      {/* Timeline Section - Simplified */}
-      <section ref={timelineRef} className="py-16 sm:py-20 lg:py-32 bg-secondary/30">
+      {/* Heritage Section */}
+      <section className="py-16 sm:py-20 lg:py-32 fade-section">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20">
-            <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-accent" />
-              <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOTRE PARCOURS</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold">
-              L'évolution de <span className="gradient-text italic">KAYNA</span>
-            </h2>
-          </div>
-
-          <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 lg:space-y-12">
-            {[
-              {
-                year: "2024",
-                title: "La vision",
-                description: "Naissance d'une marque dédiée à la maîtrise et l'authenticité."
-              },
-              {
-                year: "2025",
-                title: "L'excellence",
-                description: "Collection premium qui incarne force, élégance et certitude."
-              }
-            ].map((item, index) => (
-              <div key={index} className="timeline-item flex flex-col sm:flex-row gap-4 sm:gap-6 lg:gap-8 group">
-                <div className="flex-shrink-0">
-                  <div className="w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-2xl sm:rounded-3xl gradient-accent flex items-center justify-center text-white font-bold text-lg sm:text-xl lg:text-2xl shadow-lg group-hover:shadow-glow transition-all group-hover:scale-110">
-                    {item.year}
-                  </div>
-                </div>
-                <div className="flex-1 glass-effect border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 group-hover:border-accent/50 transition-all">
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3 lg:mb-4 group-hover:gradient-text transition-all">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+                Votre Uniforme. <span className="gradient-text italic">Votre Héritage.</span>
+              </h2>
+              <div className="space-y-4 text-base sm:text-lg lg:text-xl leading-relaxed">
+                <p className="text-xl sm:text-2xl font-light">
+                  KAYNA n'est pas juste un vêtement. C'est <span className="font-bold">l'uniforme de votre assurance inébranlable</span>.
+                </p>
+                <p>
+                  Chaque pièce est conçue avec la rigueur et la résilience nécessaires pour supporter votre propre ascension. 
+                  Inspiré par ceux qui, de l'Afrique de l'Ouest aux capitales du monde, ont forgé leur propre succès par la volonté.
+                </p>
+                <p className="text-muted-foreground">
+                  Nous nous adressons à ceux qui savent que le plus grand héritage n'est pas ce que l'on reçoit, 
+                  mais ce que l'on construit et transmet par la force de sa détermination.
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  En portant KAYNA, vous rejoignez ceux qui se battent pour <span className="gradient-text italic">chaque victoire</span>.
+                </p>
               </div>
-            ))}
+            </div>
+            <div className="order-first lg:order-last">
+              <img 
+                src={kaynaHeritage} 
+                alt="Votre Héritage" 
+                className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Values Section - Enhanced */}
-      <section id="values" className="py-14 sm:py-20 lg:py-32">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20">
-            <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-accent/10 rounded-full">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-accent" />
-              <span className="text-xs sm:text-sm font-bold text-accent tracking-wider">NOS VALEURS</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6">
-              Ce qui nous <span className="gradient-text italic">définit</span>
-            </h2>
-            <p className="text-sm sm:text-base lg:text-xl text-muted-foreground">
-              Quatre piliers qui guident chaque création, chaque choix, chaque message.
-            </p>
-          </div>
-
-          <div ref={valuesRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="value-card group relative rounded-2xl lg:rounded-3xl overflow-hidden glass-effect border border-border/50 hover:border-accent/50 transition-all duration-500 hover:shadow-2xl hover:shadow-accent/20"
-              >
-                <div className="relative h-[260px] sm:h-[360px] lg:h-[500px]">
-                  {/* Background Image */}
-                  <div className="absolute inset-0 overflow-hidden">
-                     <img 
-                      src={value.image} 
-                      alt={value.title}
-                      loading="lazy"
-                      decoding="async"
-                      sizes="(min-width: 1024px) 50vw, 100vw"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="relative h-full flex flex-col justify-end p-5 sm:p-6 lg:p-8">
-                    <div className="mb-3 sm:mb-4 lg:mb-6 text-3xl sm:text-4xl lg:text-5xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
-                      {value.icon}
-                    </div>
-                    
-                    <div className="space-y-2 sm:space-y-3 lg:space-y-4">
-                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors">
-                        {value.title}
-                      </h3>
-                      
-                      <p className="text-xs sm:text-sm lg:text-base text-white/90 leading-relaxed">
-                        {value.description}
-                      </p>
-                      
-                      <div className="pt-2 sm:pt-3 lg:pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <p className="text-base sm:text-lg lg:text-xl font-bold text-accent italic">
-                          "{value.quote}"
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 sm:mt-4 lg:mt-6 w-12 sm:w-16 h-1 gradient-accent rounded-full transform origin-left group-hover:w-full transition-all duration-500" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Final CTA */}
+      <section className="py-20 sm:py-28 lg:py-40 bg-primary text-primary-foreground relative overflow-hidden fade-section">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
         </div>
-      </section>
-
-      {/* CTA Section - Minimal */}
-      <section className="py-16 sm:py-20 lg:py-32 bg-secondary/30 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent" />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
-              Découvre <span className="gradient-text italic">KAYNA</span>
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
+              Portez l'assurance. <br/>
+              <span className="gradient-text italic">Devenez la Certitude.</span>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-10 lg:mb-12 leading-relaxed">
-              Style premium. Authenticité garantie.
+            <p className="text-xl sm:text-2xl lg:text-3xl opacity-90 font-light">
+              Ceci est KAYNA. Votre engagement. Votre héritage. Votre victoire.
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+            <div className="pt-6">
               <a 
                 href="/"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 lg:px-12 py-4 sm:py-4.5 lg:py-5 rounded-full gradient-accent text-white font-bold text-sm sm:text-base lg:text-lg hover:shadow-glow transition-all duration-300 group shadow-lg hover:scale-105"
+                className="inline-flex items-center gap-3 px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full gradient-accent text-white font-bold text-base sm:text-lg lg:text-xl hover:shadow-glow transition-all duration-300 group shadow-2xl hover:scale-105"
               >
-                <span>COLLECTION</span>
-                <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-2 transition-transform" />
-              </a>
-              
-              <a 
-                href="#values"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 lg:px-12 py-4 sm:py-4.5 lg:py-5 rounded-full border-2 border-accent text-accent font-bold text-sm sm:text-base lg:text-lg hover:bg-accent hover:text-white transition-all duration-300 hover:scale-105"
-              >
-                <Target className="w-5 h-5 lg:w-6 lg:h-6" />
-                <span>VALEURS</span>
+                <span>DÉCOUVRIR LA COLLECTION</span>
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform" />
               </a>
             </div>
           </div>
