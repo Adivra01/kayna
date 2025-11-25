@@ -64,19 +64,19 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-background relative">
+    <section ref={sectionRef} className="py-24 lg:py-32 bg-primary relative">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Vertical Layout */}
         <div className="max-w-4xl mx-auto text-center mb-20">
-          <div className="inline-flex items-center gap-3 px-5 py-2 bg-secondary rounded-full mb-8">
+          <div className="inline-flex items-center gap-3 px-5 py-2 bg-accent/10 border border-accent/30 rounded-full mb-8">
             <span className="text-accent text-xl">★</span>
-            <span className="text-sm font-bold tracking-wider">NOS CATÉGORIES</span>
+            <span className="text-sm font-bold tracking-wider text-white">NOS CATÉGORIES</span>
           </div>
-          <h2 className="text-display font-bold leading-none mb-6">
+          <h2 className="text-display font-bold leading-none mb-6 text-white">
             Trouve ton
             <span className="block italic text-accent">style</span>
           </h2>
-          <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg lg:text-xl text-white/70 max-w-2xl mx-auto">
             Trois catégories essentielles. Une seule mission : exprimer ta détermination.
           </p>
         </div>
@@ -89,17 +89,17 @@ const CategorySection = () => {
               ref={(el) => (categoriesRef.current[index] = el)}
               className="group cursor-pointer"
             >
-              <div className="relative bg-secondary rounded-3xl p-8 lg:p-10 hover:bg-accent hover:text-white transition-all duration-500 hover:scale-105 hover:shadow-2xl overflow-hidden">
+              <div className="relative bg-primary-dark border border-primary-light/30 rounded-3xl p-8 lg:p-10 hover:bg-accent hover:text-primary hover:border-accent transition-all duration-500 hover:scale-105 hover:shadow-gold-glow overflow-hidden">
                 {/* Background Number */}
                 <div className="absolute top-4 right-4 text-[120px] font-bold opacity-5 group-hover:opacity-10 transition-opacity">
                   {category.id}
                 </div>
 
-                <div className="relative z-10">
+                <div className="relative z-10 text-white group-hover:text-primary">
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-sm font-bold opacity-60">{category.id}</span>
                     {category.active && (
-                      <div className="w-3 h-3 rounded-full bg-accent group-hover:bg-white animate-pulse" />
+                      <div className="w-3 h-3 rounded-full bg-accent animate-pulse" />
                     )}
                   </div>
 
@@ -128,13 +128,13 @@ const CategorySection = () => {
         {/* Feature Image Below */}
         <div ref={imageRef} className="mt-20 relative max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group">
+            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group border border-accent/30 shadow-royal-lg">
               <img 
                 src={hoodie1} 
-                alt="Collection inspire" 
+                alt="Collection KAYNA" 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <h3 className="text-white text-3xl font-bold mb-2">Collection Élite</h3>
                 <p className="text-white/90 text-lg">Disponible maintenant</p>
@@ -142,15 +142,15 @@ const CategorySection = () => {
             </div>
 
             <div className="space-y-8">
-              <div className="text-6xl icon-accent">★</div>
-              <h3 className="text-heading font-bold">
+              <div className="text-6xl text-accent">★</div>
+              <h3 className="text-heading font-bold text-white">
                 Chaque détail compte
               </h3>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="text-lg text-white/70 leading-relaxed">
                 Du choix des tissus à la coupe finale, nous ne faisons aucun compromis. 
                 Parce que tu mérites le meilleur.
               </p>
-              <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent/90 transition-all hover:scale-105 shadow-lg flex items-center gap-3 group">
+              <button className="px-8 py-4 bg-accent text-primary rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-gold flex items-center gap-3 group">
                 <span>Découvrir</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
