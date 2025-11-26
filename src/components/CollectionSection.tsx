@@ -27,8 +27,9 @@ const CollectionSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-primary-dark relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+    <section ref={sectionRef} className="py-24 lg:py-32 bg-primary relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/12 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>

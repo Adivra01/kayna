@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, Twitter, Youtube, ArrowDown } from "lucide-react";
+import { Instagram, ArrowDown } from "lucide-react";
+import { SiTiktok, SiX, SiThreads } from "react-icons/si";
 import heroImage from "@/assets/hero-image.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -71,11 +72,17 @@ const Hero = () => {
         <div className="flex items-center gap-2 sm:gap-4">
           <button className="hidden lg:block text-sm text-white/90 hover:text-accent transition-colors">Search</button>
           <div className="flex gap-2 sm:gap-3">
-            <a href="#" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-accent hover:text-primary hover:border-accent transition-all hover:scale-110">
+            <a href="https://www.instagram.com/kayna.xxv?igsh=MWJkdXN3YzJiMzZ0dw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-accent hover:text-white hover:border-accent transition-all hover:scale-110 hover:shadow-energy-glow">
               <Instagram className="w-3 h-3 sm:w-4 sm:h-4" />
             </a>
-            <a href="#" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-accent hover:text-primary hover:border-accent transition-all hover:scale-110">
-              <Twitter className="w-3 h-3 sm:w-4 sm:h-4" />
+            <a href="https://www.tiktok.com/@kayna.xxv?_r=1&_t=ZS-91iQ1QA3OXl" target="_blank" rel="noopener noreferrer" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-accent hover:text-white hover:border-accent transition-all hover:scale-110 hover:shadow-energy-glow">
+              <SiTiktok className="w-3 h-3 sm:w-4 sm:h-4" />
+            </a>
+            <a href="https://x.com/kayna20xxv?s=11" target="_blank" rel="noopener noreferrer" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-accent hover:text-white hover:border-accent transition-all hover:scale-110 hover:shadow-energy-glow">
+              <SiX className="w-3 h-3 sm:w-4 sm:h-4" />
+            </a>
+            <a href="https://www.threads.com/@kayna.xxv?invite=0" target="_blank" rel="noopener noreferrer" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-secondary-light hover:text-white hover:border-secondary-light transition-all hover:scale-110 hover:shadow-transformation-glow">
+              <SiThreads className="w-3 h-3 sm:w-4 sm:h-4" />
             </a>
           </div>
         </div>
@@ -85,8 +92,9 @@ const Hero = () => {
       <div className="min-h-screen flex flex-col lg:flex-row pt-16 sm:pt-20">
         {/* Left Side - Content */}
         <div className="lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-16 py-8 sm:py-12 lg:py-0 relative">
-          {/* Ambient glow effect */}
+          {/* Ambient glow effects - Orange + Violet fusion */}
           <div className="absolute top-1/4 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-accent/20 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-48 sm:w-80 h-48 sm:h-80 bg-secondary/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
           
           <div className="max-w-2xl relative z-10 w-full">
             <div ref={headingRef} className="space-y-4 sm:space-y-6 lg:space-y-8">
@@ -151,29 +159,29 @@ const Hero = () => {
               alt="KAYNA - Collection premium"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/40 to-accent/20" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/75 via-secondary/30 to-accent/25" />
             
-            {/* Floating Elements with enhanced design */}
-            <div className="absolute top-6 sm:top-12 right-4 sm:right-12 backdrop-blur-md bg-primary/60 border border-accent/30 px-3 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-royal-lg animate-float">
-              <div className="text-[10px] sm:text-xs text-accent mb-0.5 sm:mb-1 uppercase tracking-wider font-medium">Nouveau</div>
+            {/* Floating Elements - Orange/Violet accents */}
+            <div className="absolute top-6 sm:top-12 right-4 sm:right-12 backdrop-blur-md bg-primary/70 border border-secondary/40 px-3 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-transformation animate-float">
+              <div className="text-[10px] sm:text-xs text-secondary-light mb-0.5 sm:mb-1 uppercase tracking-wider font-medium">Nouveau</div>
               <div className="text-sm sm:text-lg font-bold text-white">Collection Elite</div>
-              <div className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-accent animate-glow shadow-gold-glow"></div>
+              <div className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-accent animate-glow shadow-energy-glow"></div>
             </div>
 
-            <div className="absolute bottom-6 sm:bottom-12 left-4 sm:left-12 bg-accent text-primary px-4 sm:px-8 py-3 sm:py-6 rounded-2xl sm:rounded-3xl shadow-gold-glow hover:scale-105 transition-all cursor-pointer group">
+            <div className="absolute bottom-6 sm:bottom-12 left-4 sm:left-12 bg-accent text-white px-4 sm:px-8 py-3 sm:py-6 rounded-2xl sm:rounded-3xl shadow-energy-glow hover:scale-105 transition-all cursor-pointer group">
               <div className="text-xs sm:text-sm mb-1 sm:mb-2 font-medium">Livraison offerte</div>
               <div className="text-lg sm:text-2xl font-bold">Dès 75€</div>
               <div className="absolute inset-0 bg-accent-light rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
 
             <div className="hidden sm:block absolute top-1/2 left-6 lg:left-12 -translate-y-1/2 animate-float">
-              <div className="w-16 lg:w-20 h-16 lg:h-20 rounded-full border-2 lg:border-3 border-accent flex items-center justify-center backdrop-blur-md bg-primary/40 cursor-pointer hover:scale-110 transition-all group shadow-gold">
-                <ArrowDown className="w-6 lg:w-8 h-6 lg:h-8 text-accent group-hover:animate-bounce" />
+              <div className="w-16 lg:w-20 h-16 lg:h-20 rounded-full border-2 lg:border-3 border-secondary-light flex items-center justify-center backdrop-blur-md bg-primary/50 cursor-pointer hover:scale-110 transition-all group shadow-transformation hover:shadow-transformation-glow">
+                <ArrowDown className="w-6 lg:w-8 h-6 lg:h-8 text-secondary-light group-hover:animate-bounce" />
               </div>
             </div>
             
-            {/* Decorative rotating element */}
-            <div className="hidden sm:block absolute top-1/4 right-1/4 w-24 sm:w-32 h-24 sm:h-32 border border-accent/20 rounded-full animate-rotate-slow"></div>
+            {/* Decorative rotating element - Violet accent */}
+            <div className="hidden sm:block absolute top-1/4 right-1/4 w-24 sm:w-32 h-24 sm:h-32 border border-secondary/30 rounded-full animate-rotate-slow"></div>
           </div>
         </div>
       </div>

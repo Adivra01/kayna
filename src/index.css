@@ -17,45 +17,51 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 227 67% 17%;
 
+    /* Bleu profond = Dominant (Confiance/Stabilité) */
     --primary: 227 67% 17%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 227 55% 28%;
-    --primary-dark: 227 75% 12%;
+    --primary-light: 227 60% 25%;
+    --primary-dark: 227 75% 10%;
 
+    /* Violet royal = Secondaire (Transformation) */
     --secondary: 275 86% 36%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-light: 275 75% 48%;
+    --secondary-light: 275 80% 48%;
     --secondary-dark: 275 90% 28%;
 
-    --muted: 227 30% 90%;
-    --muted-foreground: 227 20% 45%;
+    --muted: 230 25% 90%;
+    --muted-foreground: 230 15% 45%;
 
+    /* Orange intense = Accent (Énergie/Action) */
     --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
-    --accent-light: 25 100% 60%;
+    --accent-light: 25 100% 58%;
     --accent-dark: 25 100% 42%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 96%;
 
-    --border: 227 30% 85%;
-    --input: 227 30% 88%;
+    --border: 230 25% 85%;
+    --input: 230 25% 88%;
     --ring: 25 100% 50%;
 
     --radius: 1rem;
     
-    /* KAYNA - Palette Énergie/Transformation/Confiance */
-    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 60%) 100%);
-    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 75% 48%) 100%);
-    --gradient-confidence: linear-gradient(135deg, hsl(227 67% 17%) 0%, hsl(227 55% 28%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(227 75% 12%) 0%, hsl(275 90% 28%) 50%, hsl(25 100% 50%) 100%);
-    --gradient-overlay: linear-gradient(135deg, hsla(227 67% 17% / 0.95) 0%, hsla(275 86% 36% / 0.85) 100%);
+    /* KAYNA - Fusion Masterclass: Orange/Violet/Bleu */
+    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 58%) 100%);
+    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 80% 48%) 100%);
+    --gradient-deep: linear-gradient(135deg, hsl(227 67% 17%) 0%, hsl(227 75% 10%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(227 67% 17%) 0%, hsl(275 86% 36%) 50%, hsl(25 100% 50%) 100%);
+    --gradient-power: linear-gradient(90deg, hsl(25 100% 50%) 0%, hsl(275 86% 36%) 50%, hsl(227 67% 17%) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(227 67% 17% / 0.97) 0%, hsla(275 86% 36% / 0.88) 60%, hsla(25 100% 50% / 0.12) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsla(227 67% 17% / 0.05) 0%, hsla(275 86% 36% / 0.08) 100%);
     
-    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.35);
-    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.5);
-    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.35);
-    --shadow-confidence: 0 8px 32px hsla(227 67% 17% / 0.25);
-    --shadow-confidence-lg: 0 16px 48px hsla(227 67% 17% / 0.35);
+    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.4);
+    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.55);
+    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.4);
+    --shadow-transformation-glow: 0 0 48px hsla(275 86% 36% / 0.5);
+    --shadow-deep: 0 8px 32px hsla(227 67% 17% / 0.3);
+    --shadow-deep-lg: 0 16px 48px hsla(227 67% 17% / 0.4);
     
     --blur-sm: 12px;
     --blur-md: 24px;
@@ -88,43 +94,49 @@ All colors MUST be HSL.
     --popover: 227 70% 12%;
     --popover-foreground: 0 0% 100%;
 
+    /* Bleu profond Dark */
     --primary: 227 67% 17%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 227 55% 28%;
-    --primary-dark: 227 75% 12%;
+    --primary-light: 227 60% 25%;
+    --primary-dark: 227 75% 10%;
 
+    /* Violet royal Dark */
     --secondary: 275 86% 36%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-light: 275 75% 48%;
+    --secondary-light: 275 80% 48%;
     --secondary-dark: 275 90% 28%;
 
-    --muted: 227 50% 20%;
-    --muted-foreground: 227 20% 75%;
+    --muted: 230 40% 20%;
+    --muted-foreground: 230 15% 75%;
 
+    /* Orange intense Dark */
     --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
-    --accent-light: 25 100% 60%;
+    --accent-light: 25 100% 58%;
     --accent-dark: 25 100% 42%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 96%;
 
-    --border: 227 50% 22%;
-    --input: 227 50% 20%;
+    --border: 230 40% 22%;
+    --input: 230 40% 20%;
     --ring: 25 100% 50%;
     
-    /* KAYNA Dark Mode */
-    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 60%) 100%);
-    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 75% 48%) 100%);
-    --gradient-confidence: linear-gradient(135deg, hsl(227 75% 8%) 0%, hsl(227 70% 12%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(227 75% 12%) 0%, hsl(275 90% 28%) 50%, hsl(25 100% 50%) 100%);
-    --gradient-overlay: linear-gradient(135deg, hsla(227 75% 8% / 0.98) 0%, hsla(275 86% 36% / 0.90) 100%);
+    /* KAYNA Dark - Fusion Orange/Violet/Bleu */
+    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 58%) 100%);
+    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 80% 48%) 100%);
+    --gradient-deep: linear-gradient(135deg, hsl(227 75% 8%) 0%, hsl(227 70% 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(227 75% 8%) 0%, hsl(275 86% 36%) 50%, hsl(25 100% 50%) 100%);
+    --gradient-power: linear-gradient(90deg, hsl(25 100% 50%) 0%, hsl(275 86% 36%) 50%, hsl(227 75% 8%) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(227 75% 8% / 0.98) 0%, hsla(275 86% 36% / 0.90) 60%, hsla(25 100% 50% / 0.15) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsla(227 75% 8% / 0.08) 0%, hsla(275 86% 36% / 0.12) 100%);
     
-    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.45);
-    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.6);
-    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.45);
-    --shadow-confidence: 0 8px 32px hsla(227 67% 17% / 0.4);
-    --shadow-confidence-lg: 0 16px 48px hsla(227 75% 8% / 0.5);
+    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.5);
+    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.65);
+    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.5);
+    --shadow-transformation-glow: 0 0 48px hsla(275 86% 36% / 0.6);
+    --shadow-deep: 0 8px 32px hsla(227 75% 8% / 0.45);
+    --shadow-deep-lg: 0 16px 48px hsla(227 75% 8% / 0.6);
     
     --blur-sm: 12px;
     --blur-md: 24px;
