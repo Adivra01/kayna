@@ -8,52 +8,54 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 65% 97%;
-    --foreground: 220 80% 8%;
+    --background: 0 0% 98%;
+    --foreground: 227 67% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 80% 8%;
+    --card-foreground: 227 67% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 80% 8%;
+    --popover-foreground: 227 67% 17%;
 
-    --primary: 230 70% 22%;
+    --primary: 227 67% 17%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 230 60% 35%;
-    --primary-dark: 230 80% 12%;
+    --primary-light: 227 55% 28%;
+    --primary-dark: 227 75% 12%;
 
-    --secondary: 220 50% 92%;
-    --secondary-foreground: 220 80% 8%;
+    --secondary: 275 86% 36%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 275 75% 48%;
+    --secondary-dark: 275 90% 28%;
 
-    --muted: 220 40% 94%;
-    --muted-foreground: 220 30% 40%;
+    --muted: 227 30% 90%;
+    --muted-foreground: 227 20% 45%;
 
-    --accent: 48 95% 53%;
-    --accent-foreground: 220 80% 8%;
-    --accent-light: 48 95% 65%;
-    --accent-dark: 45 90% 45%;
+    --accent: 25 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 25 100% 60%;
+    --accent-dark: 25 100% 42%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 96%;
 
-    --border: 220 40% 88%;
-    --input: 220 40% 90%;
-    --ring: 48 95% 53%;
+    --border: 227 30% 85%;
+    --input: 227 30% 88%;
+    --ring: 25 100% 50%;
 
     --radius: 1rem;
     
-    /* KAYNA Royal Dominant - Minimalisme Premium */
-    --gradient-royal-primary: linear-gradient(135deg, hsl(230 80% 12%) 0%, hsl(230 70% 22%) 100%);
-    --gradient-royal-soft: linear-gradient(180deg, hsl(230 60% 35%) 0%, hsl(230 70% 22%) 100%);
-    --gradient-royal-accent: linear-gradient(135deg, hsl(230 70% 22%) 0%, hsl(230 65% 28%) 50%, hsl(48 95% 53%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 45%) 0%, hsl(48 95% 53%) 50%, hsl(48 95% 65%) 100%);
-    --gradient-overlay-royal: linear-gradient(135deg, hsla(230 80% 12% / 0.92) 0%, hsla(230 70% 22% / 0.88) 100%);
+    /* KAYNA - Palette Énergie/Transformation/Confiance */
+    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 60%) 100%);
+    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 75% 48%) 100%);
+    --gradient-confidence: linear-gradient(135deg, hsl(227 67% 17%) 0%, hsl(227 55% 28%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(227 75% 12%) 0%, hsl(275 90% 28%) 50%, hsl(25 100% 50%) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(227 67% 17% / 0.95) 0%, hsla(275 86% 36% / 0.85) 100%);
     
-    --shadow-royal-sm: 0 2px 12px hsla(230 70% 22% / 0.12);
-    --shadow-royal-md: 0 8px 24px hsla(230 70% 22% / 0.18);
-    --shadow-royal-lg: 0 16px 48px hsla(230 80% 12% / 0.24);
-    --shadow-gold: 0 8px 32px hsla(48 95% 53% / 0.35);
-    --shadow-gold-glow: 0 0 64px hsla(48 95% 53% / 0.5);
+    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.35);
+    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.5);
+    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.35);
+    --shadow-confidence: 0 8px 32px hsla(227 67% 17% / 0.25);
+    --shadow-confidence-lg: 0 16px 48px hsla(227 67% 17% / 0.35);
     
     --blur-sm: 12px;
     --blur-md: 24px;
@@ -77,50 +79,52 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 230 75% 6%;
+    --background: 227 75% 8%;
     --foreground: 0 0% 100%;
 
-    --card: 230 70% 10%;
+    --card: 227 70% 12%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 230 70% 10%;
+    --popover: 227 70% 12%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 0 0% 100%;
-    --primary-foreground: 230 75% 6%;
-    --primary-light: 230 60% 35%;
-    --primary-dark: 230 80% 12%;
+    --primary: 227 67% 17%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 227 55% 28%;
+    --primary-dark: 227 75% 12%;
 
-    --secondary: 230 60% 14%;
+    --secondary: 275 86% 36%;
     --secondary-foreground: 0 0% 100%;
+    --secondary-light: 275 75% 48%;
+    --secondary-dark: 275 90% 28%;
 
-    --muted: 230 50% 18%;
-    --muted-foreground: 220 20% 75%;
+    --muted: 227 50% 20%;
+    --muted-foreground: 227 20% 75%;
 
-    --accent: 48 95% 53%;
-    --accent-foreground: 230 75% 6%;
-    --accent-light: 48 95% 65%;
-    --accent-dark: 45 90% 45%;
+    --accent: 25 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 25 100% 60%;
+    --accent-dark: 25 100% 42%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 96%;
 
-    --border: 230 50% 20%;
-    --input: 230 50% 18%;
-    --ring: 48 95% 53%;
+    --border: 227 50% 22%;
+    --input: 227 50% 20%;
+    --ring: 25 100% 50%;
     
-    /* KAYNA Royal Dominant - Minimalisme Premium Dark */
-    --gradient-royal-primary: linear-gradient(135deg, hsl(230 75% 6%) 0%, hsl(230 70% 14%) 100%);
-    --gradient-royal-soft: linear-gradient(180deg, hsl(230 70% 14%) 0%, hsl(230 75% 6%) 100%);
-    --gradient-royal-accent: linear-gradient(135deg, hsl(230 75% 6%) 0%, hsl(230 70% 10%) 50%, hsl(48 95% 53%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 45%) 0%, hsl(48 95% 53%) 50%, hsl(48 95% 65%) 100%);
-    --gradient-overlay-royal: linear-gradient(135deg, hsla(230 75% 6% / 0.95) 0%, hsla(230 70% 10% / 0.90) 100%);
+    /* KAYNA Dark Mode */
+    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 60%) 100%);
+    --gradient-transformation: linear-gradient(135deg, hsl(275 86% 36%) 0%, hsl(275 75% 48%) 100%);
+    --gradient-confidence: linear-gradient(135deg, hsl(227 75% 8%) 0%, hsl(227 70% 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(227 75% 12%) 0%, hsl(275 90% 28%) 50%, hsl(25 100% 50%) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(227 75% 8% / 0.98) 0%, hsla(275 86% 36% / 0.90) 100%);
     
-    --shadow-royal-sm: 0 2px 12px hsla(230 75% 6% / 0.4);
-    --shadow-royal-md: 0 8px 24px hsla(230 75% 6% / 0.5);
-    --shadow-royal-lg: 0 16px 48px hsla(230 80% 4% / 0.6);
-    --shadow-gold: 0 8px 32px hsla(48 95% 53% / 0.4);
-    --shadow-gold-glow: 0 0 64px hsla(48 95% 53% / 0.6);
+    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.45);
+    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.6);
+    --shadow-transformation: 0 8px 32px hsla(275 86% 36% / 0.45);
+    --shadow-confidence: 0 8px 32px hsla(227 67% 17% / 0.4);
+    --shadow-confidence-lg: 0 16px 48px hsla(227 75% 8% / 0.5);
     
     --blur-sm: 12px;
     --blur-md: 24px;
