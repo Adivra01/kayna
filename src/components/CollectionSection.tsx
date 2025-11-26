@@ -32,73 +32,72 @@ const CollectionSection = () => {
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-3 mb-8 px-5 py-2 bg-accent/10 border border-accent/20 rounded-full">
-              <span className="text-accent text-2xl animate-pulse">★</span>
-              <span className="text-sm font-bold text-accent tracking-wider">POURQUOI KAYNA?</span>
+            <div className="inline-flex items-center gap-3 mb-8 px-5 py-2 bg-accent/10 border border-accent/30 rounded-full">
+              <span className="text-accent text-2xl animate-pulse">⚔️</span>
+              <span className="text-sm font-bold text-accent tracking-wider">LE CHOIX INÉBRANLABLE</span>
             </div>
             
             <h2 className="text-display font-bold leading-none mb-8 text-white">
-              L'excellence
-              <span className="block italic text-accent">n'attend pas</span>
+              Transforme le doute
+              <span className="block italic text-accent">en élan</span>
             </h2>
 
             <div ref={textRef} className="space-y-6">
               <p className="text-xl lg:text-2xl leading-relaxed font-light text-white">
-                Tu n'es pas là pour <span className="font-bold">suivre</span>. 
-                Tu es là pour <span className="italic text-accent">montrer la voie</span>.
+                KAYNA n'est pas un vêtement. 
+                C'est une <span className="italic text-accent">armure spirituelle</span>.
               </p>
               
               <p className="text-base lg:text-lg leading-relaxed text-white/80">
-                Nos collections sont créées pour les <span className="font-bold text-white">visionnaires</span>, 
-                les <span className="font-bold text-white">persévérants</span>, ceux qui transforment les obstacles en tremplins. 
-                Chaque pièce incarne la <span className="text-accent">détermination</span> et 
-                la <span className="text-accent">confiance</span> que tu portes déjà en toi.
+                Un <span className="font-bold text-white">rappel physique</span> que ton esprit a déjà fait le choix de la victoire. 
+                Le doute n'est qu'un bruit de fond. L'épuisement n'est qu'une étape. 
+                Ton objectif n'est <span className="text-accent font-bold">pas négociable</span>.
               </p>
 
               <div className="flex items-center gap-4 pt-4">
-                <button className="px-8 py-4 bg-accent text-primary rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-gold">
-                  DÉCOUVRIR
+                <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-energy">
+                  PORTER LA CONFIANCE
                 </button>
                 <div className="flex items-center gap-2">
-                  <div className="w-12 h-12 rounded-full border-2 border-accent flex items-center justify-center">
-                    <ArrowRight className="w-5 h-5 text-accent" />
+                  <div className="w-12 h-12 rounded-full border-2 border-secondary flex items-center justify-center">
+                    <ArrowRight className="w-5 h-5 text-secondary-light" />
                   </div>
-                  <span className="text-sm font-bold text-white">Livraison gratuite</span>
+                  <span className="text-sm font-bold text-white">Devenir la certitude</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            <div className="bg-primary border border-primary-light/30 rounded-3xl p-6 lg:p-8 hover:shadow-royal-md transition-all hover:scale-105">
-              <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">01</div>
-              <h3 className="font-bold text-lg mb-3 text-white">Qualité Premium</h3>
-              <p className="text-sm text-white/70">Tissus haut de gamme sélectionnés pour leur durabilité et confort</p>
+            <div className="bg-primary border border-secondary/30 rounded-3xl p-6 lg:p-8 hover:shadow-transformation transition-all hover:scale-105">
+              <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">⚡</div>
+              <h3 className="font-bold text-lg mb-3 text-white">Confiance</h3>
+              <p className="text-sm text-white/70">La base inébranlable de toute action décisive</p>
             </div>
             
-            <div className="bg-primary border border-primary-light/30 rounded-3xl p-6 lg:p-8 hover:shadow-royal-md transition-all hover:scale-105 mt-8">
-              <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">02</div>
-              <h3 className="font-bold text-lg mb-3 text-white">Design Unique</h3>
-              <p className="text-sm text-white/70">Créations originales qui racontent ton histoire</p>
+            <div className="bg-secondary/10 border border-secondary/40 rounded-3xl p-6 lg:p-8 hover:shadow-transformation transition-all hover:scale-105 mt-8">
+              <div className="text-4xl lg:text-5xl font-bold mb-4 text-secondary-light">🔥</div>
+              <h3 className="font-bold text-lg mb-3 text-white">Dépassement</h3>
+              <p className="text-sm text-white/70">Transformer chaque limite en tremplin</p>
             </div>
             
-            <div className="bg-primary border border-primary-light/30 rounded-3xl p-6 lg:p-8 hover:shadow-royal-md transition-all hover:scale-105 -mt-8">
-              <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">03</div>
-              <h3 className="font-bold text-lg mb-3 text-white">Impact Positif</h3>
-              <p className="text-sm text-white/70">Production éthique et responsable</p>
+            <div className="bg-primary border border-accent/30 rounded-3xl p-6 lg:p-8 hover:shadow-energy transition-all hover:scale-105 -mt-8">
+              <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">🛡️</div>
+              <h3 className="font-bold text-lg mb-3 text-white">Persévérance</h3>
+              <p className="text-sm text-white/70">L'engagement qui ne se négocie jamais</p>
             </div>
             
-            <div className="bg-accent text-primary rounded-3xl p-6 lg:p-8 hover:shadow-gold-glow transition-all hover:scale-105">
+            <div className="bg-accent text-white rounded-3xl p-6 lg:p-8 hover:shadow-energy-glow transition-all hover:scale-105">
               <div className="text-4xl lg:text-5xl font-bold mb-4">★</div>
-              <h3 className="font-bold text-lg mb-3">Communauté</h3>
-              <p className="text-sm opacity-90">Rejoins 50K+ battants qui incarnent l'excellence</p>
+              <h3 className="font-bold text-lg mb-3">Ton Héritage</h3>
+              <p className="text-sm opacity-90">Rejoins ceux qui construisent leur propre légende</p>
             </div>
           </div>
         </div>
         
         <div className="mt-16 text-center">
           <p className="text-sm text-white/50">
-            ©KAYNA - Dépassement, Confiance, Persévérance • 2025
+            ©KAYNA - Portez la confiance. Devenez la certitude. • 2025
           </p>
         </div>
       </div>

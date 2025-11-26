@@ -81,29 +81,28 @@ const AboutSection = () => {
           {/* Middle - Text */}
           <div ref={textRef} className="lg:col-span-4 space-y-8">
             <div>
-              <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full">
-                <span className="text-accent text-2xl">★</span>
-                <span className="text-sm font-bold text-accent tracking-wider">PHILOSOPHIE</span>
+              <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 bg-secondary/10 border border-secondary/30 rounded-full">
+                <span className="text-secondary-light text-2xl">🥷</span>
+                <span className="text-sm font-bold text-secondary-light tracking-wider">LA BATAILLE SILENCIEUSE</span>
               </div>
               
               <h2 className="text-display font-bold leading-none mb-8 text-primary">
-                Ta force
-                <span className="block italic text-accent">commence ici</span>
+                Le vrai combat
+                <span className="block italic text-secondary">se fait en toi</span>
               </h2>
               
               <p className="text-xl lg:text-2xl mb-6 leading-relaxed font-light text-primary">
-                Chaque matin, tu fais un choix : <span className="font-bold">rester dans ta zone de confort</span> ou 
-                <span className="italic text-accent"> oser être exceptionnel</span>.
+                Ce n'est pas la tâche qui t'écrase, c'est cette <span className="font-bold text-secondary">petite voix</span> qui murmure : 
+                <span className="italic text-accent"> "Tu es fatigué... Abandonne..."</span>
               </p>
               
               <p className="text-base lg:text-lg mb-8 leading-relaxed text-muted-foreground">
-                Nos vêtements ne sont pas juste du tissu. Ce sont des <span className="font-bold text-primary">rappels quotidiens</span> de 
-                ta capacité à tout surmonter. À chaque fois que tu les portes, tu incarnes la persévérance, 
-                la confiance, le dépassement.
+                Le véritable ennemi n'est pas l'épuisement ni le regard des autres. C'est la <span className="font-bold text-primary">fragilité d'un esprit</span> tenté par l'abandon. 
+                Dans cette solitude, beaucoup reculent. <span className="font-bold text-accent">Mais toi, tu as choisi une autre voie.</span>
               </p>
               
-              <a href="/about" className="inline-flex px-8 py-4 rounded-full bg-accent text-primary font-bold hover:bg-accent-light transition-all duration-300 items-center gap-3 group shadow-gold hover:shadow-gold-glow hover:scale-105">
-                <span className="text-sm lg:text-base">DÉCOUVRE NOTRE HISTOIRE</span>
+              <a href="/about" className="inline-flex px-8 py-4 rounded-full bg-accent text-white font-bold hover:bg-accent-light transition-all duration-300 items-center gap-3 group shadow-energy hover:shadow-energy-glow hover:scale-105">
+                <span className="text-sm lg:text-base">DÉCOUVRE L'HISTOIRE COMPLÈTE</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </a>
             </div>

@@ -100,17 +100,17 @@ const Hero = () => {
               </div>
 
               <h2 className="text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] xl:text-[7rem] 2xl:text-[8rem] font-bold leading-[0.9] text-white">
-                Force
-                <span className="block">& </span>
-                <span className="block italic text-accent">Élégance</span>
+                Plus qu'un mot
+                <span className="block text-accent">Une </span>
+                <span className="block italic text-accent">Philosophie</span>
               </h2>
 
               <div className="space-y-3 sm:space-y-4">
                 <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-light leading-relaxed text-white/95">
-                  La <span className="font-bold text-accent">maîtrise</span> se porte.
+                  La convergence de la <span className="font-bold text-accent">Confiance</span>, du <span className="font-bold text-secondary-light">Dépassement</span> et de la <span className="font-bold text-accent">Persévérance</span>.
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg text-white/70 max-w-lg leading-relaxed">
-                  Style premium qui incarne l'<span className="font-semibold text-accent">authenticité</span> et la <span className="font-semibold text-accent">certitude</span>.
+                  Une <span className="font-semibold text-accent">certitude intérieure</span> inébranlable. Toute victoire commence ici.
                 </p>
               </div>
 
