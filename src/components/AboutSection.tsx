@@ -70,9 +70,9 @@ const AboutSection = () => {
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left - Images */}
           <div className="lg:col-span-5 relative">
-            <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8 shadow-royal-lg border border-primary/20">
+            <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8 shadow-deep-lg border border-secondary/20">
               <img src={sweater1} alt="Collection KAYNA - Confiance" className="w-full h-full object-cover" />
-              <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-primary flex items-center justify-center shadow-gold">
+              <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center shadow-energy-glow hover:scale-110 transition-transform">
                 <ArrowRight className="w-6 h-6" />
               </div>
             </div>
@@ -110,27 +110,27 @@ const AboutSection = () => {
 
           {/* Right - Second Image */}
           <div className="lg:col-span-3">
-            <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] group border border-accent/20 shadow-royal-md">
+            <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] group border border-secondary/25 shadow-transformation">
               <img src={tshirt2} alt="KAYNA - Collection premium" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-secondary/20 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-gold-glow" />
+                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-energy-glow" />
                   <span className="text-white/90 text-xs uppercase tracking-wider">En stock</span>
                 </div>
                 <p className="text-white font-bold text-lg lg:text-xl mb-2">Collection Élite</p>
                 <p className="text-white/90 text-sm mb-4">Qualité premium • Design unique</p>
-                <button className="text-accent font-bold text-sm flex items-center gap-2 group/btn">
+                <button className="text-accent font-bold text-sm flex items-center gap-2 group/btn hover:text-accent-light transition-colors">
                   <span>Voir plus</span>
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
             <div className="mt-8 flex items-center justify-end gap-4">
-              <div className="text-3xl text-accent">✱</div>
+              <div className="text-3xl text-secondary-light">✱</div>
               <div className="text-right text-primary">
                 <p className="font-bold text-sm lg:text-base">Fabriqué pour</p>
-                <p className="font-bold text-sm lg:text-base italic">les battants</p>
+                <p className="font-bold text-sm lg:text-base italic text-secondary">les battants</p>
               </div>
             </div>
           </div>
