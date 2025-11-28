@@ -104,15 +104,15 @@ const ProductGrid = () => {
                 ref={(el) => (cardsRef.current[index] = el)}
                 className={`group cursor-pointer ${gridClasses[index]}`}
               >
-                <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card h-full shadow-royal-md hover:shadow-royal-lg transition-all duration-500">
+                <div className={`relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card h-full shadow-dark hover:shadow-dark-lg transition-all duration-500`}>
                   <img
                     src={product.image}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700"
                   />
                   
-                  {/* Gradient Overlay - Fusion Bleu/Violet */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-secondary/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
+                  {/* Gradient Overlay - Fusion Noir/Orange/Beige */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-secondary/25 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
                   
                   {/* Content - Always visible but enhanced on hover */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 transform translate-y-0 transition-transform duration-500">
@@ -121,14 +121,14 @@ const ProductGrid = () => {
                     </h3>
                     <div className="flex items-center justify-between">
                       <span className="text-white/80 text-xs lg:text-sm font-medium">{product.year}</span>
-                      <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-accent text-white flex items-center justify-center hover:scale-110 transition-all shadow-energy-glow">
+                      <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-accent text-primary flex items-center justify-center hover:scale-110 transition-all shadow-energy-glow">
                         <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
                       </button>
                     </div>
                   </div>
 
                   {product.tag && (
-                    <div className="absolute top-3 left-3 lg:top-4 lg:left-4 px-3 py-1.5 lg:px-4 lg:py-2 backdrop-blur-md bg-secondary-light border border-secondary-light rounded-full shadow-transformation-glow animate-float">
+                    <div className="absolute top-3 left-3 lg:top-4 lg:left-4 px-3 py-1.5 lg:px-4 lg:py-2 backdrop-blur-md bg-secondary border border-secondary rounded-full shadow-earth-glow animate-float">
                       <span className="text-xs font-bold text-white">NEW</span>
                     </div>
                   )}
@@ -145,7 +145,7 @@ const ProductGrid = () => {
         </div>
 
         <div className="mt-16 flex justify-center">
-          <button className="group relative px-12 py-5 rounded-full bg-accent text-white hover:scale-105 transition-all flex items-center gap-4 shadow-energy-glow hover:shadow-energy-glow font-bold text-lg overflow-hidden">
+          <button className="group relative px-12 py-5 rounded-full bg-accent text-primary hover:scale-105 transition-all flex items-center gap-4 shadow-energy-glow hover:shadow-energy-glow font-bold text-lg overflow-hidden">
             <span className="relative z-10">Voir tout</span>
             <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform relative z-10" />
             <div className="absolute inset-0 bg-accent-light translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>

@@ -66,13 +66,15 @@ const AboutSection = () => {
 
   return (
     <section ref={sectionRef} className="py-32 bg-background relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/15 rounded-full blur-[120px]"></div>
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left - Images */}
           <div className="lg:col-span-5 relative">
-            <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8 shadow-deep-lg border border-secondary/20">
+            <div ref={image1Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] mb-8 shadow-dark-lg border border-secondary/30">
               <img src={sweater1} alt="Collection KAYNA - Confiance" className="w-full h-full object-cover" />
-              <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center shadow-energy-glow hover:scale-110 transition-transform">
+              <div className="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent text-primary flex items-center justify-center shadow-energy-glow hover:scale-110 transition-transform">
                 <ArrowRight className="w-6 h-6" />
               </div>
             </div>
@@ -81,9 +83,9 @@ const AboutSection = () => {
           {/* Middle - Text */}
           <div ref={textRef} className="lg:col-span-4 space-y-8">
             <div>
-              <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 bg-secondary/10 border border-secondary/30 rounded-full">
-                <span className="text-secondary-light text-2xl">🥷</span>
-                <span className="text-sm font-bold text-secondary-light tracking-wider">LA BATAILLE SILENCIEUSE</span>
+              <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 bg-secondary/15 border border-secondary/40 rounded-full">
+                <span className="text-secondary text-2xl">🥷</span>
+                <span className="text-sm font-bold text-secondary tracking-wider">LA BATAILLE SILENCIEUSE</span>
               </div>
               
               <h2 className="text-display font-bold leading-none mb-8 text-primary">
@@ -101,7 +103,7 @@ const AboutSection = () => {
                 Dans cette solitude, beaucoup reculent. <span className="font-bold text-accent">Mais toi, tu as choisi une autre voie.</span>
               </p>
               
-              <a href="/about" className="inline-flex px-8 py-4 rounded-full bg-accent text-white font-bold hover:bg-accent-light transition-all duration-300 items-center gap-3 group shadow-energy hover:shadow-energy-glow hover:scale-105">
+              <a href="/about" className="inline-flex px-8 py-4 rounded-full bg-accent text-primary font-bold hover:bg-accent-light transition-all duration-300 items-center gap-3 group shadow-energy hover:shadow-energy-glow hover:scale-105">
                 <span className="text-sm lg:text-base">DÉCOUVRE L'HISTOIRE COMPLÈTE</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </a>
@@ -110,9 +112,9 @@ const AboutSection = () => {
 
           {/* Right - Second Image */}
           <div className="lg:col-span-3">
-            <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] group border border-secondary/25 shadow-transformation">
+            <div ref={image2Ref} className="relative rounded-[3rem] overflow-hidden aspect-[3/4] group border border-secondary/30 shadow-earth">
               <img src={tshirt2} alt="KAYNA - Collection premium" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-secondary/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-secondary/25 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-energy-glow" />
@@ -127,7 +129,7 @@ const AboutSection = () => {
               </div>
             </div>
             <div className="mt-8 flex items-center justify-end gap-4">
-              <div className="text-3xl text-secondary-light">✱</div>
+              <div className="text-3xl text-secondary">✱</div>
               <div className="text-right text-primary">
                 <p className="font-bold text-sm lg:text-base">Fabriqué pour</p>
                 <p className="font-bold text-sm lg:text-base italic text-secondary">les battants</p>
