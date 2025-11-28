@@ -68,8 +68,8 @@ const CategorySection = () => {
       <div className="container mx-auto px-6 lg:px-12">
         {/* Vertical Layout */}
         <div className="max-w-4xl mx-auto text-center mb-20">
-          <div className="inline-flex items-center gap-3 px-5 py-2 bg-secondary/10 border border-secondary/30 rounded-full mb-8">
-            <span className="text-secondary-light text-xl">★</span>
+          <div className="inline-flex items-center gap-3 px-5 py-2 bg-secondary/15 border border-secondary/40 rounded-full mb-8">
+            <span className="text-secondary text-xl">★</span>
             <span className="text-sm font-bold tracking-wider text-white">NOS CATÉGORIES</span>
           </div>
           <h2 className="text-display font-bold leading-none mb-6 text-white">
@@ -89,13 +89,13 @@ const CategorySection = () => {
               ref={(el) => (categoriesRef.current[index] = el)}
               className="group cursor-pointer"
             >
-              <div className="relative bg-primary-dark border border-secondary/25 rounded-3xl p-8 lg:p-10 hover:bg-gradient-to-br hover:from-accent hover:to-accent-light hover:text-white hover:border-accent transition-all duration-500 hover:scale-105 hover:shadow-energy-glow overflow-hidden">
+              <div className="relative bg-primary-light border border-secondary/30 rounded-3xl p-8 lg:p-10 hover:bg-gradient-to-br hover:from-accent hover:to-accent-light hover:text-primary hover:border-accent transition-all duration-500 hover:scale-105 hover:shadow-energy-glow overflow-hidden">
                 {/* Background Number */}
                 <div className="absolute top-4 right-4 text-[120px] font-bold opacity-5 group-hover:opacity-10 transition-opacity">
                   {category.id}
                 </div>
 
-                <div className="relative z-10 text-white group-hover:text-white">
+                <div className="relative z-10 text-white group-hover:text-primary">
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-sm font-bold opacity-60">{category.id}</span>
                     {category.active && (
@@ -128,13 +128,13 @@ const CategorySection = () => {
         {/* Feature Image Below */}
         <div ref={imageRef} className="mt-20 relative max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group border border-secondary/30 shadow-deep-lg">
+            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group border border-secondary/30 shadow-dark-lg">
               <img 
                 src={hoodie1} 
                 alt="Collection KAYNA" 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-secondary/15 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-secondary/25 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <h3 className="text-white text-3xl font-bold mb-2">Collection Élite</h3>
                 <p className="text-white/90 text-lg">Disponible maintenant</p>
@@ -142,7 +142,7 @@ const CategorySection = () => {
             </div>
 
             <div className="space-y-8">
-              <div className="text-6xl text-secondary-light">★</div>
+              <div className="text-6xl text-secondary">★</div>
               <h3 className="text-heading font-bold text-white">
                 Chaque détail compte
               </h3>
@@ -150,7 +150,7 @@ const CategorySection = () => {
                 Du choix des tissus à la coupe finale, nous ne faisons aucun compromis. 
                 Parce que tu mérites le meilleur.
               </p>
-              <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-energy flex items-center gap-3 group">
+              <button className="px-8 py-4 bg-accent text-primary rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-energy hover:shadow-energy-glow flex items-center gap-3 group">
                 <span>Découvrir</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>

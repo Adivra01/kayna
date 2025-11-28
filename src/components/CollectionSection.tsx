@@ -28,8 +28,8 @@ const CollectionSection = () => {
 
   return (
     <section ref={sectionRef} className="py-24 lg:py-32 bg-primary relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/12 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-secondary/25 rounded-full blur-[140px] animate-pulse"></div>
+      <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-accent/15 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '1s' }}></div>
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -56,12 +56,12 @@ const CollectionSection = () => {
               </p>
 
               <div className="flex items-center gap-4 pt-4">
-                <button className="px-8 py-4 bg-accent text-white rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-energy">
+                <button className="px-8 py-4 bg-accent text-primary rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-energy hover:shadow-energy-glow">
                   PORTER LA CONFIANCE
                 </button>
                 <div className="flex items-center gap-2">
                   <div className="w-12 h-12 rounded-full border-2 border-secondary flex items-center justify-center">
-                    <ArrowRight className="w-5 h-5 text-secondary-light" />
+                    <ArrowRight className="w-5 h-5 text-secondary" />
                   </div>
                   <span className="text-sm font-bold text-white">Devenir la certitude</span>
                 </div>
@@ -70,25 +70,25 @@ const CollectionSection = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            <div className="bg-primary border border-secondary/30 rounded-3xl p-6 lg:p-8 hover:shadow-transformation transition-all hover:scale-105">
+            <div className="bg-primary-light border border-secondary/30 rounded-3xl p-6 lg:p-8 hover:shadow-earth transition-all hover:scale-105">
               <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">⚡</div>
               <h3 className="font-bold text-lg mb-3 text-white">Confiance</h3>
               <p className="text-sm text-white/70">La base inébranlable de toute action décisive</p>
             </div>
             
-            <div className="bg-secondary/10 border border-secondary/40 rounded-3xl p-6 lg:p-8 hover:shadow-transformation transition-all hover:scale-105 mt-8">
-              <div className="text-4xl lg:text-5xl font-bold mb-4 text-secondary-light">🔥</div>
+            <div className="bg-secondary/15 border border-secondary/40 rounded-3xl p-6 lg:p-8 hover:shadow-earth-glow transition-all hover:scale-105 mt-8">
+              <div className="text-4xl lg:text-5xl font-bold mb-4 text-secondary">🔥</div>
               <h3 className="font-bold text-lg mb-3 text-white">Dépassement</h3>
               <p className="text-sm text-white/70">Transformer chaque limite en tremplin</p>
             </div>
             
-            <div className="bg-primary border border-accent/30 rounded-3xl p-6 lg:p-8 hover:shadow-energy transition-all hover:scale-105 -mt-8">
+            <div className="bg-primary-light border border-accent/30 rounded-3xl p-6 lg:p-8 hover:shadow-energy transition-all hover:scale-105 -mt-8">
               <div className="text-4xl lg:text-5xl font-bold mb-4 text-accent">🛡️</div>
               <h3 className="font-bold text-lg mb-3 text-white">Persévérance</h3>
               <p className="text-sm text-white/70">L'engagement qui ne se négocie jamais</p>
             </div>
             
-            <div className="bg-accent text-white rounded-3xl p-6 lg:p-8 hover:shadow-energy-glow transition-all hover:scale-105">
+            <div className="bg-accent text-primary rounded-3xl p-6 lg:p-8 hover:shadow-energy-glow transition-all hover:scale-105">
               <div className="text-4xl lg:text-5xl font-bold mb-4">★</div>
               <h3 className="font-bold text-lg mb-3">Ton Héritage</h3>
               <p className="text-sm opacity-90">Rejoins ceux qui construisent leur propre légende</p>
