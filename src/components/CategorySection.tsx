@@ -50,7 +50,7 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-primary relative overflow-hidden">
+    <section ref={sectionRef} id="categories" className="py-24 lg:py-32 bg-primary relative overflow-hidden scroll-mt-20">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left - Categories */}
