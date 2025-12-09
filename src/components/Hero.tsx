@@ -59,6 +59,7 @@ const Hero = () => {
         <nav className="hidden lg:flex items-center gap-8 text-sm text-secondary/80">
           <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
           <Link to="/about" className="hover:text-accent transition-colors">Histoire</Link>
+          <Link to="/auth" className="hover:text-accent transition-colors">Connexion</Link>
         </nav>
         
         <div className="flex gap-3">
