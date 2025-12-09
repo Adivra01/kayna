@@ -10,7 +10,7 @@ const authSchema = z.object({
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
-const AdminAuth = () => {
+const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,29 +21,30 @@ const AdminAuth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        checkAdminAndRedirect(session.user.id);
+        checkRoleAndRedirect(session.user.id);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        checkAdminAndRedirect(session.user.id);
+        checkRoleAndRedirect(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminAndRedirect = async (userId: string) => {
+  const checkRoleAndRedirect = async (userId: string) => {
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
-      .eq("role", "admin")
       .maybeSingle();
     
-    if (data) {
+    if (data?.role === "admin") {
       navigate("/admin");
+    } else {
+      navigate("/shop");
     }
   };
 
@@ -68,11 +69,11 @@ const AdminAuth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
+            emailRedirectTo: `${window.location.origin}/`,
           },
         });
         if (error) throw error;
-        toast.success("Compte créé ! Connecte-toi maintenant.");
+        toast.success("Compte créé ! Tu peux maintenant te connecter.");
         setIsLogin(true);
       }
     } catch (error: any) {
@@ -99,7 +100,7 @@ const AdminAuth = () => {
         <div className="bg-secondary/5 border border-secondary/10 rounded-3xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold italic text-secondary mb-2">KAYNA</h1>
-            <p className="text-secondary/60">Administration</p>
+            <p className="text-secondary/60">Connexion à ton espace</p>
           </div>
 
           <div className="flex gap-2 p-1 bg-secondary/10 rounded-xl mb-8">
@@ -131,7 +132,7 @@ const AdminAuth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
-                  placeholder="admin@kayna.com"
+                  placeholder="ton@email.com"
                   required
                 />
               </div>
@@ -182,13 +183,9 @@ const AdminAuth = () => {
             </button>
           </p>
         </div>
-
-        <p className="text-center text-secondary/30 text-xs mt-8">
-          Note: Après inscription, un administrateur doit vous attribuer le rôle admin.
-        </p>
       </div>
     </div>
   );
 };
 
-export default AdminAuth;
+export default Auth;
