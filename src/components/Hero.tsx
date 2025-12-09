@@ -49,15 +49,26 @@ const Hero = () => {
     return () => ctx.revert();
   }, []);
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <section ref={heroRef} className="relative min-h-screen overflow-hidden bg-primary">
+    <section ref={heroRef} id="hero" className="relative min-h-screen overflow-hidden bg-primary">
       <CartDrawer />
       
       {/* Header - Minimal */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 lg:py-5 flex items-center justify-between backdrop-blur-md bg-primary/80">
         <Link to="/" className="text-xl sm:text-2xl font-bold italic text-secondary">KAYNA</Link>
         
-        <nav className="hidden lg:flex items-center gap-8 text-sm text-secondary/80">
+        <nav className="hidden lg:flex items-center gap-6 text-sm text-secondary/80">
+          <button onClick={() => scrollToSection("bestsellers")} className="hover:text-accent transition-colors">Bestsellers</button>
+          <button onClick={() => scrollToSection("categories")} className="hover:text-accent transition-colors">Catégories</button>
+          <button onClick={() => scrollToSection("qualite")} className="hover:text-accent transition-colors">Qualité</button>
           <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
           <Link to="/about" className="hover:text-accent transition-colors">Histoire</Link>
           <Link to="/auth" className="hover:text-accent transition-colors">Connexion</Link>
@@ -96,7 +107,17 @@ const Hero = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-primary/95 backdrop-blur-xl" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="absolute top-20 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
+          <nav className="absolute top-20 left-0 right-0 flex flex-col items-center gap-5 py-8 animate-fade-in">
+            <button onClick={() => scrollToSection("bestsellers")} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
+              Bestsellers
+            </button>
+            <button onClick={() => scrollToSection("categories")} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
+              Catégories
+            </button>
+            <button onClick={() => scrollToSection("qualite")} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
+              Qualité
+            </button>
+            <div className="w-16 h-px bg-secondary/20 my-2" />
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-medium text-secondary hover:text-accent transition-colors">
               Shop
             </Link>

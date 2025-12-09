@@ -73,7 +73,7 @@ const ProductGrid = () => {
   };
 
   return (
-    <section ref={gridRef} className="py-24 lg:py-32 bg-background relative overflow-hidden">
+    <section ref={gridRef} id="bestsellers" className="py-24 lg:py-32 bg-background relative overflow-hidden scroll-mt-20">
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[150px]" />
       
       <div className="container mx-auto px-6 lg:px-12 relative z-10">

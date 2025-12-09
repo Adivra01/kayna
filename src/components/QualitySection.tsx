@@ -101,7 +101,7 @@ const QualitySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-background relative overflow-hidden">
+    <section ref={sectionRef} id="qualite" className="py-24 lg:py-32 bg-background relative overflow-hidden scroll-mt-20">
       <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[200px] -translate-y-1/2" />
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
