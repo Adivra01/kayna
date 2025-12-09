@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import tshirt1 from "@/assets/tshirt-1.jpg";
 import tshirt2 from "@/assets/tshirt-2.jpg";
 import hoodie1 from "@/assets/hoodie-1.jpg";
@@ -14,16 +14,16 @@ interface Product {
   id: string;
   image: string;
   title: string;
-  year: string;
+  price: string;
   tag?: string;
 }
 
 const products: Product[] = [
-  { id: "1", image: jacket1, title: "©ikigai - jacket momento", year: "2024", tag: "[Other]" },
-  { id: "2", image: tshirt1, title: "Essential Olive Tee", year: "2024" },
-  { id: "3", image: hoodie1, title: "Graphic Hoodie", year: "2024" },
-  { id: "4", image: sweater1, title: "Cream Crewneck", year: "2024" },
-  { id: "5", image: tshirt2, title: "Statement Graphic Tee", year: "2024" },
+  { id: "1", image: jacket1, title: "Jacket Ikigai", price: "89€", tag: "NEW" },
+  { id: "2", image: tshirt1, title: "Tee Essential", price: "35€" },
+  { id: "3", image: hoodie1, title: "Hoodie Classic", price: "75€" },
+  { id: "4", image: sweater1, title: "Crewneck Elite", price: "65€" },
+  { id: "5", image: tshirt2, title: "Tee Statement", price: "39€" },
 ];
 
 const ProductGrid = () => {
@@ -36,9 +36,9 @@ const ProductGrid = () => {
         if (!card) return;
 
         gsap.from(card, {
-          y: 100,
+          y: 80,
           opacity: 0,
-          duration: 1,
+          duration: 0.8,
           delay: index * 0.1,
           scrollTrigger: {
             trigger: card,
@@ -46,17 +46,6 @@ const ProductGrid = () => {
             toggleActions: "play none none reverse",
           },
         });
-
-        // Image scale on hover
-        const image = card.querySelector("img");
-        if (image) {
-          card.addEventListener("mouseenter", () => {
-            gsap.to(image, { scale: 1.05, duration: 0.6, ease: "power2.out" });
-          });
-          card.addEventListener("mouseleave", () => {
-            gsap.to(image, { scale: 1, duration: 0.6, ease: "power2.out" });
-          });
-        }
       });
     }, gridRef);
 
@@ -65,37 +54,29 @@ const ProductGrid = () => {
 
   return (
     <section ref={gridRef} className="py-24 lg:py-32 bg-background relative overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-muted/30 rounded-full blur-3xl animate-pulse delay-1000" />
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[150px]" />
       
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
-          <div>
-            <div className="inline-flex items-center gap-3 px-5 py-2 bg-accent rounded-full mb-6 shadow-gold animate-float">
-              <span className="text-primary text-2xl">★</span>
-              <span className="text-sm font-bold text-primary tracking-wider">BESTSELLERS</span>
-            </div>
-            <h2 className="text-display font-bold leading-none text-foreground">
-              Nos
-              <span className="block italic text-accent">essentiels</span>
-            </h2>
-          </div>
-          <p className="text-lg lg:text-xl max-w-md text-muted-foreground text-balance">
-            Des pièces pensées pour durer. Qualité premium, style intemporel.
-          </p>
+        {/* Header - Minimal */}
+        <div className="flex justify-between items-end mb-12">
+          <h2 className="text-[3rem] lg:text-[4rem] font-bold leading-none text-foreground">
+            Best<span className="italic text-accent">sellers</span>
+          </h2>
+          <button className="hidden lg:flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors">
+            <span>Voir tout</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Improved Masonry Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 auto-rows-[280px]">
+        {/* Clean Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6">
           {products.map((product, index) => {
-            // Masonry pattern: 1-large, 2-small, 3-tall, 4-wide, 5-small
             const gridClasses = [
-              "sm:col-span-2 lg:col-span-6 lg:row-span-2", // Large featured
-              "sm:col-span-1 lg:col-span-3 lg:row-span-1", // Small
-              "sm:col-span-1 lg:col-span-3 lg:row-span-2", // Tall
-              "sm:col-span-2 lg:col-span-6 lg:row-span-1", // Wide
-              "sm:col-span-1 lg:col-span-3 lg:row-span-1", // Small
+              "col-span-2 lg:col-span-6 lg:row-span-2",
+              "col-span-1 lg:col-span-3",
+              "col-span-1 lg:col-span-3",
+              "col-span-1 lg:col-span-4",
+              "col-span-1 lg:col-span-2",
             ];
             
             return (
@@ -104,38 +85,31 @@ const ProductGrid = () => {
                 ref={(el) => (cardsRef.current[index] = el)}
                 className={`group cursor-pointer ${gridClasses[index]}`}
               >
-                <div className={`relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card h-full shadow-elegant hover:shadow-dark transition-all duration-500`}>
+                <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card h-full min-h-[280px] lg:min-h-[320px] shadow-elegant hover:shadow-dark transition-all duration-500">
                   <img
                     src={product.image}
                     alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-700"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                   
-                  {/* Content - Always visible but enhanced on hover */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 transform translate-y-0 transition-transform duration-500">
-                    <h3 className="text-secondary text-lg lg:text-2xl font-bold mb-2 transform group-hover:scale-105 transition-transform">
-                      {product.title}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <span className="text-secondary/70 text-xs lg:text-sm font-medium">{product.year}</span>
-                      <button className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-accent text-primary flex items-center justify-center hover:scale-110 transition-all shadow-gold">
-                        <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-6">
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <h3 className="text-secondary text-lg lg:text-xl font-bold mb-1">{product.title}</h3>
+                        <span className="text-accent font-bold text-lg">{product.price}</span>
+                      </div>
+                      <button className="w-11 h-11 rounded-full bg-accent text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-gold">
+                        <ShoppingBag className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
 
                   {product.tag && (
-                    <div className="absolute top-3 left-3 lg:top-4 lg:left-4 px-3 py-1.5 lg:px-4 lg:py-2 backdrop-blur-md bg-accent border border-accent rounded-full shadow-gold animate-float">
-                      <span className="text-xs font-bold text-primary">NEW</span>
-                    </div>
-                  )}
-                  
-                  {index === 0 && (
-                    <div className="absolute top-3 right-3 lg:top-4 lg:right-4 w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-accent text-primary flex items-center justify-center text-xs lg:text-sm font-bold shadow-gold-glow animate-pulse">
-                      TOP
+                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-accent text-primary rounded-full text-xs font-bold shadow-gold">
+                      {product.tag}
                     </div>
                   )}
                 </div>
@@ -144,11 +118,10 @@ const ProductGrid = () => {
           })}
         </div>
 
-        <div className="mt-16 flex justify-center">
-          <button className="group relative px-12 py-5 rounded-full bg-accent text-primary hover:scale-105 transition-all flex items-center gap-4 shadow-gold hover:shadow-gold-glow font-bold text-lg overflow-hidden">
-            <span className="relative z-10">Voir tout</span>
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform relative z-10" />
-            <div className="absolute inset-0 bg-accent-light translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
+        <div className="mt-12 flex justify-center lg:hidden">
+          <button className="px-10 py-4 rounded-full bg-accent text-primary font-bold shadow-gold hover:scale-105 transition-all flex items-center gap-3">
+            <span>Voir tout</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>
