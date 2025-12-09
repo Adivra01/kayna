@@ -11,7 +11,7 @@ const MarqueeText = () => {
     const animation = gsap.to(marquee.children, {
       xPercent: -100,
       repeat: -1,
-      duration: 20,
+      duration: 25,
       ease: "linear",
     });
 
@@ -21,18 +21,18 @@ const MarqueeText = () => {
   }, []);
 
   return (
-    <div className="py-8 border-y border-accent/20 overflow-hidden bg-gradient-to-r from-primary via-accent/5 to-primary">
+    <div className="py-5 bg-accent overflow-hidden">
       <div ref={marqueeRef} className="flex whitespace-nowrap">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="flex items-center px-8">
-            <span className="text-4xl font-bold italic text-secondary">KAYNA</span>
-            <span className="text-accent text-3xl mx-4">✱</span>
-            <span className="text-2xl font-light text-secondary/80">CONFIANCE</span>
-            <span className="text-secondary/30 text-3xl mx-4">•</span>
-            <span className="text-2xl font-light text-accent">DÉPASSEMENT</span>
-            <span className="text-secondary/30 text-3xl mx-4">•</span>
-            <span className="text-2xl font-light text-secondary/80">PERSÉVÉRANCE</span>
-            <span className="text-accent text-3xl mx-4">✱</span>
+            <span className="text-xl font-bold text-primary">KAYNA</span>
+            <span className="text-primary/50 mx-6">•</span>
+            <span className="text-sm font-medium text-primary/80 tracking-wider">CONFIANCE</span>
+            <span className="text-primary/50 mx-6">•</span>
+            <span className="text-sm font-medium text-primary/80 tracking-wider">DÉPASSEMENT</span>
+            <span className="text-primary/50 mx-6">•</span>
+            <span className="text-sm font-medium text-primary/80 tracking-wider">PERSÉVÉRANCE</span>
+            <span className="text-primary/50 mx-6">★</span>
           </div>
         ))}
       </div>
