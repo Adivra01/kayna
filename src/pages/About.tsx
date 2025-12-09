@@ -65,7 +65,7 @@ const About = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="overflow-x-hidden bg-primary">
+    <div ref={containerRef} className="overflow-x-hidden">
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-primary/80 border-b border-secondary/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 py-4 lg:py-5">
@@ -84,15 +84,15 @@ const About = () => {
         </div>
       </header>
 
-      {/* Hero - L'Introduction */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Hero - L'Introduction - DARK */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary">
         <div className="absolute inset-0">
           <img 
             src={storyPhilosophy} 
             alt="KAYNA - La Certitude" 
-            className="w-full h-full object-cover parallax-img scale-110"
+            className="w-full h-full object-cover parallax-img scale-110 opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/50 to-primary" />
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10 text-center py-32">
@@ -115,47 +115,47 @@ const About = () => {
         </div>
       </section>
 
-      {/* Section 1 - La Philosophie */}
-      <section className="py-24 lg:py-40 relative">
+      {/* Section 1 - La Philosophie - LIGHT (Ivoire) */}
+      <section className="py-24 lg:py-40 bg-secondary relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-4 mb-8 fade-up">
               <Shield className="w-8 h-8 text-accent" />
-              <span className="text-accent uppercase tracking-widest text-sm">Chapitre 1</span>
+              <span className="text-accent uppercase tracking-widest text-sm font-medium">Chapitre 1</span>
             </div>
             
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary mb-12 fade-up">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-12 fade-up">
               Plus qu'un mot,<br/>
               <span className="text-accent italic">une Philosophie</span>
             </h2>
             
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               <div className="space-y-8 text-reveal">
-                <p className="text-xl lg:text-2xl text-secondary/90 leading-relaxed">
+                <p className="text-xl lg:text-2xl text-primary/90 leading-relaxed">
                   En <span className="text-accent font-semibold">Songhaï</span>, KAYNA est un mot qui résonne 
                   au-delà de la simple traduction.
                 </p>
-                <p className="text-lg text-secondary/70 leading-relaxed">
-                  Ce n'est pas seulement la <span className="font-bold text-secondary">Certitude</span> ; 
+                <p className="text-lg text-primary/70 leading-relaxed">
+                  Ce n'est pas seulement la <span className="font-bold text-primary">Certitude</span> ; 
                   c'est la convergence de trois forces inébranlables :
                 </p>
                 
-                <div className="space-y-6 pl-6 border-l-2 border-accent/50">
+                <div className="space-y-6 pl-6 border-l-4 border-accent">
                   <div>
-                    <h4 className="text-xl font-bold text-accent">La Confiance</h4>
-                    <p className="text-secondary/60">La fondation de chaque action que tu entreprends.</p>
+                    <h4 className="text-xl font-bold text-primary">La Confiance</h4>
+                    <p className="text-primary/60">La fondation de chaque action que tu entreprends.</p>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-accent">Le Dépassement</h4>
-                    <p className="text-secondary/60">L'état d'esprit qui refuse les limites imposées.</p>
+                    <h4 className="text-xl font-bold text-primary">Le Dépassement</h4>
+                    <p className="text-primary/60">L'état d'esprit qui refuse les limites imposées.</p>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-accent">La Persévérance</h4>
-                    <p className="text-secondary/60">La seule issue acceptable face à tes objectifs.</p>
+                    <h4 className="text-xl font-bold text-primary">La Persévérance</h4>
+                    <p className="text-primary/60">La seule issue acceptable face à tes objectifs.</p>
                   </div>
                 </div>
                 
-                <p className="text-2xl font-bold text-secondary pt-4">
+                <p className="text-2xl font-bold text-primary pt-4">
                   La plus grande victoire commence par cette <span className="text-accent italic">certitude intérieure</span>.
                 </p>
               </div>
@@ -168,9 +168,9 @@ const About = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -left-6 bg-accent text-primary px-6 py-4 rounded-2xl shadow-gold">
+                <div className="absolute -bottom-6 -left-6 bg-primary text-secondary px-6 py-4 rounded-2xl shadow-xl">
                   <p className="text-sm uppercase tracking-wider opacity-80">Depuis</p>
-                  <p className="text-2xl font-bold">2024</p>
+                  <p className="text-2xl font-bold text-accent">2024</p>
                 </div>
               </div>
             </div>
@@ -178,22 +178,22 @@ const About = () => {
         </div>
       </section>
 
-      {/* Section 2 - La Bataille Silencieuse */}
-      <section className="relative py-24 lg:py-40">
+      {/* Section 2 - La Bataille Silencieuse - DARK */}
+      <section className="relative py-24 lg:py-40 bg-primary">
         <div className="absolute inset-0 overflow-hidden">
           <img 
             src={storyBattle} 
             alt="La Bataille Silencieuse"
-            className="w-full h-full object-cover parallax-img scale-110"
+            className="w-full h-full object-cover parallax-img scale-110 opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/95 to-primary/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="max-w-4xl">
             <div className="flex items-center gap-4 mb-8 fade-up">
               <Flame className="w-8 h-8 text-accent" />
-              <span className="text-accent uppercase tracking-widest text-sm">Chapitre 2</span>
+              <span className="text-accent uppercase tracking-widest text-sm font-medium">Chapitre 2</span>
             </div>
             
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary mb-12 fade-up">
@@ -211,8 +211,8 @@ const About = () => {
                 frappe dans le silence de l'aube.
               </p>
               
-              <div className="bg-secondary/5 backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 my-12">
-                <p className="text-xl text-secondary/90 italic leading-relaxed">
+              <div className="bg-accent/10 backdrop-blur-sm border border-accent/30 rounded-2xl p-8 my-12">
+                <p className="text-xl text-secondary italic leading-relaxed">
                   "Elle te parle de l'épuisement. Du cynisme des autres. De la tentation de tout 
                   laisser tomber après un échec."
                 </p>
@@ -232,8 +232,8 @@ const About = () => {
         </div>
       </section>
 
-      {/* Section 3 - Le Choix Inébranlable */}
-      <section className="py-24 lg:py-40">
+      {/* Section 3 - Le Choix Inébranlable - LIGHT (Ivoire) */}
+      <section className="py-24 lg:py-40 bg-secondary">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -253,49 +253,49 @@ const About = () => {
               <div>
                 <div className="flex items-center gap-4 mb-8 fade-up">
                   <Zap className="w-8 h-8 text-accent" />
-                  <span className="text-accent uppercase tracking-widest text-sm">Chapitre 3</span>
+                  <span className="text-accent uppercase tracking-widest text-sm font-medium">Chapitre 3</span>
                 </div>
                 
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary mb-12 fade-up">
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-12 fade-up">
                   Le Choix<br/>
                   <span className="text-accent italic">Inébranlable</span>
                 </h2>
                 
                 <div className="space-y-8 text-reveal">
-                  <p className="text-2xl text-secondary font-light leading-relaxed">
+                  <p className="text-2xl text-primary font-light leading-relaxed">
                     C'est pour ce moment précis que <span className="text-accent font-bold">KAYNA</span> existe.
                   </p>
                   
-                  <p className="text-lg text-secondary/80 leading-relaxed">
-                    Nous sommes là pour <span className="font-bold text-secondary">transformer le doute en élan</span>. 
+                  <p className="text-lg text-primary/80 leading-relaxed">
+                    Nous sommes là pour <span className="font-bold text-primary">transformer le doute en élan</span>. 
                     Le vêtement que tu enfiles est le rappel physique que ton esprit a déjà fait le choix de la victoire.
                   </p>
                   
                   <div className="space-y-4">
-                    <div className="flex items-start gap-4 p-4 rounded-xl bg-secondary/5 border border-secondary/10">
-                      <div className="w-2 h-2 rounded-full bg-accent mt-2" />
+                    <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                      <div className="w-3 h-3 rounded-full bg-accent mt-1.5 flex-shrink-0" />
                       <div>
-                        <p className="font-bold text-secondary">Le doute n'est qu'un bruit de fond</p>
-                        <p className="text-secondary/60">Car ta Confiance est la fondation de ton action.</p>
+                        <p className="font-bold text-primary">Le doute n'est qu'un bruit de fond</p>
+                        <p className="text-primary/60">Car ta Confiance est la fondation de ton action.</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-4 p-4 rounded-xl bg-secondary/5 border border-secondary/10">
-                      <div className="w-2 h-2 rounded-full bg-accent mt-2" />
+                    <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                      <div className="w-3 h-3 rounded-full bg-accent mt-1.5 flex-shrink-0" />
                       <div>
-                        <p className="font-bold text-secondary">L'épuisement n'est qu'une étape</p>
-                        <p className="text-secondary/60">Car ton Dépassement est ton mode de vie.</p>
+                        <p className="font-bold text-primary">L'épuisement n'est qu'une étape</p>
+                        <p className="text-primary/60">Car ton Dépassement est ton mode de vie.</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-4 p-4 rounded-xl bg-secondary/5 border border-secondary/10">
-                      <div className="w-2 h-2 rounded-full bg-accent mt-2" />
+                    <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                      <div className="w-3 h-3 rounded-full bg-accent mt-1.5 flex-shrink-0" />
                       <div>
-                        <p className="font-bold text-secondary">Ton objectif n'est pas négociable</p>
-                        <p className="text-secondary/60">Car ta Persévérance est la seule issue.</p>
+                        <p className="font-bold text-primary">Ton objectif n'est pas négociable</p>
+                        <p className="text-primary/60">Car ta Persévérance est la seule issue.</p>
                       </div>
                     </div>
                   </div>
                   
-                  <p className="text-xl font-bold text-secondary pt-4">
+                  <p className="text-xl font-bold text-primary pt-4">
                     Ce n'est pas un vêtement que tu mets.<br/>
                     C'est une <span className="text-accent italic">armure spirituelle</span>.
                   </p>
@@ -306,21 +306,21 @@ const About = () => {
         </div>
       </section>
 
-      {/* Section 4 - Ton Héritage */}
-      <section className="relative py-24 lg:py-40">
+      {/* Section 4 - Ton Héritage - DARK */}
+      <section className="relative py-24 lg:py-40 bg-primary">
         <div className="absolute inset-0 overflow-hidden">
           <img 
             src={storyHeritage} 
             alt="Ton Héritage"
-            className="w-full h-full object-cover parallax-img scale-110"
+            className="w-full h-full object-cover parallax-img scale-110 opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-l from-primary via-primary/95 to-primary/80" />
+          <div className="absolute inset-0 bg-gradient-to-l from-primary via-primary/90 to-primary/70" />
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="max-w-4xl ml-auto text-right">
             <div className="flex items-center gap-4 mb-8 justify-end fade-up">
-              <span className="text-accent uppercase tracking-widest text-sm">Chapitre 4</span>
+              <span className="text-accent uppercase tracking-widest text-sm font-medium">Chapitre 4</span>
               <Crown className="w-8 h-8 text-accent" />
             </div>
             
@@ -355,29 +355,29 @@ const About = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-32 lg:py-48 bg-gradient-to-b from-primary to-primary/95 relative overflow-hidden">
+      {/* Final CTA - ACCENT GOLD Background */}
+      <section className="py-32 lg:py-48 bg-accent relative overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[150px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[200px]" />
         </div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-10 fade-up">
-            <div className="w-20 h-1 bg-accent mx-auto" />
+            <div className="w-20 h-1 bg-primary mx-auto" />
             
-            <h2 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-secondary leading-tight">
+            <h2 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-primary leading-tight">
               Porte l'assurance.<br/>
-              <span className="text-accent italic">Deviens la Certitude.</span>
+              <span className="italic">Deviens la Certitude.</span>
             </h2>
             
-            <p className="text-xl lg:text-2xl text-secondary/70 max-w-2xl mx-auto">
+            <p className="text-xl lg:text-2xl text-primary/80 max-w-2xl mx-auto">
               Ceci est KAYNA. Ton engagement. Ton héritage. Ta victoire.
             </p>
             
             <div className="pt-8">
               <Link 
                 to="/shop"
-                className="inline-flex items-center gap-3 px-10 py-5 lg:px-12 lg:py-6 rounded-full bg-accent text-primary font-bold text-lg lg:text-xl shadow-gold hover:shadow-gold-glow hover:scale-105 transition-all group"
+                className="inline-flex items-center gap-3 px-10 py-5 lg:px-12 lg:py-6 rounded-full bg-primary text-secondary font-bold text-lg lg:text-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all group"
               >
                 <span>DÉCOUVRIR LA COLLECTION</span>
                 <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-2 transition-transform" />
