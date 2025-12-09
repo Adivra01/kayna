@@ -2,153 +2,145 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* KAYNA Design System - Palette Intemporelle Premium
+   Noir Absolu (#0A0A0A) → Force, discipline, fondation
+   Ivoire Pur (#F5F5F0) → Clarté, pureté, premium  
+   Or Bronze (#C9A86C) → Excellence, accomplissement, héritage
 */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 240 4% 5%;
+    --background: 60 20% 96%;
+    --foreground: 0 0% 4%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 4% 5%;
+    --card: 60 20% 98%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 4% 5%;
+    --popover: 60 20% 98%;
+    --popover-foreground: 0 0% 4%;
 
-    /* Noir profond = Dominant (Force/Discipline) */
-    --primary: 240 4% 5%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 240 4% 12%;
-    --primary-dark: 240 4% 3%;
+    /* Noir Absolu = Dominant (Force/Discipline) */
+    --primary: 0 0% 4%;
+    --primary-foreground: 60 20% 96%;
+    --primary-light: 0 0% 12%;
+    --primary-dark: 0 0% 2%;
 
-    /* Beige/Sable foncé = Secondaire (Racines/Authenticité) */
-    --secondary: 27 57% 40%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-light: 27 57% 50%;
-    --secondary-dark: 27 57% 30%;
+    /* Ivoire = Secondaire (Clarté/Premium) */
+    --secondary: 60 20% 96%;
+    --secondary-foreground: 0 0% 4%;
+    --secondary-light: 60 20% 98%;
+    --secondary-dark: 60 15% 90%;
 
-    --muted: 27 20% 90%;
-    --muted-foreground: 27 15% 45%;
+    --muted: 40 15% 92%;
+    --muted-foreground: 40 10% 40%;
 
-    /* Orange énergie = Accent (Dépassement/Action) */
-    --accent: 25 100% 50%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 25 100% 58%;
-    --accent-dark: 25 100% 42%;
+    /* Or Bronze = Accent (Excellence/Accomplissement) */
+    --accent: 40 45% 60%;
+    --accent-foreground: 0 0% 4%;
+    --accent-light: 40 50% 68%;
+    --accent-dark: 40 45% 50%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 96%;
+    --destructive-foreground: 60 20% 96%;
 
-    --border: 27 20% 85%;
-    --input: 27 20% 88%;
-    --ring: 25 100% 50%;
+    --border: 40 20% 88%;
+    --input: 40 15% 90%;
+    --ring: 40 45% 60%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
     
-    /* KAYNA - Fusion Masterclass: Noir/Orange/Beige */
-    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 58%) 100%);
-    --gradient-earth: linear-gradient(135deg, hsl(27 57% 40%) 0%, hsl(27 57% 50%) 100%);
-    --gradient-dark: linear-gradient(135deg, hsl(240 4% 5%) 0%, hsl(240 4% 12%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(240 4% 5%) 0%, hsl(27 57% 40%) 50%, hsl(25 100% 50%) 100%);
-    --gradient-power: linear-gradient(90deg, hsl(25 100% 50%) 0%, hsl(27 57% 40%) 50%, hsl(240 4% 5%) 100%);
-    --gradient-overlay: linear-gradient(135deg, hsla(240 4% 5% / 0.97) 0%, hsla(27 57% 40% / 0.70) 60%, hsla(25 100% 50% / 0.12) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsla(240 4% 5% / 0.05) 0%, hsla(27 57% 40% / 0.08) 100%);
+    /* KAYNA - Gradients Premium Noir/Ivoire/Or */
+    --gradient-gold: linear-gradient(135deg, hsl(40 45% 60%) 0%, hsl(40 50% 68%) 100%);
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 12%) 100%);
+    --gradient-light: linear-gradient(135deg, hsl(60 20% 96%) 0%, hsl(60 20% 98%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 8%) 50%, hsl(40 45% 60% / 0.1) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(0 0% 4% / 0.95) 0%, hsla(0 0% 4% / 0.7) 60%, hsla(40 45% 60% / 0.05) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsla(40 45% 60% / 0.03) 0%, hsla(40 45% 60% / 0.08) 100%);
     
-    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.4);
-    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.55);
-    --shadow-earth: 0 8px 32px hsla(27 57% 40% / 0.4);
-    --shadow-earth-glow: 0 0 48px hsla(27 57% 40% / 0.5);
-    --shadow-dark: 0 8px 32px hsla(240 4% 5% / 0.5);
-    --shadow-dark-lg: 0 16px 48px hsla(240 4% 5% / 0.6);
+    --shadow-gold: 0 8px 32px hsla(40 45% 60% / 0.25);
+    --shadow-gold-glow: 0 0 48px hsla(40 45% 60% / 0.35);
+    --shadow-dark: 0 8px 32px hsla(0 0% 4% / 0.15);
+    --shadow-dark-lg: 0 16px 48px hsla(0 0% 4% / 0.2);
+    --shadow-elegant: 0 4px 20px hsla(0 0% 4% / 0.08);
     
     --blur-sm: 12px;
     --blur-md: 24px;
     --blur-lg: 32px;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 60 20% 96%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 0% 4%;
+    --sidebar-primary-foreground: 60 20% 96%;
+    --sidebar-accent: 40 45% 60%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 40 45% 60%;
   }
 
   .dark {
-    --background: 240 4% 5%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 4%;
+    --foreground: 60 20% 96%;
 
-    --card: 240 4% 8%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 6%;
+    --card-foreground: 60 20% 96%;
 
-    --popover: 240 4% 8%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 60 20% 96%;
 
-    /* Noir profond Dark */
-    --primary: 240 4% 5%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 240 4% 12%;
-    --primary-dark: 240 4% 3%;
+    /* Noir Absolu Dark */
+    --primary: 60 20% 96%;
+    --primary-foreground: 0 0% 4%;
+    --primary-light: 60 20% 98%;
+    --primary-dark: 60 15% 90%;
 
-    /* Beige/Sable foncé Dark */
-    --secondary: 27 57% 40%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-light: 27 57% 50%;
-    --secondary-dark: 27 57% 30%;
+    /* Ivoire Dark */
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 60 20% 96%;
+    --secondary-light: 0 0% 14%;
+    --secondary-dark: 0 0% 6%;
 
-    --muted: 240 4% 20%;
-    --muted-foreground: 0 0% 75%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 60 10% 70%;
 
-    /* Orange énergie Dark */
-    --accent: 25 100% 50%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 25 100% 58%;
-    --accent-dark: 25 100% 42%;
+    /* Or Bronze Dark */
+    --accent: 40 45% 60%;
+    --accent-foreground: 0 0% 4%;
+    --accent-light: 40 50% 68%;
+    --accent-dark: 40 45% 50%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 96%;
+    --destructive-foreground: 60 20% 96%;
 
-    --border: 240 4% 15%;
-    --input: 240 4% 12%;
-    --ring: 25 100% 50%;
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 40 45% 60%;
     
-    /* KAYNA Dark - Fusion Noir/Orange/Beige */
-    --gradient-energy: linear-gradient(135deg, hsl(25 100% 50%) 0%, hsl(25 100% 58%) 100%);
-    --gradient-earth: linear-gradient(135deg, hsl(27 57% 40%) 0%, hsl(27 57% 50%) 100%);
-    --gradient-dark: linear-gradient(135deg, hsl(240 4% 5%) 0%, hsl(240 4% 8%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(240 4% 5%) 0%, hsl(27 57% 40%) 50%, hsl(25 100% 50%) 100%);
-    --gradient-power: linear-gradient(90deg, hsl(25 100% 50%) 0%, hsl(27 57% 40%) 50%, hsl(240 4% 5%) 100%);
-    --gradient-overlay: linear-gradient(135deg, hsla(240 4% 5% / 0.98) 0%, hsla(27 57% 40% / 0.75) 60%, hsla(25 100% 50% / 0.15) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsla(240 4% 5% / 0.08) 0%, hsla(27 57% 40% / 0.12) 100%);
+    /* KAYNA Dark - Gradients Premium */
+    --gradient-gold: linear-gradient(135deg, hsl(40 45% 60%) 0%, hsl(40 50% 68%) 100%);
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 8%) 100%);
+    --gradient-light: linear-gradient(180deg, hsl(0 0% 6%) 0%, hsl(0 0% 8%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 2%) 0%, hsl(0 0% 6%) 50%, hsl(40 45% 60% / 0.15) 100%);
+    --gradient-overlay: linear-gradient(135deg, hsla(0 0% 4% / 0.98) 0%, hsla(0 0% 4% / 0.85) 60%, hsla(40 45% 60% / 0.1) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsla(40 45% 60% / 0.05) 0%, hsla(40 45% 60% / 0.12) 100%);
     
-    --shadow-energy: 0 8px 32px hsla(25 100% 50% / 0.5);
-    --shadow-energy-glow: 0 0 64px hsla(25 100% 50% / 0.65);
-    --shadow-earth: 0 8px 32px hsla(27 57% 40% / 0.5);
-    --shadow-earth-glow: 0 0 48px hsla(27 57% 40% / 0.6);
-    --shadow-dark: 0 8px 32px hsla(240 4% 5% / 0.6);
-    --shadow-dark-lg: 0 16px 48px hsla(240 4% 5% / 0.7);
+    --shadow-gold: 0 8px 32px hsla(40 45% 60% / 0.3);
+    --shadow-gold-glow: 0 0 48px hsla(40 45% 60% / 0.4);
+    --shadow-dark: 0 8px 32px hsla(0 0% 0% / 0.4);
+    --shadow-dark-lg: 0 16px 48px hsla(0 0% 0% / 0.5);
+    --shadow-elegant: 0 4px 20px hsla(0 0% 0% / 0.3);
     
     --blur-sm: 12px;
     --blur-md: 24px;
     --blur-lg: 32px;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 60 20% 90%;
+    --sidebar-primary: 60 20% 96%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 40 45% 60%;
+    --sidebar-accent-foreground: 0 0% 4%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 40 45% 60%;
   }
 }
 
@@ -184,28 +176,32 @@ All colors MUST be HSL.
     @apply text-accent;
   }
   
-  .gradient-accent {
-    background: var(--gradient-accent);
+  .gradient-gold {
+    background: var(--gradient-gold);
   }
   
   .gradient-text {
-    background: var(--gradient-accent);
+    background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
-  .shadow-accent {
-    box-shadow: var(--shadow-accent);
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
   }
   
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
+  .shadow-gold-glow {
+    box-shadow: var(--shadow-gold-glow);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
   }
   
   .glass-effect {
     backdrop-filter: blur(var(--blur-md));
-    background: hsla(var(--background) / 0.7);
+    background: hsla(var(--background) / 0.8);
   }
   
   .text-balance {
