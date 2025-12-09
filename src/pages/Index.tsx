@@ -4,6 +4,7 @@ import ProductGrid from "@/components/ProductGrid";
 import CategorySection from "@/components/CategorySection";
 import AboutSection from "@/components/AboutSection";
 import CollectionSection from "@/components/CollectionSection";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -15,6 +16,7 @@ const Index = () => {
       <AboutSection />
       <CollectionSection />
       <MarqueeText />
+      <Footer />
     </div>
   );
 };
