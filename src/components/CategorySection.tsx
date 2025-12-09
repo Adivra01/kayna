@@ -67,15 +67,15 @@ const CategorySection = () => {
       <div className="container mx-auto px-6 lg:px-12">
         {/* Vertical Layout */}
         <div className="max-w-4xl mx-auto text-center mb-20">
-          <div className="inline-flex items-center gap-3 px-5 py-2 bg-accent/15 border border-accent/40 rounded-full mb-8">
+          <div className="inline-flex items-center gap-3 px-5 py-2 bg-accent/15 border border-accent/30 rounded-full mb-8">
             <span className="text-accent text-xl">★</span>
-            <span className="text-sm font-bold tracking-wider text-white">NOS CATÉGORIES</span>
+            <span className="text-sm font-bold tracking-wider text-secondary">NOS CATÉGORIES</span>
           </div>
-          <h2 className="text-display font-bold leading-none mb-6 text-white">
+          <h2 className="text-display font-bold leading-none mb-6 text-secondary">
             Trouve ton
-            <span className="block italic text-secondary">style</span>
+            <span className="block italic text-accent">style</span>
           </h2>
-          <p className="text-lg lg:text-xl text-white/70 max-w-2xl mx-auto">
+          <p className="text-lg lg:text-xl text-secondary/60 max-w-2xl mx-auto">
             Trois catégories essentielles. Une seule mission : exprimer ta détermination.
           </p>
         </div>
@@ -88,17 +88,17 @@ const CategorySection = () => {
               ref={(el) => (categoriesRef.current[index] = el)}
               className="group cursor-pointer"
             >
-              <div className="relative bg-primary-light border border-accent/30 rounded-3xl p-8 lg:p-10 hover:bg-gradient-to-br hover:from-secondary hover:to-secondary-light hover:text-white hover:border-secondary transition-all duration-500 hover:scale-105 hover:shadow-blood-glow overflow-hidden">
+              <div className="relative bg-secondary/5 border border-accent/20 rounded-3xl p-8 lg:p-10 hover:bg-accent hover:text-primary hover:border-accent transition-all duration-500 hover:scale-105 hover:shadow-gold-glow overflow-hidden">
                 {/* Background Number */}
                 <div className="absolute top-4 right-4 text-[120px] font-bold opacity-5 group-hover:opacity-10 transition-opacity">
                   {category.id}
                 </div>
 
-                <div className="relative z-10 text-white group-hover:text-white">
+                <div className="relative z-10 text-secondary group-hover:text-primary">
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-sm font-bold opacity-60">{category.id}</span>
                     {category.active && (
-                      <div className="w-3 h-3 rounded-full bg-secondary animate-pulse" />
+                      <div className="w-3 h-3 rounded-full bg-accent group-hover:bg-primary animate-pulse" />
                     )}
                   </div>
 
@@ -127,29 +127,29 @@ const CategorySection = () => {
         {/* Feature Image Below */}
         <div ref={imageRef} className="mt-20 relative max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group border border-accent/30 shadow-void-lg">
+            <div className="relative rounded-[3rem] overflow-hidden aspect-[4/5] group border border-accent/20 shadow-dark-lg">
               <img 
                 src={hoodie1} 
                 alt="Collection KAYNA" 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-secondary/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
-                <h3 className="text-white text-3xl font-bold mb-2">Collection Élite</h3>
-                <p className="text-white/90 text-lg">Disponible maintenant</p>
+                <h3 className="text-secondary text-3xl font-bold mb-2">Collection Élite</h3>
+                <p className="text-secondary/80 text-lg">Disponible maintenant</p>
               </div>
             </div>
 
             <div className="space-y-8">
               <div className="text-6xl text-accent">★</div>
-              <h3 className="text-heading font-bold text-white">
+              <h3 className="text-heading font-bold text-secondary">
                 Chaque détail compte
               </h3>
-              <p className="text-lg text-white/70 leading-relaxed">
+              <p className="text-lg text-secondary/60 leading-relaxed">
                 Du choix des tissus à la coupe finale, nous ne faisons aucun compromis. 
                 Parce que tu mérites le meilleur.
               </p>
-              <button className="px-8 py-4 bg-secondary text-white rounded-full font-bold hover:bg-secondary-light transition-all hover:scale-105 shadow-blood hover:shadow-blood-glow flex items-center gap-3 group">
+              <button className="px-8 py-4 bg-accent text-primary rounded-full font-bold hover:bg-accent-light transition-all hover:scale-105 shadow-gold hover:shadow-gold-glow flex items-center gap-3 group">
                 <span>Découvrir</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
