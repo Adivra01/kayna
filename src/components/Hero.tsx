@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, ArrowRight, ShoppingBag } from "lucide-react";
-import { SiTiktok, SiX } from "react-icons/si";
+import { Instagram, ArrowRight, ShoppingBag, Menu, X } from "lucide-react";
+import { SiTiktok } from "react-icons/si";
 import heroImage from "@/assets/hero-image.jpg";
 import { useCart } from "@/hooks/useCart";
 import CartDrawer from "@/components/CartDrawer";
@@ -15,6 +15,7 @@ const Hero = () => {
   const imageRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const { getTotalItems, toggleCart } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -53,8 +54,8 @@ const Hero = () => {
       <CartDrawer />
       
       {/* Header - Minimal */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-primary/80">
-        <Link to="/" className="text-2xl font-bold italic text-secondary">KAYNA</Link>
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 lg:py-5 flex items-center justify-between backdrop-blur-md bg-primary/80">
+        <Link to="/" className="text-xl sm:text-2xl font-bold italic text-secondary">KAYNA</Link>
         
         <nav className="hidden lg:flex items-center gap-8 text-sm text-secondary/80">
           <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
@@ -62,11 +63,11 @@ const Hero = () => {
           <Link to="/auth" className="hover:text-accent transition-colors">Connexion</Link>
         </nav>
         
-        <div className="flex gap-3">
-          <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
+        <div className="flex gap-2 sm:gap-3">
+          <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-10 h-10 rounded-full border border-secondary/20 items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
             <Instagram className="w-4 h-4" />
           </a>
-          <a href="https://www.tiktok.com/@kayna.xxv" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
+          <a href="https://www.tiktok.com/@kayna.xxv" target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-10 h-10 rounded-full border border-secondary/20 items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
             <SiTiktok className="w-4 h-4" />
           </a>
           <button 
@@ -80,8 +81,42 @@ const Hero = () => {
               </span>
             )}
           </button>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-primary/95 backdrop-blur-xl" onClick={() => setMobileMenuOpen(false)} />
+          <nav className="absolute top-20 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
+            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-medium text-secondary hover:text-accent transition-colors">
+              Shop
+            </Link>
+            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-medium text-secondary hover:text-accent transition-colors">
+              Histoire
+            </Link>
+            <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-medium text-secondary hover:text-accent transition-colors">
+              Connexion
+            </Link>
+            <div className="flex gap-4 pt-4">
+              <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="https://www.tiktok.com/@kayna.xxv" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
+                <SiTiktok className="w-5 h-5" />
+              </a>
+            </div>
+          </nav>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="min-h-screen flex flex-col lg:flex-row pt-20">
