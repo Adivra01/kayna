@@ -57,7 +57,7 @@ const Admin = () => {
         }, 0);
       } else {
         setLoading(false);
-        navigate("/admin/auth");
+        navigate("/auth");
       }
     });
 
@@ -69,7 +69,7 @@ const Admin = () => {
         checkAdminRole(session.user.id);
       } else {
         setLoading(false);
-        navigate("/admin/auth");
+        navigate("/auth");
       }
     });
 
