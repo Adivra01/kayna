@@ -3,33 +3,19 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, ShoppingBag, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
-import tshirt1 from "@/assets/tshirt-1.jpg";
-import tshirt2 from "@/assets/tshirt-2.jpg";
-import hoodie1 from "@/assets/hoodie-1.jpg";
-import sweater1 from "@/assets/sweater-1.jpg";
-import jacket1 from "@/assets/jacket-1.jpg";
+import { products } from "@/data/products";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface Product {
-  id: string;
-  image: string;
-  title: string;
-  price: string;
-  tag?: string;
-}
-
-const products: Product[] = [
-  { id: "1", image: jacket1, title: "Jacket Ikigai", price: "89€", tag: "NEW" },
-  { id: "2", image: tshirt1, title: "Tee Essential", price: "35€" },
-  { id: "3", image: hoodie1, title: "Hoodie Classic", price: "75€" },
-  { id: "4", image: sweater1, title: "Crewneck Elite", price: "65€" },
-  { id: "5", image: tshirt2, title: "Tee Statement", price: "39€" },
-];
-
 const ProductGrid = () => {
   const gridRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+  
+  const { addItem } = useCart();
+
+  const displayProducts = products.slice(0, 5);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -73,6 +59,19 @@ const ProductGrid = () => {
     return () => ctx.revert();
   }, []);
 
+  const handleAddToCart = (product: typeof displayProducts[0], e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.images[0],
+      category: product.category,
+    });
+    toast.success(`${product.title} ajouté au panier`);
+  };
+
   return (
     <section ref={gridRef} className="py-24 lg:py-32 bg-background relative overflow-hidden">
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[150px]" />
@@ -89,7 +88,7 @@ const ProductGrid = () => {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6">
-          {products.map((product, index) => {
+          {displayProducts.map((product, index) => {
             const gridClasses = [
               "col-span-2 lg:col-span-6 lg:row-span-2",
               "col-span-1 lg:col-span-3",
@@ -99,14 +98,15 @@ const ProductGrid = () => {
             ];
             
             return (
-              <div
+              <Link
                 key={product.id}
+                to={`/product/${product.slug}`}
                 ref={(el) => (cardsRef.current[index] = el)}
                 className={`group cursor-pointer ${gridClasses[index]}`}
               >
                 <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card h-full min-h-[280px] lg:min-h-[320px] shadow-elegant hover:shadow-gold transition-all duration-500">
                   <img
-                    src={product.image}
+                    src={product.images[0]}
                     alt={product.title}
                     className="w-full h-full object-cover"
                   />
@@ -114,7 +114,10 @@ const ProductGrid = () => {
                   <div className="card-overlay absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent opacity-60" />
                   
                   {/* Floating heart button */}
-                  <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary/10 backdrop-blur-sm border border-secondary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-accent hover:border-accent hover:text-primary text-secondary">
+                  <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary/10 backdrop-blur-sm border border-secondary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-accent hover:border-accent hover:text-primary text-secondary"
+                  >
                     <Heart className="w-4 h-4" />
                   </button>
                   
@@ -123,10 +126,13 @@ const ProductGrid = () => {
                     <div className="flex items-end justify-between">
                       <div>
                         <h3 className="text-secondary text-lg lg:text-xl font-bold mb-1">{product.title}</h3>
-                        <span className="text-accent font-bold text-lg">{product.price}</span>
+                        <span className="text-accent font-bold text-lg">{product.price}€</span>
                       </div>
                       <div className="card-actions flex gap-2 opacity-0 translate-y-5">
-                        <button className="w-11 h-11 rounded-full bg-accent text-primary flex items-center justify-center hover:scale-110 transition-transform shadow-gold">
+                        <button 
+                          onClick={(e) => handleAddToCart(product, e)}
+                          className="w-11 h-11 rounded-full bg-accent text-primary flex items-center justify-center hover:scale-110 transition-transform shadow-gold"
+                        >
                           <ShoppingBag className="w-5 h-5" />
                         </button>
                       </div>
@@ -139,7 +145,7 @@ const ProductGrid = () => {
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

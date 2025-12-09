@@ -1,40 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Instagram, ShoppingBag, Heart, Filter, X } from "lucide-react";
-import { SiTiktok, SiX } from "react-icons/si";
+import { Instagram, ShoppingBag, Heart, Filter } from "lucide-react";
+import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCart } from "@/hooks/useCart";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
-
-import tshirt1 from "@/assets/tshirt-1.jpg";
-import tshirt2 from "@/assets/tshirt-2.jpg";
-import hoodie1 from "@/assets/hoodie-1.jpg";
-import sweater1 from "@/assets/sweater-1.jpg";
-import jacket1 from "@/assets/jacket-1.jpg";
+import { products, Product } from "@/data/products";
+import { toast } from "sonner";
 
 gsap.registerPlugin(ScrollTrigger);
-
-interface Product {
-  id: string;
-  image: string;
-  title: string;
-  price: number;
-  category: string;
-  tag?: string;
-}
-
-const allProducts: Product[] = [
-  { id: "1", image: jacket1, title: "Jacket Ikigai", price: 89, category: "jackets", tag: "NEW" },
-  { id: "2", image: tshirt1, title: "Tee Essential Olive", price: 35, category: "tshirts" },
-  { id: "3", image: hoodie1, title: "Hoodie Classic", price: 75, category: "hoodies" },
-  { id: "4", image: sweater1, title: "Crewneck Elite", price: 65, category: "sweaters" },
-  { id: "5", image: tshirt2, title: "Tee Statement", price: 39, category: "tshirts" },
-  { id: "6", image: hoodie1, title: "Hoodie Premium", price: 85, category: "hoodies", tag: "BESTSELLER" },
-  { id: "7", image: tshirt1, title: "Tee Minimal", price: 32, category: "tshirts" },
-  { id: "8", image: sweater1, title: "Sweater Comfort", price: 59, category: "sweaters" },
-];
 
 const categories = [
   { id: "all", label: "Tous" },
@@ -48,11 +24,11 @@ const Shop = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const { addItem, getTotalItems, toggleCart } = useCart();
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   const filteredProducts = activeCategory === "all" 
-    ? allProducts 
-    : allProducts.filter(p => p.category === activeCategory);
+    ? products 
+    : products.filter(p => p.category === activeCategory);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -73,14 +49,17 @@ const Shop = () => {
     return () => ctx.revert();
   }, [activeCategory]);
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     addItem({
       id: product.id,
       title: product.title,
       price: product.price,
-      image: product.image,
+      image: product.images[0],
       category: product.category,
     });
+    toast.success(`${product.title} ajouté au panier`);
   };
 
   return (
@@ -178,14 +157,15 @@ const Shop = () => {
           {/* Products Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {filteredProducts.map((product, index) => (
-              <div
+              <Link
                 key={product.id}
+                to={`/product/${product.slug}`}
                 ref={(el) => (cardsRef.current[index] = el)}
-                className="group cursor-pointer"
+                className="group"
               >
                 <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500">
                   <img
-                    src={product.image}
+                    src={product.images[0]}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
@@ -194,11 +174,14 @@ const Shop = () => {
                   
                   {/* Quick Actions */}
                   <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                    <button className="w-10 h-10 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-accent hover:text-primary transition-all">
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      className="w-10 h-10 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-accent hover:text-primary transition-all"
+                    >
                       <Heart className="w-4 h-4" />
                     </button>
                     <button 
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => handleAddToCart(product, e)}
                       className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-primary hover:scale-110 transition-all shadow-gold"
                     >
                       <ShoppingBag className="w-4 h-4" />
@@ -217,7 +200,7 @@ const Shop = () => {
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
