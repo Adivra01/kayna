@@ -3,9 +3,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Shield, Flame, Zap } from "lucide-react";
 import kaynaHero from "@/assets/kayna-hero.jpg";
-import kaynaHeritage from "@/assets/kayna-heritage.jpg";
-import kaynaConfidence from "@/assets/kayna-confidence.jpg";
-import kaynaBattle from "@/assets/kayna-battle.jpg";
+import aboutHeritage from "@/assets/about-heritage.jpg";
+import aboutConfidence from "@/assets/about-confidence.jpg";
+import aboutBattle from "@/assets/about-battle.jpg";
 import logo from "@/assets/logo.png";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -130,7 +130,7 @@ const About = () => {
             </div>
             <div className="order-first lg:order-last">
               <img 
-                src={kaynaBattle} 
+                src={aboutBattle} 
                 alt="La Bataille Silencieuse" 
                 className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
               />
@@ -145,7 +145,7 @@ const About = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img 
-                src={kaynaConfidence} 
+                src={aboutConfidence} 
                 alt="Le Choix Inébranlable" 
                 className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
               />
@@ -216,7 +216,7 @@ const About = () => {
             </div>
             <div className="order-first lg:order-last">
               <img 
-                src={kaynaHeritage} 
+                src={aboutHeritage} 
                 alt="Votre Héritage" 
                 className="rounded-2xl lg:rounded-3xl w-full h-auto shadow-2xl hover:shadow-accent/20 transition-shadow duration-500"
               />

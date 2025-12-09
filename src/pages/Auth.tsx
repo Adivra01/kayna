@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, User, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const authSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email("Email invalide"),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+});
+
+const signupSchema = z.object({
+  fullName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(8, "Numéro de téléphone invalide"),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
@@ -14,6 +21,8 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -51,10 +60,18 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validation = authSchema.safeParse({ email, password });
-    if (!validation.success) {
-      toast.error(validation.error.errors[0].message);
-      return;
+    if (isLogin) {
+      const validation = loginSchema.safeParse({ email, password });
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
+        return;
+      }
+    } else {
+      const validation = signupSchema.safeParse({ fullName, email, phone, password });
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
+        return;
+      }
     }
 
     setLoading(true);
@@ -70,6 +87,10 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: fullName,
+              phone: phone,
+            },
           },
         });
         if (error) throw error;
@@ -123,6 +144,40 @@ const Auth = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-2">Nom complet</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/40" />
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3.5 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
+                      placeholder="Prénom Nom"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-2">Téléphone</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/40" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3.5 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
+                      placeholder="+33 6 12 34 56 78"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-secondary mb-2">Email</label>
               <div className="relative">
