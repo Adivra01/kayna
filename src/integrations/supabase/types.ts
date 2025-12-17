@@ -14,9 +14,116 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
+      analytics_events: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          event_type: string
+          id: string
+          page_url: string | null
+          product_id: string | null
+          referrer: string | null
+          user_agent: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          page_url?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          page_url?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_colors: {
+        Row: {
+          color_hex: string
+          color_name: string
+          created_at: string
+          id: string
+          images: string[] | null
+          product_id: string
+        }
+        Insert: {
+          color_hex: string
+          color_name: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          product_id: string
+        }
+        Update: {
+          color_hex?: string
+          color_name?: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_colors_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string
+          colors: string[] | null
           created_at: string
           description: string | null
           details: string[] | null
@@ -32,6 +139,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          colors?: string[] | null
           created_at?: string
           description?: string | null
           details?: string[] | null
@@ -47,6 +155,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          colors?: string[] | null
           created_at?: string
           description?: string | null
           details?: string[] | null
@@ -59,6 +168,69 @@ export type Database = {
           tag?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          cart_timeout_minutes: number | null
+          created_at: string
+          drop_duration_hours: number | null
+          drop_end_time: string | null
+          free_shipping_threshold: number | null
+          id: string
+          lock_message: string | null
+          lock_password: string | null
+          site_status: Database["public"]["Enums"]["site_status"]
+          updated_at: string
+        }
+        Insert: {
+          cart_timeout_minutes?: number | null
+          created_at?: string
+          drop_duration_hours?: number | null
+          drop_end_time?: string | null
+          free_shipping_threshold?: number | null
+          id?: string
+          lock_message?: string | null
+          lock_password?: string | null
+          site_status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+        }
+        Update: {
+          cart_timeout_minutes?: number | null
+          created_at?: string
+          drop_duration_hours?: number | null
+          drop_end_time?: string | null
+          free_shipping_threshold?: number | null
+          id?: string
+          lock_message?: string | null
+          lock_password?: string | null
+          site_status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          country: string | null
+          email: string
+          id: string
+          phone: string | null
+          subscribed_at: string
+        }
+        Insert: {
+          country?: string | null
+          email: string
+          id?: string
+          phone?: string | null
+          subscribed_at?: string
+        }
+        Update: {
+          country?: string | null
+          email?: string
+          id?: string
+          phone?: string | null
+          subscribed_at?: string
         }
         Relationships: []
       }
@@ -98,6 +270,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      site_status: "open" | "locked" | "maintenance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -226,6 +399,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      site_status: ["open", "locked", "maintenance"],
     },
   },
 } as const

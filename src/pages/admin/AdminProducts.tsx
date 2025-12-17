@@ -1,8 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
-import { Plus, Edit, Trash2, LogOut, Package, ImagePlus, X, Save, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Package, 
+  ImagePlus, 
+  X, 
+  Eye, 
+  EyeOff,
+  Archive,
+  Search
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -14,21 +24,27 @@ interface Product {
   category: string;
   tag: string | null;
   sizes: string[];
+  colors: string[];
   details: string[];
   images: string[];
   is_active: boolean;
   created_at: string;
 }
 
-const Admin = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+const FIXED_SIZES = ["S", "M", "L", "XL", "XXL"];
+const FIXED_COLORS = [
+  { name: "noir", hex: "#0A0A0A" },
+  { name: "blanc", hex: "#F5F5F0" },
+  { name: "beige", hex: "#D4C4A8" },
+];
+
+export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterActive, setFilterActive] = useState<"all" | "active" | "archived">("all");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -39,6 +55,7 @@ const Admin = () => {
     category: "tshirts",
     tag: "",
     sizes: ["S", "M", "L", "XL"],
+    colors: ["noir", "blanc", "beige"],
     details: [""],
     is_active: true,
   });
@@ -47,52 +64,8 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setTimeout(() => {
-          checkAdminRole(session.user.id);
-        }, 0);
-      } else {
-        setLoading(false);
-        navigate("/auth");
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        checkAdminRole(session.user.id);
-      } else {
-        setLoading(false);
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    
-    if (data) {
-      setIsAdmin(true);
-      fetchProducts();
-    } else {
-      toast.error("Accès refusé. Vous n'êtes pas administrateur.");
-      navigate("/");
-    }
-    setLoading(false);
-  };
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
@@ -106,11 +79,7 @@ const Admin = () => {
     }
     
     setProducts(data || []);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    setLoading(false);
   };
 
   const generateSlug = (title: string) => {
@@ -132,7 +101,8 @@ const Admin = () => {
         price: product.price.toString(),
         category: product.category,
         tag: product.tag || "",
-        sizes: product.sizes || ["S", "M", "L", "XL"],
+        sizes: product.sizes || FIXED_SIZES,
+        colors: product.colors || ["noir", "blanc", "beige"],
         details: product.details?.length ? product.details : [""],
         is_active: product.is_active,
       });
@@ -146,7 +116,8 @@ const Admin = () => {
         price: "",
         category: "tshirts",
         tag: "",
-        sizes: ["S", "M", "L", "XL"],
+        sizes: FIXED_SIZES,
+        colors: ["noir", "blanc", "beige"],
         details: [""],
         is_active: true,
       });
@@ -204,6 +175,15 @@ const Admin = () => {
     }));
   };
 
+  const toggleColor = (color: string) => {
+    setFormData(prev => ({
+      ...prev,
+      colors: prev.colors.includes(color)
+        ? prev.colors.filter(c => c !== color)
+        : [...prev.colors, color],
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -235,6 +215,7 @@ const Admin = () => {
         category: formData.category,
         tag: formData.tag || null,
         sizes: formData.sizes,
+        colors: formData.colors,
         details: formData.details.filter(d => d.trim()),
         images: uploadedUrls,
         is_active: formData.is_active,
@@ -267,7 +248,7 @@ const Admin = () => {
   };
 
   const deleteProduct = async (id: string) => {
-    if (!confirm("Supprimer ce produit ?")) return;
+    if (!confirm("Supprimer ce produit définitivement ?")) return;
 
     const { error } = await supabase
       .from("products")
@@ -294,44 +275,24 @@ const Admin = () => {
       return;
     }
 
-    toast.success(currentStatus ? "Produit masqué" : "Produit activé");
+    toast.success(currentStatus ? "Produit archivé" : "Produit activé");
     fetchProducts();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) return null;
+  // Filter products
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = 
+      filterActive === "all" ? true :
+      filterActive === "active" ? product.is_active :
+      !product.is_active;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="min-h-screen bg-primary">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-primary/90 backdrop-blur-md border-b border-secondary/10 px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-xl sm:text-2xl font-bold italic text-secondary">KAYNA</Link>
-            <span className="px-2 py-1 bg-accent/20 text-accent text-xs font-bold rounded-full">ADMIN</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-secondary/60 text-sm">{user?.email}</span>
-            <button 
-              onClick={handleLogout}
-              className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/60 hover:bg-accent hover:text-primary hover:border-accent transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Title & Actions */}
+    <AdminLayout>
+      <div className="p-6 lg:p-8">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-secondary">Produits</h1>
@@ -346,25 +307,59 @@ const Admin = () => {
           </button>
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/40" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher un produit..."
+              className="w-full pl-12 pr-4 py-3 bg-secondary/5 border border-secondary/10 rounded-xl text-secondary focus:outline-none focus:border-accent"
+            />
+          </div>
+          <div className="flex gap-2">
+            {(["all", "active", "archived"] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setFilterActive(filter)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  filterActive === filter
+                    ? "bg-accent text-primary"
+                    : "bg-secondary/5 text-secondary/70 hover:bg-secondary/10"
+                }`}
+              >
+                {filter === "all" ? "Tous" : filter === "active" ? "Actifs" : "Archivés"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Products Grid */}
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
             <Package className="w-16 h-16 text-secondary/20 mx-auto mb-4" />
-            <p className="text-secondary/60 mb-4">Aucun produit pour le moment</p>
-            <button
-              onClick={() => openForm()}
-              className="text-accent hover:underline"
-            >
-              Créer votre premier produit
-            </button>
+            <p className="text-secondary/60 mb-4">
+              {searchQuery ? "Aucun produit trouvé" : "Aucun produit pour le moment"}
+            </p>
+            {!searchQuery && (
+              <button onClick={() => openForm()} className="text-accent hover:underline">
+                Créer votre premier produit
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 className={`bg-secondary/5 border border-secondary/10 rounded-2xl overflow-hidden group ${
-                  !product.is_active ? "opacity-50" : ""
+                  !product.is_active ? "opacity-60" : ""
                 }`}
               >
                 <div className="aspect-square relative">
@@ -392,7 +387,7 @@ const Admin = () => {
                       onClick={() => toggleProductActive(product.id, product.is_active)}
                       className="w-12 h-12 rounded-full bg-secondary/20 text-secondary flex items-center justify-center hover:scale-110 transition-transform"
                     >
-                      {product.is_active ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {product.is_active ? <Archive className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                     <button
                       onClick={() => deleteProduct(product.id)}
@@ -402,7 +397,12 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  {product.tag && (
+                  {!product.is_active && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-secondary/80 text-primary text-xs font-bold rounded-full">
+                      Archivé
+                    </div>
+                  )}
+                  {product.tag && product.is_active && (
                     <div className="absolute top-3 left-3 px-2 py-1 bg-accent text-primary text-xs font-bold rounded-full">
                       {product.tag}
                     </div>
@@ -411,7 +411,7 @@ const Admin = () => {
                 <div className="p-4">
                   <h3 className="font-bold text-secondary mb-1 truncate">{product.title}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-accent font-bold">{product.price}€</span>
+                    <span className="text-accent font-bold">{product.price.toLocaleString()} FCFA</span>
                     <span className="text-secondary/40 text-sm capitalize">{product.category}</span>
                   </div>
                 </div>
@@ -419,11 +419,11 @@ const Admin = () => {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-primary/90 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-primary/95 backdrop-blur-sm overflow-y-auto">
           <div className="min-h-screen py-8 px-4">
             <div className="max-w-2xl mx-auto bg-secondary/5 border border-secondary/10 rounded-3xl p-6 sm:p-8">
               <div className="flex items-center justify-between mb-8">
@@ -457,25 +457,12 @@ const Admin = () => {
                   />
                 </div>
 
-                {/* Slug */}
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">Slug URL</label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                    className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
-                    placeholder="auto-generated"
-                  />
-                </div>
-
                 {/* Price & Category */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">Prix (€) *</label>
+                    <label className="block text-sm font-medium text-secondary mb-2">Prix (FCFA) *</label>
                     <input
                       type="number"
-                      step="0.01"
                       value={formData.price}
                       onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                       className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
@@ -492,21 +479,11 @@ const Admin = () => {
                       <option value="tshirts">T-Shirts</option>
                       <option value="hoodies">Hoodies</option>
                       <option value="sweaters">Sweaters</option>
-                      <option value="jackets">Jackets</option>
+                      <option value="jackets">Vestes</option>
+                      <option value="pants">Pantalons</option>
+                      <option value="accessories">Accessoires</option>
                     </select>
                   </div>
-                </div>
-
-                {/* Tag */}
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">Tag (optionnel)</label>
-                  <input
-                    type="text"
-                    value={formData.tag}
-                    onChange={(e) => setFormData(prev => ({ ...prev, tag: e.target.value }))}
-                    className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
-                    placeholder="NEW, BESTSELLER, etc."
-                  />
                 </div>
 
                 {/* Description */}
@@ -522,23 +499,60 @@ const Admin = () => {
 
                 {/* Sizes */}
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">Tailles</label>
+                  <label className="block text-sm font-medium text-secondary mb-2">Tailles disponibles</label>
                   <div className="flex flex-wrap gap-2">
-                    {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                    {FIXED_SIZES.map((size) => (
                       <button
                         key={size}
                         type="button"
                         onClick={() => toggleSize(size)}
-                        className={`w-12 h-12 rounded-lg font-bold transition-all ${
+                        className={`px-4 py-2 rounded-lg border transition-all ${
                           formData.sizes.includes(size)
-                            ? "bg-accent text-primary"
-                            : "bg-secondary/10 text-secondary/60"
+                            ? "bg-accent text-primary border-accent"
+                            : "bg-transparent text-secondary/60 border-secondary/20 hover:border-secondary/40"
                         }`}
                       >
                         {size}
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Colors */}
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-2">Couleurs disponibles</label>
+                  <div className="flex flex-wrap gap-3">
+                    {FIXED_COLORS.map((color) => (
+                      <button
+                        key={color.name}
+                        type="button"
+                        onClick={() => toggleColor(color.name)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                          formData.colors.includes(color.name)
+                            ? "bg-accent/20 border-accent"
+                            : "bg-transparent border-secondary/20 hover:border-secondary/40"
+                        }`}
+                      >
+                        <span 
+                          className="w-5 h-5 rounded-full border border-secondary/20" 
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span className="text-secondary capitalize">{color.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tag */}
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-2">Tag (optionnel)</label>
+                  <input
+                    type="text"
+                    value={formData.tag}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tag: e.target.value }))}
+                    placeholder="Ex: Nouveau, Bestseller, -20%"
+                    className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
+                  />
                 </div>
 
                 {/* Details */}
@@ -551,14 +565,14 @@ const Admin = () => {
                           type="text"
                           value={detail}
                           onChange={(e) => updateDetail(index, e.target.value)}
-                          className="flex-1 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary focus:outline-none focus:border-accent"
-                          placeholder="Ex: 100% Coton bio"
+                          placeholder="Ex: 100% Coton Premium"
+                          className="flex-1 px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
                         />
                         {formData.details.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeDetail(index)}
-                            className="w-10 h-10 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center"
+                            className="w-12 h-12 rounded-xl border border-secondary/20 flex items-center justify-center text-secondary/60 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -568,7 +582,7 @@ const Admin = () => {
                     <button
                       type="button"
                       onClick={addDetail}
-                      className="text-accent text-sm hover:underline"
+                      className="text-sm text-accent hover:underline"
                     >
                       + Ajouter un détail
                     </button>
@@ -578,32 +592,34 @@ const Admin = () => {
                 {/* Images */}
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-2">Images</label>
-                  <div className="flex flex-wrap gap-3 mb-3">
+                  <div className="grid grid-cols-4 gap-3 mb-3">
                     {existingImages.map((url, index) => (
-                      <div key={`existing-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
+                      <div key={`existing-${index}`} className="aspect-square relative rounded-xl overflow-hidden">
                         <img src={url} alt="" className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index, true)}
-                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ))}
                     {imageFiles.map((file, index) => (
-                      <div key={`new-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
+                      <div key={`new-${index}`} className="aspect-square relative rounded-xl overflow-hidden">
                         <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index, false)}
-                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ))}
-                    <label className="w-20 h-20 rounded-lg border-2 border-dashed border-secondary/30 flex items-center justify-center cursor-pointer hover:border-accent transition-colors">
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-secondary/20 flex flex-col items-center justify-center cursor-pointer hover:border-accent transition-colors">
+                      <ImagePlus className="w-6 h-6 text-secondary/40 mb-1" />
+                      <span className="text-xs text-secondary/40">Ajouter</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -611,51 +627,43 @@ const Admin = () => {
                         onChange={handleImageUpload}
                         className="hidden"
                       />
-                      <ImagePlus className="w-6 h-6 text-secondary/40" />
                     </label>
                   </div>
                 </div>
 
                 {/* Active toggle */}
-                <div className="flex items-center justify-between py-3 px-4 bg-secondary/10 rounded-xl">
-                  <span className="text-secondary font-medium">Produit actif</span>
+                <div className="flex items-center justify-between py-3 px-4 bg-secondary/5 rounded-xl">
+                  <span className="text-secondary">Produit actif (visible sur le site)</span>
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
-                    className={`w-12 h-7 rounded-full transition-colors relative ${
-                      formData.is_active ? "bg-accent" : "bg-secondary/30"
+                    className={`w-12 h-7 rounded-full transition-all ${
+                      formData.is_active ? "bg-accent" : "bg-secondary/20"
                     }`}
                   >
-                    <div
-                      className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${
-                        formData.is_active ? "left-6" : "left-1"
-                      }`}
+                    <span 
+                      className={`block w-5 h-5 bg-white rounded-full transform transition-transform ${
+                        formData.is_active ? "translate-x-6" : "translate-x-1"
+                      }`} 
                     />
                   </button>
                 </div>
 
                 {/* Submit */}
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-3 pt-4">
                   <button
                     type="button"
                     onClick={closeForm}
-                    className="flex-1 py-4 border border-secondary/20 text-secondary rounded-xl font-bold hover:bg-secondary/10 transition-colors"
+                    className="flex-1 px-6 py-3 border border-secondary/20 rounded-xl text-secondary hover:bg-secondary/10 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 py-4 bg-accent text-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-gold hover:shadow-gold-glow transition-all disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50"
                   >
-                    {saving ? (
-                      <span>Sauvegarde...</span>
-                    ) : (
-                      <>
-                        <Save className="w-5 h-5" />
-                        <span>{editingProduct ? "Mettre à jour" : "Créer"}</span>
-                      </>
-                    )}
+                    {saving ? "Enregistrement..." : editingProduct ? "Mettre à jour" : "Créer"}
                   </button>
                 </div>
               </form>
@@ -663,8 +671,6 @@ const Admin = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
-};
-
-export default Admin;
+}
