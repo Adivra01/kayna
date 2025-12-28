@@ -111,10 +111,11 @@ export default function LockedSite() {
       });
     } else {
       toast.error("Mot de passe incorrect");
-      gsap.to(".password-input", {
-        x: [-10, 10, -10, 10, 0],
-        duration: 0.4,
-      });
+      // Shake animation for wrong password
+      gsap.fromTo(".password-input", 
+        { x: 0 },
+        { x: 10, duration: 0.1, repeat: 5, yoyo: true, ease: "power1.inOut" }
+      );
     }
   };
 

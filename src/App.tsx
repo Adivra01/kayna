@@ -3,12 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useSiteStatus } from "@/hooks/useSiteStatus";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import LockedSite from "./pages/LockedSite";
+import CartDrawer from "./components/CartDrawer";
+import DropCountdownBanner from "./components/DropCountdownBanner";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -18,28 +22,56 @@ import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
+function AppContent() {
+  const { status, isLoading } = useSiteStatus();
+  
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+  
+  // Show locked site if status is locked (except for admin routes)
+  const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname === "/auth";
+  
+  if (status === "locked" && !isAdminRoute) {
+    return <LockedSite />;
+  }
+  
+  return (
+    <>
+      <DropCountdownBanner />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/auth" element={<Auth />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminAnalytics />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/drop" element={<AdminDrop />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+        
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <CartDrawer />
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/product/:slug" element={<ProductDetail />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminAnalytics />} />
-          <Route path="/admin/products" element={<AdminProducts />} />
-          <Route path="/admin/drop" element={<AdminDrop />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppContent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
