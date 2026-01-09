@@ -7,7 +7,9 @@ import {
   LogOut,
   Home,
   Menu,
-  X
+  X,
+  ShoppingBag,
+  Users
 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +18,8 @@ import { useNavigate } from "react-router-dom";
 const navItems = [
   { title: "Analytique", url: "/admin", icon: BarChart3 },
   { title: "Produits", url: "/admin/products", icon: Package },
+  { title: "Commandes", url: "/admin/orders", icon: ShoppingBag },
+  { title: "Affiliés", url: "/admin/affiliates", icon: Users },
   { title: "Drop Time", url: "/admin/drop", icon: Timer },
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
 ];

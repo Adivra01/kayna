@@ -11,12 +11,17 @@ import ProductDetail from "./pages/ProductDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import LockedSite from "./pages/LockedSite";
+import Favorites from "./pages/Favorites";
+import AffiliateSignup from "./pages/AffiliateSignup";
+import AffiliateDashboard from "./pages/AffiliateDashboard";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminAffiliates from "./pages/admin/AdminAffiliates";
 import AdminDrop from "./pages/admin/AdminDrop";
 import AdminSettings from "./pages/admin/AdminSettings";
 
@@ -50,10 +55,15 @@ function AppContent() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/affiliate" element={<AffiliateSignup />} />
+        <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminAnalytics />} />
         <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
         <Route path="/admin/drop" element={<AdminDrop />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         

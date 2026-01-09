@@ -5,6 +5,8 @@ import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { products, Product } from "@/data/products";
@@ -24,6 +26,7 @@ const Shop = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const { addItem, getTotalItems, toggleCart } = useCart();
+  const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   const filteredProducts = activeCategory === "all" 
@@ -76,6 +79,17 @@ const Shop = () => {
         </nav>
         
         <div className="flex items-center gap-3">
+          <Link 
+            to="/favorites"
+            className="relative w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-primary hover:border-accent transition-all"
+          >
+            <Heart className="w-4 h-4" />
+            {getFavoritesCount() > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-primary text-xs font-bold rounded-full flex items-center justify-center">
+                {getFavoritesCount()}
+              </span>
+            )}
+          </Link>
           <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-10 h-10 rounded-full border border-border items-center justify-center text-muted-foreground hover:bg-accent hover:text-primary hover:border-accent transition-all">
             <Instagram className="w-4 h-4" />
           </a>
@@ -174,12 +188,11 @@ const Shop = () => {
                   
                   {/* Quick Actions */}
                   <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                    <button 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                      className="w-10 h-10 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-accent hover:text-primary transition-all"
-                    >
-                      <Heart className="w-4 h-4" />
-                    </button>
+                    <FavoriteButton
+                      isFavorite={isFavorite(product.id)}
+                      onToggle={() => toggleFavorite(product.id)}
+                      size="md"
+                    />
                     <button 
                       onClick={(e) => handleAddToCart(product, e)}
                       className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-primary hover:scale-110 transition-all shadow-gold"
@@ -191,7 +204,7 @@ const Shop = () => {
                   {/* Content */}
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <h3 className="text-secondary text-lg font-bold mb-1 group-hover:translate-y-[-4px] transition-transform">{product.title}</h3>
-                    <span className="text-accent font-bold text-lg">{product.price}€</span>
+                    <span className="text-accent font-bold text-lg">{product.price.toLocaleString()} FCFA</span>
                   </div>
 
                   {product.tag && (

@@ -65,7 +65,7 @@ export default function AdminOrders() {
   }, []);
 
   const fetchOrders = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false });
@@ -74,14 +74,14 @@ export default function AdminOrders() {
       toast.error('Erreur lors du chargement des commandes');
       console.error(error);
     } else {
-      setOrders(data || []);
+      setOrders((data || []) as Order[]);
     }
     setLoading(false);
   };
 
   const fetchOrderDetails = async (orderId: string) => {
     setLoadingDetails(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('order_items')
       .select('*')
       .eq('order_id', orderId);
@@ -89,13 +89,13 @@ export default function AdminOrders() {
     if (error) {
       toast.error('Erreur lors du chargement des détails');
     } else {
-      setOrderItems(data || []);
+      setOrderItems((data || []) as OrderItem[]);
     }
     setLoadingDetails(false);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('orders')
       .update({ status: newStatus })
       .eq('id', orderId);
