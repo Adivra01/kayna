@@ -1,0 +1,207 @@
+import { useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface TrackingData {
+  event_type: string;
+  page_url?: string;
+  product_id?: string;
+  affiliate_code?: string;
+}
+
+// Get or create a visitor ID
+const getVisitorId = (): string => {
+  let visitorId = localStorage.getItem('kayna_visitor_id');
+  if (!visitorId) {
+    visitorId = `v_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    localStorage.setItem('kayna_visitor_id', visitorId);
+  }
+  return visitorId;
+};
+
+// Get or create session ID (resets after 30 min of inactivity)
+const getSessionId = (): string => {
+  const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  const now = Date.now();
+  
+  const storedSession = localStorage.getItem('kayna_session');
+  if (storedSession) {
+    const { id, lastActive } = JSON.parse(storedSession);
+    if (now - lastActive < SESSION_TIMEOUT) {
+      localStorage.setItem('kayna_session', JSON.stringify({ id, lastActive: now }));
+      return id;
+    }
+  }
+  
+  const newSessionId = `s_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  localStorage.setItem('kayna_session', JSON.stringify({ id: newSessionId, lastActive: now }));
+  return newSessionId;
+};
+
+// Get affiliate code from URL or storage
+export const getAffiliateCode = (): string | null => {
+  // Check URL params first
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
+  
+  if (refCode) {
+    // Store affiliate code for this session
+    localStorage.setItem('kayna_affiliate_code', refCode);
+    localStorage.setItem('kayna_affiliate_timestamp', Date.now().toString());
+    return refCode;
+  }
+  
+  // Check stored affiliate code (valid for 30 days)
+  const storedCode = localStorage.getItem('kayna_affiliate_code');
+  const storedTimestamp = localStorage.getItem('kayna_affiliate_timestamp');
+  
+  if (storedCode && storedTimestamp) {
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    if (parseInt(storedTimestamp) > thirtyDaysAgo) {
+      return storedCode;
+    }
+    // Clear expired affiliate code
+    localStorage.removeItem('kayna_affiliate_code');
+    localStorage.removeItem('kayna_affiliate_timestamp');
+  }
+  
+  return null;
+};
+
+// Parse user agent for device info
+const parseUserAgent = () => {
+  const ua = navigator.userAgent;
+  
+  // Device type
+  let deviceType = 'desktop';
+  if (/Mobile|Android|iPhone|iPad/.test(ua)) {
+    deviceType = /iPad|Tablet/.test(ua) ? 'tablet' : 'mobile';
+  }
+  
+  // Browser
+  let browser = 'unknown';
+  if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Safari')) browser = 'Safari';
+  else if (ua.includes('Edge')) browser = 'Edge';
+  else if (ua.includes('Opera')) browser = 'Opera';
+  
+  // OS
+  let os = 'unknown';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  
+  return { deviceType, browser, os };
+};
+
+// Determine traffic source
+const getTrafficSource = (): string => {
+  const affiliateCode = getAffiliateCode();
+  if (affiliateCode) return 'affiliate';
+  
+  const referrer = document.referrer;
+  if (!referrer) return 'direct';
+  
+  const referrerHost = new URL(referrer).hostname;
+  
+  if (referrerHost.includes('google')) return 'google';
+  if (referrerHost.includes('facebook') || referrerHost.includes('fb.')) return 'facebook';
+  if (referrerHost.includes('instagram')) return 'instagram';
+  if (referrerHost.includes('tiktok')) return 'tiktok';
+  if (referrerHost.includes('twitter') || referrerHost.includes('x.com')) return 'twitter';
+  
+  return 'referral';
+};
+
+export const useTracking = () => {
+  const trackEvent = useCallback(async (data: TrackingData) => {
+    try {
+      const visitorId = getVisitorId();
+      const sessionId = getSessionId();
+      const affiliateCode = data.affiliate_code || getAffiliateCode();
+      const { deviceType, browser, os } = parseUserAgent();
+      const trafficSource = getTrafficSource();
+      
+      await (supabase as any)
+        .from('analytics_events')
+        .insert({
+          event_type: data.event_type,
+          page_url: data.page_url || window.location.pathname,
+          product_id: data.product_id || null,
+          visitor_id: visitorId,
+          session_id: sessionId,
+          affiliate_code: affiliateCode,
+          device_type: deviceType,
+          browser,
+          os,
+          traffic_source: trafficSource,
+          user_agent: navigator.userAgent,
+          referrer: document.referrer || null,
+        });
+
+      // If this is an affiliate visit, also record in affiliate_visits
+      if (affiliateCode && data.event_type === 'page_view') {
+        // Get affiliate id
+        const { data: affiliate } = await (supabase as any)
+          .from('affiliates')
+          .select('id')
+          .eq('affiliate_code', affiliateCode)
+          .eq('status', 'approved')
+          .maybeSingle();
+        
+        if (affiliate) {
+          await (supabase as any)
+            .from('affiliate_visits')
+            .insert({
+              affiliate_id: affiliate.id,
+              visitor_id: visitorId,
+              country: null, // Would need IP geolocation service
+              city: null,
+              device_type: deviceType,
+              browser,
+              os,
+              referrer: document.referrer || null,
+              page_url: window.location.pathname,
+            });
+        }
+      }
+    } catch (error) {
+      console.error('Tracking error:', error);
+    }
+  }, []);
+
+  const trackPageView = useCallback(() => {
+    trackEvent({ event_type: 'page_view' });
+  }, [trackEvent]);
+
+  const trackProductView = useCallback((productId: string) => {
+    trackEvent({ event_type: 'product_view', product_id: productId });
+  }, [trackEvent]);
+
+  const trackAddToCart = useCallback((productId: string) => {
+    trackEvent({ event_type: 'add_to_cart', product_id: productId });
+  }, [trackEvent]);
+
+  const trackPurchase = useCallback((productId?: string) => {
+    trackEvent({ event_type: 'purchase', product_id: productId });
+  }, [trackEvent]);
+
+  return {
+    trackEvent,
+    trackPageView,
+    trackProductView,
+    trackAddToCart,
+    trackPurchase,
+  };
+};
+
+// Hook to auto-track page views
+export const usePageTracking = () => {
+  const { trackPageView } = useTracking();
+
+  useEffect(() => {
+    trackPageView();
+  }, [trackPageView]);
+};

@@ -38,40 +38,177 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_visits: {
+        Row: {
+          affiliate_id: string
+          browser: string | null
+          city: string | null
+          converted: boolean | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          order_id: string | null
+          os: string | null
+          page_url: string | null
+          referrer: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          browser?: string | null
+          city?: string | null
+          converted?: boolean | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          order_id?: string | null
+          os?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          browser?: string | null
+          city?: string | null
+          converted?: boolean | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          order_id?: string | null
+          os?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_visits_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          affiliate_code: string | null
+          commission_rate: number | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          pending_earnings: number | null
+          phone: string | null
+          status: string
+          total_earnings: number | null
+          total_sales: number | null
+          total_visits: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          affiliate_code?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          pending_earnings?: number | null
+          phone?: string | null
+          status?: string
+          total_earnings?: number | null
+          total_sales?: number | null
+          total_visits?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          affiliate_code?: string | null
+          commission_rate?: number | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          pending_earnings?: number | null
+          phone?: string | null
+          status?: string
+          total_earnings?: number | null
+          total_sales?: number | null
+          total_visits?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
+          affiliate_code: string | null
+          age_range: string | null
+          browser: string | null
           city: string | null
           country: string | null
           created_at: string
+          device_type: string | null
           event_type: string
+          gender: string | null
           id: string
+          ip_address: string | null
+          os: string | null
           page_url: string | null
           product_id: string | null
           referrer: string | null
+          session_id: string | null
+          traffic_source: string | null
           user_agent: string | null
           visitor_id: string | null
         }
         Insert: {
+          affiliate_code?: string | null
+          age_range?: string | null
+          browser?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
+          device_type?: string | null
           event_type: string
+          gender?: string | null
           id?: string
+          ip_address?: string | null
+          os?: string | null
           page_url?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
+          traffic_source?: string | null
           user_agent?: string | null
           visitor_id?: string | null
         }
         Update: {
+          affiliate_code?: string | null
+          age_range?: string | null
+          browser?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
+          device_type?: string | null
           event_type?: string
+          gender?: string | null
           id?: string
+          ip_address?: string | null
+          os?: string | null
           page_url?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
+          traffic_source?: string | null
           user_agent?: string | null
           visitor_id?: string | null
         }
@@ -258,11 +395,50 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          id: string
+          processed_at: string | null
+          rejection_reason: string | null
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_affiliate_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

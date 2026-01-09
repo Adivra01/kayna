@@ -7,9 +7,14 @@ import {
   Eye, 
   TrendingUp,
   MapPin,
-  Calendar,
   Download,
-  RefreshCw
+  RefreshCw,
+  Smartphone,
+  Monitor,
+  Tablet,
+  Globe,
+  Link2,
+  Filter
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,34 +26,69 @@ interface AnalyticsData {
   totalAddToCart: number;
   totalPurchases: number;
   countryStats: { country: string; count: number }[];
-  recentEvents: { event_type: string; created_at: string; country: string | null }[];
+  cityStats: { city: string; count: number }[];
+  deviceStats: { device: string; count: number }[];
+  browserStats: { browser: string; count: number }[];
+  trafficSourceStats: { source: string; count: number }[];
+  affiliateStats: { code: string; visits: number; conversions: number }[];
+  recentEvents: { event_type: string; created_at: string; country: string | null; traffic_source: string | null }[];
+  conversionRate: number;
+  affiliateConversionRate: number;
+  directConversionRate: number;
 }
 
 export default function AdminAnalytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'affiliate' | 'direct'>('all');
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('all');
 
   const fetchAnalytics = async () => {
     try {
-      // Get all analytics events
-      const { data: events, error } = await supabase
+      let query = (supabase as any)
         .from("analytics_events")
         .select("*")
         .order("created_at", { ascending: false });
 
+      // Apply date filter
+      if (dateRange !== 'all') {
+        const now = new Date();
+        let startDate: Date;
+        
+        if (dateRange === 'today') {
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (dateRange === 'week') {
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        } else {
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+        
+        query = query.gte('created_at', startDate.toISOString());
+      }
+
+      const { data: events, error } = await query;
+
       if (error) throw error;
+
+      // Filter by traffic source
+      let filteredEvents = events || [];
+      if (filter === 'affiliate') {
+        filteredEvents = filteredEvents.filter((e: any) => e.affiliate_code);
+      } else if (filter === 'direct') {
+        filteredEvents = filteredEvents.filter((e: any) => !e.affiliate_code);
+      }
 
       const today = new Date().toDateString();
       
       // Calculate stats
-      const uniqueVisitors = new Set(events?.map(e => e.visitor_id) || []);
-      const todayEvents = events?.filter(e => new Date(e.created_at).toDateString() === today) || [];
-      const todayVisitors = new Set(todayEvents.map(e => e.visitor_id));
+      const uniqueVisitors = new Set(filteredEvents.map((e: any) => e.visitor_id));
+      const todayEvents = filteredEvents.filter((e: any) => new Date(e.created_at).toDateString() === today);
+      const todayVisitors = new Set(todayEvents.map((e: any) => e.visitor_id));
 
       // Country stats
       const countryCounts: Record<string, number> = {};
-      events?.forEach(e => {
+      filteredEvents.forEach((e: any) => {
         if (e.country) {
           countryCounts[e.country] = (countryCounts[e.country] || 0) + 1;
         }
@@ -58,15 +98,92 @@ export default function AdminAnalytics() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
+      // City stats
+      const cityCounts: Record<string, number> = {};
+      filteredEvents.forEach((e: any) => {
+        if (e.city) {
+          cityCounts[e.city] = (cityCounts[e.city] || 0) + 1;
+        }
+      });
+      const cityStats = Object.entries(cityCounts)
+        .map(([city, count]) => ({ city, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Device stats
+      const deviceCounts: Record<string, number> = {};
+      filteredEvents.forEach((e: any) => {
+        const device = e.device_type || 'unknown';
+        deviceCounts[device] = (deviceCounts[device] || 0) + 1;
+      });
+      const deviceStats = Object.entries(deviceCounts)
+        .map(([device, count]) => ({ device, count }))
+        .sort((a, b) => b.count - a.count);
+
+      // Browser stats
+      const browserCounts: Record<string, number> = {};
+      filteredEvents.forEach((e: any) => {
+        const browser = e.browser || 'unknown';
+        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+      });
+      const browserStats = Object.entries(browserCounts)
+        .map(([browser, count]) => ({ browser, count }))
+        .sort((a, b) => b.count - a.count);
+
+      // Traffic source stats
+      const sourceCounts: Record<string, number> = {};
+      filteredEvents.forEach((e: any) => {
+        const source = e.traffic_source || 'direct';
+        sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+      });
+      const trafficSourceStats = Object.entries(sourceCounts)
+        .map(([source, count]) => ({ source, count }))
+        .sort((a, b) => b.count - a.count);
+
+      // Affiliate stats
+      const affiliateCounts: Record<string, { visits: number; conversions: number }> = {};
+      filteredEvents.forEach((e: any) => {
+        if (e.affiliate_code) {
+          if (!affiliateCounts[e.affiliate_code]) {
+            affiliateCounts[e.affiliate_code] = { visits: 0, conversions: 0 };
+          }
+          if (e.event_type === 'page_view') {
+            affiliateCounts[e.affiliate_code].visits++;
+          }
+          if (e.event_type === 'purchase') {
+            affiliateCounts[e.affiliate_code].conversions++;
+          }
+        }
+      });
+      const affiliateStats = Object.entries(affiliateCounts)
+        .map(([code, stats]) => ({ code, ...stats }))
+        .sort((a, b) => b.visits - a.visits)
+        .slice(0, 10);
+
+      // Conversion rates
+      const totalPurchases = filteredEvents.filter((e: any) => e.event_type === 'purchase').length;
+      const affiliateVisits = filteredEvents.filter((e: any) => e.affiliate_code && e.event_type === 'page_view').length;
+      const affiliatePurchases = filteredEvents.filter((e: any) => e.affiliate_code && e.event_type === 'purchase').length;
+      const directVisits = filteredEvents.filter((e: any) => !e.affiliate_code && e.event_type === 'page_view').length;
+      const directPurchases = filteredEvents.filter((e: any) => !e.affiliate_code && e.event_type === 'purchase').length;
+
       setData({
         totalVisitors: uniqueVisitors.size,
         todayVisitors: todayVisitors.size,
-        totalPageViews: events?.filter(e => e.event_type === "page_view").length || 0,
-        totalProductViews: events?.filter(e => e.event_type === "product_view").length || 0,
-        totalAddToCart: events?.filter(e => e.event_type === "add_to_cart").length || 0,
-        totalPurchases: events?.filter(e => e.event_type === "purchase").length || 0,
+        totalPageViews: filteredEvents.filter((e: any) => e.event_type === "page_view").length,
+        totalProductViews: filteredEvents.filter((e: any) => e.event_type === "product_view").length,
+        totalAddToCart: filteredEvents.filter((e: any) => e.event_type === "add_to_cart").length,
+        totalPurchases,
         countryStats,
-        recentEvents: events?.slice(0, 20) || [],
+        cityStats,
+        deviceStats,
+        browserStats,
+        trafficSourceStats,
+        affiliateStats,
+        recentEvents: filteredEvents.slice(0, 20),
+        conversionRate: uniqueVisitors.size > 0 ? (totalPurchases / uniqueVisitors.size) * 100 : 0,
+        affiliateConversionRate: affiliateVisits > 0 ? (affiliatePurchases / affiliateVisits) * 100 : 0,
+        directConversionRate: directVisits > 0 ? (directPurchases / directVisits) * 100 : 0,
       });
     } catch (error: any) {
       toast.error("Erreur lors du chargement des analytiques");
@@ -78,11 +195,9 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     fetchAnalytics();
-    
-    // Refresh every 30 seconds
     const interval = setInterval(fetchAnalytics, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [filter, dateRange]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -100,9 +215,15 @@ export default function AdminAnalytics() {
       ["Produits consultés", data.totalProductViews],
       ["Ajouts au panier", data.totalAddToCart],
       ["Achats", data.totalPurchases],
+      ["Taux de conversion global", data.conversionRate.toFixed(2) + "%"],
+      ["Taux de conversion affiliés", data.affiliateConversionRate.toFixed(2) + "%"],
+      ["Taux de conversion direct", data.directConversionRate.toFixed(2) + "%"],
       [""],
       ["Pays", "Visites"],
       ...data.countryStats.map(c => [c.country, c.count]),
+      [""],
+      ["Source de trafic", "Visites"],
+      ...data.trafficSourceStats.map(s => [s.source, s.count]),
     ].map(row => row.join(",")).join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -119,12 +240,14 @@ export default function AdminAnalytics() {
     icon: Icon, 
     label, 
     value, 
-    trend 
+    trend,
+    suffix = ""
   }: { 
     icon: any; 
     label: string; 
-    value: number; 
+    value: number | string; 
     trend?: string;
+    suffix?: string;
   }) => (
     <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
       <div className="flex items-start justify-between mb-4">
@@ -137,10 +260,20 @@ export default function AdminAnalytics() {
           </span>
         )}
       </div>
-      <p className="text-3xl font-bold text-secondary mb-1">{value.toLocaleString()}</p>
+      <p className="text-3xl font-bold text-secondary mb-1">
+        {typeof value === 'number' ? value.toLocaleString() : value}{suffix}
+      </p>
       <p className="text-secondary/60 text-sm">{label}</p>
     </div>
   );
+
+  const getDeviceIcon = (device: string) => {
+    switch (device) {
+      case 'mobile': return Smartphone;
+      case 'tablet': return Tablet;
+      default: return Monitor;
+    }
+  };
 
   return (
     <AdminLayout>
@@ -151,21 +284,44 @@ export default function AdminAnalytics() {
             <h1 className="text-2xl sm:text-3xl font-bold text-secondary">Analytique</h1>
             <p className="text-secondary/60">Vue en temps réel de votre activité</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            {/* Date Filter */}
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value as any)}
+              className="px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary text-sm focus:outline-none focus:border-accent"
+            >
+              <option value="all">Tout</option>
+              <option value="today">Aujourd'hui</option>
+              <option value="week">7 jours</option>
+              <option value="month">30 jours</option>
+            </select>
+            
+            {/* Source Filter */}
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as any)}
+              className="px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary text-sm focus:outline-none focus:border-accent"
+            >
+              <option value="all">Toutes sources</option>
+              <option value="affiliate">Affiliés</option>
+              <option value="direct">Direct</option>
+            </select>
+            
             <button
               onClick={handleRefresh}
               disabled={refreshing}
               className="flex items-center gap-2 px-4 py-2 border border-secondary/20 rounded-xl text-secondary/70 hover:bg-secondary/10 transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-              <span>Actualiser</span>
+              <span className="hidden sm:inline">Actualiser</span>
             </button>
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2 bg-accent text-primary rounded-xl font-medium hover:shadow-gold transition-all"
             >
               <Download className="w-4 h-4" />
-              <span>Exporter</span>
+              <span className="hidden sm:inline">Exporter</span>
             </button>
           </div>
         </div>
@@ -177,24 +333,64 @@ export default function AdminAnalytics() {
         ) : data ? (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
               <StatCard icon={Users} label="Visiteurs total" value={data.totalVisitors} />
-              <StatCard icon={Calendar} label="Visiteurs aujourd'hui" value={data.todayVisitors} trend="Live" />
+              <StatCard icon={Users} label="Aujourd'hui" value={data.todayVisitors} trend="Live" />
               <StatCard icon={Eye} label="Pages vues" value={data.totalPageViews} />
-              <StatCard icon={Eye} label="Produits consultés" value={data.totalProductViews} />
               <StatCard icon={ShoppingCart} label="Ajouts panier" value={data.totalAddToCart} />
               <StatCard icon={TrendingUp} label="Achats" value={data.totalPurchases} />
+              <StatCard icon={TrendingUp} label="Conversion" value={data.conversionRate.toFixed(1)} suffix="%" />
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
+            {/* Conversion Comparison */}
+            <div className="grid lg:grid-cols-2 gap-4 mb-8">
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Link2 className="w-5 h-5 text-accent" />
+                  <h2 className="font-bold text-secondary">Conversion par source</h2>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-secondary/10 rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-accent">{data.affiliateConversionRate.toFixed(1)}%</p>
+                    <p className="text-secondary/60 text-sm">Affiliés</p>
+                  </div>
+                  <div className="bg-secondary/10 rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-secondary">{data.directConversionRate.toFixed(1)}%</p>
+                    <p className="text-secondary/60 text-sm">Direct</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Traffic Sources */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Globe className="w-5 h-5 text-accent" />
+                  <h2 className="font-bold text-secondary">Sources de trafic</h2>
+                </div>
+                {data.trafficSourceStats.length === 0 ? (
+                  <p className="text-secondary/50 text-center py-4">Aucune donnée</p>
+                ) : (
+                  <div className="space-y-2">
+                    {data.trafficSourceStats.slice(0, 5).map((stat) => (
+                      <div key={stat.source} className="flex items-center justify-between">
+                        <span className="text-secondary capitalize">{stat.source}</span>
+                        <span className="text-secondary/60">{stat.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6 mb-8">
               {/* Country Stats */}
               <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <MapPin className="w-5 h-5 text-accent" />
-                  <h2 className="text-lg font-bold text-secondary">Pays des visiteurs</h2>
+                  <h2 className="font-bold text-secondary">Pays</h2>
                 </div>
                 {data.countryStats.length === 0 ? (
-                  <p className="text-secondary/50 text-center py-8">Aucune donnée disponible</p>
+                  <p className="text-secondary/50 text-center py-8">Aucune donnée</p>
                 ) : (
                   <div className="space-y-3">
                     {data.countryStats.map((stat, index) => (
@@ -215,42 +411,111 @@ export default function AdminAnalytics() {
                 )}
               </div>
 
-              {/* Recent Activity */}
+              {/* Device Stats */}
               <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <TrendingUp className="w-5 h-5 text-accent" />
-                  <h2 className="text-lg font-bold text-secondary">Activité récente</h2>
+                  <Monitor className="w-5 h-5 text-accent" />
+                  <h2 className="font-bold text-secondary">Appareils</h2>
                 </div>
-                {data.recentEvents.length === 0 ? (
-                  <p className="text-secondary/50 text-center py-8">Aucune activité récente</p>
+                {data.deviceStats.length === 0 ? (
+                  <p className="text-secondary/50 text-center py-8">Aucune donnée</p>
                 ) : (
-                  <div className="space-y-2 max-h-80 overflow-y-auto">
-                    {data.recentEvents.map((event, index) => (
-                      <div 
-                        key={index} 
-                        className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-secondary/5"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`w-2 h-2 rounded-full ${
-                            event.event_type === "purchase" ? "bg-green-400" :
-                            event.event_type === "add_to_cart" ? "bg-accent" :
-                            "bg-secondary/30"
-                          }`} />
-                          <span className="text-sm text-secondary capitalize">
-                            {event.event_type.replace("_", " ")}
-                          </span>
+                  <div className="space-y-4">
+                    {data.deviceStats.map((stat) => {
+                      const Icon = getDeviceIcon(stat.device);
+                      const total = data.deviceStats.reduce((sum, s) => sum + s.count, 0);
+                      const percentage = total > 0 ? (stat.count / total) * 100 : 0;
+                      
+                      return (
+                        <div key={stat.device} className="flex items-center gap-4">
+                          <Icon className="w-5 h-5 text-secondary/60" />
+                          <div className="flex-1">
+                            <div className="flex justify-between mb-1">
+                              <span className="text-secondary capitalize">{stat.device}</span>
+                              <span className="text-secondary/60">{percentage.toFixed(0)}%</span>
+                            </div>
+                            <div className="h-2 bg-secondary/10 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-accent rounded-full"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-xs text-secondary/50">
-                          {new Date(event.created_at).toLocaleTimeString("fr-FR", { 
-                            hour: "2-digit", 
-                            minute: "2-digit" 
-                          })}
-                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Affiliate Performance */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Link2 className="w-5 h-5 text-accent" />
+                  <h2 className="font-bold text-secondary">Top Affiliés</h2>
+                </div>
+                {data.affiliateStats.length === 0 ? (
+                  <p className="text-secondary/50 text-center py-8">Aucune donnée</p>
+                ) : (
+                  <div className="space-y-3">
+                    {data.affiliateStats.slice(0, 5).map((stat, index) => (
+                      <div key={stat.code} className="flex items-center justify-between p-3 bg-secondary/5 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-xs text-accent font-bold">
+                            {index + 1}
+                          </span>
+                          <code className="text-secondary text-sm">{stat.code}</code>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-secondary text-sm">{stat.visits} visites</p>
+                          <p className="text-accent text-xs">{stat.conversions} ventes</p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <TrendingUp className="w-5 h-5 text-accent" />
+                <h2 className="font-bold text-secondary">Activité récente</h2>
+              </div>
+              {data.recentEvents.length === 0 ? (
+                <p className="text-secondary/50 text-center py-8">Aucune activité récente</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-80 overflow-y-auto">
+                  {data.recentEvents.map((event, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`w-2 h-2 rounded-full ${
+                          event.event_type === "purchase" ? "bg-green-400" :
+                          event.event_type === "add_to_cart" ? "bg-accent" :
+                          event.event_type === "product_view" ? "bg-blue-400" :
+                          "bg-secondary/30"
+                        }`} />
+                        <span className="text-sm text-secondary capitalize">
+                          {event.event_type.replace("_", " ")}
+                        </span>
+                        {event.traffic_source === 'affiliate' && (
+                          <span className="text-xs px-1.5 py-0.5 bg-accent/20 text-accent rounded">ref</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-secondary/50">
+                        {new Date(event.created_at).toLocaleTimeString("fr-FR", { 
+                          hour: "2-digit", 
+                          minute: "2-digit" 
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         ) : null}

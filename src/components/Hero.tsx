@@ -68,7 +68,7 @@ const Hero = () => {
         <nav className="hidden lg:flex items-center gap-6 text-sm text-secondary/80">
           <button onClick={() => scrollToSection("bestsellers")} className="hover:text-accent transition-colors">Bestsellers</button>
           <button onClick={() => scrollToSection("categories")} className="hover:text-accent transition-colors">Catégories</button>
-          <button onClick={() => scrollToSection("qualite")} className="hover:text-accent transition-colors">Qualité</button>
+          <Link to="/affiliate" className="hover:text-accent transition-colors">Affiliation</Link>
           <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
           <Link to="/about" className="hover:text-accent transition-colors">Histoire</Link>
           <Link to="/auth" className="hover:text-accent transition-colors">Connexion</Link>
@@ -114,9 +114,9 @@ const Hero = () => {
             <button onClick={() => scrollToSection("categories")} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
               Catégories
             </button>
-            <button onClick={() => scrollToSection("qualite")} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
-              Qualité
-            </button>
+            <Link to="/affiliate" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium text-secondary/70 hover:text-accent transition-colors">
+              Affiliation
+            </Link>
             <div className="w-16 h-px bg-secondary/20 my-2" />
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-medium text-secondary hover:text-accent transition-colors">
               Shop
