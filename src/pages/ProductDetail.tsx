@@ -4,6 +4,8 @@ import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLe
 import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { getProductBySlug, products } from "@/data/products";
@@ -20,6 +22,7 @@ const ProductDetail = () => {
   const [isAdded, setIsAdded] = useState(false);
   
   const { addItem, getTotalItems, toggleCart } = useCart();
+  const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -101,6 +104,17 @@ const ProductDetail = () => {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link 
+            to="/favorites"
+            className="relative w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+          >
+            <Heart className="w-4 h-4" />
+            {getFavoritesCount() > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-primary text-xs font-bold rounded-full flex items-center justify-center">
+                {getFavoritesCount()}
+              </span>
+            )}
+          </Link>
           <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-10 h-10 rounded-full border border-secondary/20 items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
             <Instagram className="w-4 h-4" />
           </a>
@@ -147,9 +161,12 @@ const ProductDetail = () => {
                 </button>
 
                 {/* Wishlist */}
-                <button className="absolute top-3 sm:top-4 right-3 sm:right-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary hover:bg-accent transition-all shadow-elegant">
-                  <Heart className="w-5 h-5" />
-                </button>
+                <FavoriteButton
+                  isFavorite={isFavorite(product.id)}
+                  onToggle={() => toggleFavorite(product.id)}
+                  size="lg"
+                  className="absolute top-3 sm:top-4 right-3 sm:right-4 shadow-elegant"
+                />
 
                 {product.tag && (
                   <div className="absolute top-3 sm:top-4 left-3 sm:left-4 px-4 py-2 bg-accent text-primary rounded-full text-xs sm:text-sm font-bold shadow-gold">
