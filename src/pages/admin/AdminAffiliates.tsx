@@ -136,7 +136,7 @@ export default function AdminAffiliates() {
     const matchesSearch = 
       affiliate.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       affiliate.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      affiliate.affiliate_code.toLowerCase().includes(searchQuery.toLowerCase());
+      (affiliate.affiliate_code || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || affiliate.status === statusFilter;
     
@@ -252,17 +252,19 @@ export default function AdminAffiliates() {
                           </span>
                         </div>
                         <p className="text-secondary/60 text-sm">{affiliate.email}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <code className="px-2 py-1 bg-accent/20 text-accent text-sm rounded font-mono">
-                            {affiliate.affiliate_code}
-                          </code>
-                          <button 
-                            onClick={() => copyAffiliateLink(affiliate.affiliate_code)}
-                            className="p-1.5 text-secondary/40 hover:text-accent transition-colors"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {affiliate.affiliate_code && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <code className="px-2 py-1 bg-accent/20 text-accent text-sm rounded font-mono">
+                              {affiliate.affiliate_code}
+                            </code>
+                            <button 
+                              onClick={() => copyAffiliateLink(affiliate.affiliate_code)}
+                              className="p-1.5 text-secondary/40 hover:text-accent transition-colors"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {affiliate.status === 'approved' && (

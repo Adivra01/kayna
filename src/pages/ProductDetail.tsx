@@ -5,6 +5,7 @@ import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useTracking } from "@/hooks/useTracking";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
@@ -12,6 +13,7 @@ import { getProductBySlug, products } from "@/data/products";
 import { toast } from "sonner";
 
 const ProductDetail = () => {
+  const { trackProductView, trackAddToCart } = useTracking();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const product = getProductBySlug(slug || "");
@@ -34,6 +36,9 @@ const ProductDetail = () => {
     }
 
     window.scrollTo(0, 0);
+    
+    // Track product view
+    trackProductView(product.id);
 
     const ctx = gsap.context(() => {
       gsap.fromTo(imageRef.current,
@@ -51,7 +56,7 @@ const ProductDetail = () => {
     });
 
     return () => ctx.revert();
-  }, [product, navigate, slug]);
+  }, [product, navigate, slug, trackProductView]);
 
   if (!product) return null;
 
@@ -60,6 +65,9 @@ const ProductDetail = () => {
       toast.error("Sélectionne une taille");
       return;
     }
+    
+    // Track add to cart
+    trackAddToCart(product.id);
     
     for (let i = 0; i < quantity; i++) {
       addItem({

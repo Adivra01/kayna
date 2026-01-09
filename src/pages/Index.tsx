@@ -8,8 +8,10 @@ import TestimonialSection from "@/components/TestimonialSection";
 import CollectionSection from "@/components/CollectionSection";
 import BrandPromiseSection from "@/components/BrandPromiseSection";
 import Footer from "@/components/Footer";
+import { usePageTracking } from "@/hooks/useTracking";
 
 const Index = () => {
+  usePageTracking();
   return (
     <div className="overflow-x-hidden">
       <Hero />

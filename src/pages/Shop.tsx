@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useTracking, usePageTracking } from "@/hooks/useTracking";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
@@ -23,6 +24,7 @@ const categories = [
 ];
 
 const Shop = () => {
+  usePageTracking();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const { addItem, getTotalItems, toggleCart } = useCart();

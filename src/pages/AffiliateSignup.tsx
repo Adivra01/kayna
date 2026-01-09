@@ -88,7 +88,6 @@ export default function AffiliateSignup() {
       full_name: formData.full_name,
       email: formData.email,
       phone: formData.phone || null,
-      affiliate_code: generateAffiliateCode(),
       status: 'pending',
       commission_rate: 15,
     });
