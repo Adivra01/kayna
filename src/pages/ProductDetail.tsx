@@ -10,7 +10,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { getProductBySlug, products } from "@/data/products";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 const ProductDetail = () => {
   const { trackProductView, trackAddToCart } = useTracking();
@@ -62,7 +62,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error("Sélectionne une taille");
+      showToast.error("Sélectionne une taille");
       return;
     }
     
@@ -81,7 +81,7 @@ const ProductDetail = () => {
     }
     
     setIsAdded(true);
-    toast.success("Ajouté au panier !");
+    showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize}` });
     
     setTimeout(() => setIsAdded(false), 2000);
   };

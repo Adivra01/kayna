@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showToast } from '@/lib/toast';
 
 export interface Favorite {
   id: string;
@@ -57,7 +57,7 @@ export function useFavorites() {
 
   const toggleFavorite = async (productId: string): Promise<boolean> => {
     if (!userId) {
-      toast.error('Connecte-toi pour ajouter aux favoris');
+      showToast.error('Connecte-toi pour ajouter aux favoris');
       return false;
     }
 
@@ -70,11 +70,12 @@ export function useFavorites() {
         .eq('id', existing.id);
 
       if (error) {
-        toast.error('Erreur lors de la suppression');
+        showToast.error('Erreur lors de la suppression');
         return true;
       }
 
       setFavorites(prev => prev.filter(f => f.id !== existing.id));
+      showToast.favorite('Retiré des favoris');
       return false;
     } else {
       const { data, error } = await (supabase as any)
@@ -84,11 +85,12 @@ export function useFavorites() {
         .single();
 
       if (error) {
-        toast.error('Erreur lors de l\'ajout');
+        showToast.error('Erreur lors de l\'ajout');
         return false;
       }
 
       setFavorites(prev => [...prev, data as Favorite]);
+      showToast.favorite('Ajouté aux favoris !', { description: 'Tu peux retrouver tes favoris dans ton espace' });
       return true;
     }
   };

@@ -11,7 +11,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { products, Product } from "@/data/products";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,7 +20,6 @@ const categories = [
   { id: "tshirts", label: "T-Shirts" },
   { id: "hoodies", label: "Hoodies" },
   { id: "sweaters", label: "Sweaters" },
-  { id: "jackets", label: "Jackets" },
 ];
 
 const Shop = () => {
@@ -64,7 +63,7 @@ const Shop = () => {
       image: product.images[0],
       category: product.category,
     });
-    toast.success(`${product.title} ajouté au panier`);
+    showToast.cart("Ajouté au panier !", { description: product.title });
   };
 
   return (
