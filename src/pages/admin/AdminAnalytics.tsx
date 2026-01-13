@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -14,9 +14,21 @@ import {
   Tablet,
   Globe,
   Link2,
-  Filter
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
 
 interface AnalyticsData {
   totalVisitors: number;
@@ -35,6 +47,7 @@ interface AnalyticsData {
   conversionRate: number;
   affiliateConversionRate: number;
   directConversionRate: number;
+  dailyStats: { date: string; visitors: number; pageViews: number; purchases: number }[];
 }
 
 export default function AdminAnalytics() {
@@ -42,7 +55,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'affiliate' | 'direct'>('all');
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('all');
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('week');
 
   const fetchAnalytics = async () => {
     try {
@@ -85,6 +98,28 @@ export default function AdminAnalytics() {
       const uniqueVisitors = new Set(filteredEvents.map((e: any) => e.visitor_id));
       const todayEvents = filteredEvents.filter((e: any) => new Date(e.created_at).toDateString() === today);
       const todayVisitors = new Set(todayEvents.map((e: any) => e.visitor_id));
+
+      // Daily stats for charts
+      const dailyMap: Record<string, { visitors: Set<string>; pageViews: number; purchases: number }> = {};
+      filteredEvents.forEach((e: any) => {
+        const dateKey = new Date(e.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+        if (!dailyMap[dateKey]) {
+          dailyMap[dateKey] = { visitors: new Set(), pageViews: 0, purchases: 0 };
+        }
+        if (e.visitor_id) dailyMap[dateKey].visitors.add(e.visitor_id);
+        if (e.event_type === 'page_view') dailyMap[dateKey].pageViews++;
+        if (e.event_type === 'purchase') dailyMap[dateKey].purchases++;
+      });
+
+      const dailyStats = Object.entries(dailyMap)
+        .map(([date, stats]) => ({
+          date,
+          visitors: stats.visitors.size,
+          pageViews: stats.pageViews,
+          purchases: stats.purchases,
+        }))
+        .reverse()
+        .slice(-14); // Last 14 days
 
       // Country stats
       const countryCounts: Record<string, number> = {};
@@ -184,9 +219,10 @@ export default function AdminAnalytics() {
         conversionRate: uniqueVisitors.size > 0 ? (totalPurchases / uniqueVisitors.size) * 100 : 0,
         affiliateConversionRate: affiliateVisits > 0 ? (affiliatePurchases / affiliateVisits) * 100 : 0,
         directConversionRate: directVisits > 0 ? (directPurchases / directVisits) * 100 : 0,
+        dailyStats,
       });
     } catch (error: any) {
-      toast.error("Erreur lors du chargement des analytiques");
+      showToast.error("Erreur lors du chargement des analytiques");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -233,7 +269,7 @@ export default function AdminAnalytics() {
     a.download = `kayna-analytics-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     
-    toast.success("Export téléchargé");
+    showToast.success("Export téléchargé");
   };
 
   const StatCard = ({ 
@@ -273,6 +309,23 @@ export default function AdminAnalytics() {
       case 'tablet': return Tablet;
       default: return Monitor;
     }
+  };
+
+  // Custom tooltip for charts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-primary border border-accent/20 rounded-lg px-4 py-3 shadow-lg">
+          <p className="text-secondary text-sm font-medium mb-1">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-xs" style={{ color: entry.color }}>
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -340,6 +393,94 @@ export default function AdminAnalytics() {
               <StatCard icon={ShoppingCart} label="Ajouts panier" value={data.totalAddToCart} />
               <StatCard icon={TrendingUp} label="Achats" value={data.totalPurchases} />
               <StatCard icon={TrendingUp} label="Conversion" value={data.conversionRate.toFixed(1)} suffix="%" />
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid lg:grid-cols-2 gap-6 mb-8">
+              {/* Visitors & Page Views Line Chart */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <h2 className="font-bold text-secondary mb-6 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-accent" />
+                  Tendance des visites
+                </h2>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.dailyStats}>
+                      <defs>
+                        <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(40, 45%, 60%)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(40, 45%, 60%)" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsla(60, 20%, 96%, 0.1)" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="hsla(60, 20%, 96%, 0.5)" 
+                        fontSize={11}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        stroke="hsla(60, 20%, 96%, 0.5)" 
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="visitors"
+                        name="Visiteurs"
+                        stroke="hsl(40, 45%, 60%)"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorVisitors)"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="pageViews"
+                        name="Pages vues"
+                        stroke="hsl(60, 20%, 70%)"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Sales Bar Chart */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <h2 className="font-bold text-secondary mb-6 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-accent" />
+                  Ventes par jour
+                </h2>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.dailyStats}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsla(60, 20%, 96%, 0.1)" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="hsla(60, 20%, 96%, 0.5)" 
+                        fontSize={11}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        stroke="hsla(60, 20%, 96%, 0.5)" 
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar
+                        dataKey="purchases"
+                        name="Ventes"
+                        fill="hsl(40, 45%, 60%)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
             {/* Conversion Comparison */}
