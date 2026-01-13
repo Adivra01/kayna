@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCart } from "./useCart";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 const CART_TIMER_KEY = "kayna-cart-timer";
 
@@ -73,9 +73,8 @@ export function useCartCountdown() {
   const handleTimeout = useCallback(() => {
     localStorage.removeItem(CART_TIMER_KEY);
     clearCart();
-    toast.error("⏰ Temps écoulé ! Votre panier a été réinitialisé.", {
-      duration: 5000,
-      description: "Ajoutez vos articles à nouveau pour continuer vos achats.",
+    showToast.error("⏰ Temps écoulé !", { 
+      description: "Votre panier a été réinitialisé. Ajoutez vos articles à nouveau.",
     });
   }, [clearCart]);
 
