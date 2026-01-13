@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Bell, Mail, Phone, MapPin, User, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 import gsap from "gsap";
 
 interface SiteSettings {
   lock_message: string | null;
+}
+
+interface AdminSettings {
   lock_password: string | null;
 }
 
 export default function LockedSite() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [adminSettings, setAdminSettings] = useState<AdminSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -42,15 +46,28 @@ export default function LockedSite() {
   }, []);
 
   const fetchSettings = async () => {
-    const { data, error } = await supabase
+    // Fetch site settings (public)
+    const { data: siteData } = await supabase
       .from("site_settings")
-      .select("lock_message, lock_password")
+      .select("lock_message")
       .limit(1)
       .maybeSingle();
 
-    if (!error && data) {
-      setSettings(data);
+    if (siteData) {
+      setSettings(siteData);
     }
+    
+    // Fetch admin settings (check if password exists - admins only can see actual value)
+    const { data: adminData } = await (supabase as any)
+      .from("admin_settings")
+      .select("lock_password")
+      .limit(1)
+      .maybeSingle();
+
+    if (adminData) {
+      setAdminSettings(adminData);
+    }
+    
     setLoading(false);
   };
 
@@ -58,7 +75,7 @@ export default function LockedSite() {
     e.preventDefault();
     
     if (!email.trim()) {
-      toast.error("L'email est requis");
+      showToast.error("L'email est requis");
       return;
     }
 
@@ -73,9 +90,9 @@ export default function LockedSite() {
 
     if (error) {
       if (error.code === "23505") {
-        toast.error("Cet email est déjà inscrit");
+        showToast.error("Cet email est déjà inscrit");
       } else {
-        toast.error("Une erreur est survenue");
+        showToast.error("Une erreur est survenue");
       }
     } else {
       setSubmitted(true);
@@ -91,7 +108,7 @@ export default function LockedSite() {
           );
         }
       });
-      toast.success("Inscription réussie !");
+      showToast.success("Inscription réussie !", { description: "Vous serez notifié dès la prochaine ouverture" });
     }
     setSubmitting(false);
   };
@@ -99,7 +116,7 @@ export default function LockedSite() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password === settings?.lock_password) {
+    if (password === adminSettings?.lock_password) {
       // Unlock animation
       gsap.to(".lock-container", {
         opacity: 0,
@@ -110,7 +127,7 @@ export default function LockedSite() {
         }
       });
     } else {
-      toast.error("Mot de passe incorrect");
+      showToast.error("Mot de passe incorrect");
       // Shake animation for wrong password
       gsap.fromTo(".password-input", 
         { x: 0 },
@@ -233,7 +250,7 @@ export default function LockedSite() {
               </button>
             </form>
 
-            {settings?.lock_password && (
+            {adminSettings?.lock_password && (
               <div className="mt-6 pt-6 border-t border-secondary/10">
                 {!showPasswordInput ? (
                   <button
