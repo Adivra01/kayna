@@ -38,6 +38,27 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_settings: {
+        Row: {
+          created_at: string
+          id: string
+          lock_password: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lock_password?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lock_password?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliate_visits: {
         Row: {
           affiliate_id: string
@@ -317,7 +338,6 @@ export type Database = {
           free_shipping_threshold: number | null
           id: string
           lock_message: string | null
-          lock_password: string | null
           site_status: Database["public"]["Enums"]["site_status"]
           updated_at: string
         }
@@ -329,7 +349,6 @@ export type Database = {
           free_shipping_threshold?: number | null
           id?: string
           lock_message?: string | null
-          lock_password?: string | null
           site_status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
         }
@@ -341,7 +360,6 @@ export type Database = {
           free_shipping_threshold?: number | null
           id?: string
           lock_message?: string | null
-          lock_password?: string | null
           site_status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
         }

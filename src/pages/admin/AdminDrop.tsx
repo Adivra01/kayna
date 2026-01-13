@@ -11,17 +11,21 @@ import {
   Download,
   AlertTriangle
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 interface SiteSettings {
   id: string;
   site_status: "open" | "locked" | "maintenance";
-  lock_password: string | null;
   lock_message: string | null;
   drop_end_time: string | null;
   drop_duration_hours: number;
   free_shipping_threshold: number;
   cart_timeout_minutes: number;
+}
+
+interface AdminSettings {
+  id: string;
+  lock_password: string | null;
 }
 
 interface Subscriber {
@@ -34,6 +38,7 @@ interface Subscriber {
 
 export default function AdminDrop() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [adminSettings, setAdminSettings] = useState<AdminSettings | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +51,7 @@ export default function AdminDrop() {
 
   useEffect(() => {
     fetchSettings();
+    fetchAdminSettings();
     fetchSubscribers();
   }, []);
 
@@ -87,17 +93,29 @@ export default function AdminDrop() {
       .maybeSingle();
 
     if (error) {
-      toast.error("Erreur lors du chargement des paramètres");
+      showToast.error("Erreur lors du chargement des paramètres");
       return;
     }
 
     if (data) {
       setSettings(data as SiteSettings);
       setDropDuration(data.drop_duration_hours || 24);
-      setLockPassword(data.lock_password || "");
       setLockMessage(data.lock_message || "Le site est actuellement fermé. Inscrivez-vous pour être notifié de la prochaine ouverture.");
     }
     setLoading(false);
+  };
+
+  const fetchAdminSettings = async () => {
+    const { data } = await (supabase as any)
+      .from("admin_settings")
+      .select("*")
+      .limit(1)
+      .maybeSingle();
+
+    if (data) {
+      setAdminSettings(data as AdminSettings);
+      setLockPassword(data.lock_password || "");
+    }
   };
 
   const fetchSubscribers = async () => {
@@ -107,7 +125,7 @@ export default function AdminDrop() {
       .order("subscribed_at", { ascending: false });
 
     if (error) {
-      toast.error("Erreur lors du chargement des inscrits");
+      showToast.error("Erreur lors du chargement des inscrits");
       return;
     }
 
@@ -131,9 +149,9 @@ export default function AdminDrop() {
       .eq("id", settings.id);
 
     if (error) {
-      toast.error("Erreur lors du lancement du drop");
+      showToast.error("Erreur lors du lancement du drop");
     } else {
-      toast.success(`Drop lancé ! Le site se verrouillera dans ${dropDuration}h`);
+      showToast.success(`Drop lancé !`, { description: `Le site se verrouillera dans ${dropDuration}h` });
       fetchSettings();
     }
     setSaving(false);
@@ -151,9 +169,9 @@ export default function AdminDrop() {
       .eq("id", settings.id);
 
     if (error) {
-      toast.error("Erreur lors de l'arrêt du drop");
+      showToast.error("Erreur lors de l'arrêt du drop");
     } else {
-      toast.success("Drop arrêté");
+      showToast.success("Drop arrêté");
       fetchSettings();
     }
     setSaving(false);
@@ -163,20 +181,28 @@ export default function AdminDrop() {
     if (!settings) return;
     setSaving(true);
 
-    const { error } = await supabase
+    // Update site settings
+    const { error: settingsError } = await supabase
       .from("site_settings")
       .update({
         site_status: "locked",
         drop_end_time: null,
-        lock_password: lockPassword || null,
         lock_message: lockMessage,
       })
       .eq("id", settings.id);
 
-    if (error) {
-      toast.error("Erreur lors du verrouillage");
+    // Update admin settings (password)
+    if (adminSettings && lockPassword) {
+      await (supabase as any)
+        .from("admin_settings")
+        .update({ lock_password: lockPassword || null })
+        .eq("id", adminSettings.id);
+    }
+
+    if (settingsError) {
+      showToast.error("Erreur lors du verrouillage");
     } else {
-      toast.success("Site verrouillé");
+      showToast.success("Site verrouillé");
       fetchSettings();
     }
     setSaving(false);
@@ -194,9 +220,9 @@ export default function AdminDrop() {
       .eq("id", settings.id);
 
     if (error) {
-      toast.error("Erreur lors du déverrouillage");
+      showToast.error("Erreur lors du déverrouillage");
     } else {
-      toast.success("Site déverrouillé");
+      showToast.success("Site déverrouillé");
       fetchSettings();
     }
     setSaving(false);
@@ -206,20 +232,29 @@ export default function AdminDrop() {
     if (!settings) return;
     setSaving(true);
 
-    const { error } = await supabase
+    // Update site settings
+    const { error: settingsError } = await supabase
       .from("site_settings")
       .update({
         drop_duration_hours: dropDuration,
-        lock_password: lockPassword || null,
         lock_message: lockMessage,
       })
       .eq("id", settings.id);
 
-    if (error) {
-      toast.error("Erreur lors de la sauvegarde");
+    // Update admin settings (password)
+    if (adminSettings) {
+      await (supabase as any)
+        .from("admin_settings")
+        .update({ lock_password: lockPassword || null })
+        .eq("id", adminSettings.id);
+    }
+
+    if (settingsError) {
+      showToast.error("Erreur lors de la sauvegarde");
     } else {
-      toast.success("Paramètres sauvegardés");
+      showToast.success("Paramètres sauvegardés");
       fetchSettings();
+      fetchAdminSettings();
     }
     setSaving(false);
   };
@@ -242,7 +277,7 @@ export default function AdminDrop() {
     a.download = `kayna-subscribers-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     
-    toast.success("Export téléchargé");
+    showToast.success("Export téléchargé");
   };
 
   if (loading) {
