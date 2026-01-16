@@ -17,7 +17,7 @@ const signupSchema = z.object({
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
-const Auth = () => {
+const ClientAuth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,34 +28,39 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        checkRoleAndRedirect(session.user.id);
-      }
-    });
+        // Check if user is an affiliate - if so, redirect to affiliate login
+        const { data: affiliate } = await supabase
+          .from("affiliates")
+          .select("id, status")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        
+        if (affiliate) {
+          await supabase.auth.signOut();
+          toast.error("Ce compte est un compte affilié. Utilisez la connexion affilié.");
+          navigate("/affiliate/login");
+          return;
+        }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        checkRoleAndRedirect(session.user.id);
+        // Check if admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        
+        if (roleData?.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/shop");
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  const checkRoleAndRedirect = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    
-    if (data?.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/shop");
-    }
-  };
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,11 +83,25 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        // Check if this email belongs to an affiliate
+        const { data: affiliateCheck } = await supabase
+          .from("affiliates")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (affiliateCheck) {
+          toast.error("Ce compte est un compte affilié. Utilisez la connexion affilié.");
+          navigate("/affiliate/login");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Connexion réussie !");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -93,9 +112,28 @@ const Auth = () => {
             },
           },
         });
-        if (error) throw error;
+        if (signUpError) throw signUpError;
+
+        // Create profile for the new client
+        if (authData.user) {
+          const { error: profileError } = await supabase.from("profiles").insert({
+            user_id: authData.user.id,
+            full_name: fullName,
+            email: email,
+            phone: phone,
+          });
+
+          if (profileError && !profileError.message.includes("duplicate")) {
+            console.error("Profile creation error:", profileError);
+          }
+        }
+
         toast.success("Compte créé ! Tu peux maintenant te connecter.");
         setIsLogin(true);
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        setPhone("");
       }
     } catch (error: any) {
       if (error.message.includes("already registered")) {
@@ -121,7 +159,7 @@ const Auth = () => {
         <div className="bg-secondary/5 border border-secondary/10 rounded-3xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold italic text-secondary mb-2">KAYNA</h1>
-            <p className="text-secondary/60">Connexion à ton espace</p>
+            <p className="text-secondary/60">Espace Client</p>
           </div>
 
           <div className="flex gap-2 p-1 bg-secondary/10 rounded-xl mb-8">
@@ -237,10 +275,17 @@ const Auth = () => {
               {isLogin ? "Créer un compte" : "Se connecter"}
             </button>
           </p>
+
+          <div className="mt-6 pt-6 border-t border-secondary/10 text-center">
+            <p className="text-secondary/40 text-sm mb-2">Tu es affilié ?</p>
+            <Link to="/affiliate/login" className="text-accent hover:underline text-sm font-medium">
+              Connexion Affilié →
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Auth;
+export default ClientAuth;

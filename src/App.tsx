@@ -8,11 +8,12 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
-import Auth from "./pages/Auth";
+import ClientAuth from "./pages/ClientAuth";
 import NotFound from "./pages/NotFound";
 import LockedSite from "./pages/LockedSite";
 import Favorites from "./pages/Favorites";
 import AffiliateSignup from "./pages/AffiliateSignup";
+import AffiliateLogin from "./pages/AffiliateLogin";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
@@ -24,6 +25,7 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminAffiliates from "./pages/admin/AdminAffiliates";
 import AdminDrop from "./pages/admin/AdminDrop";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminClients from "./pages/admin/AdminClients";
 
 const queryClient = new QueryClient();
 
@@ -54,15 +56,17 @@ function AppContent() {
         <Route path="/about" element={<About />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={<ClientAuth />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/affiliate" element={<AffiliateSignup />} />
+        <Route path="/affiliate/login" element={<AffiliateLogin />} />
         <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminAnalytics />} />
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/clients" element={<AdminClients />} />
         <Route path="/admin/affiliates" element={<AdminAffiliates />} />
         <Route path="/admin/drop" element={<AdminDrop />} />
         <Route path="/admin/settings" element={<AdminSettings />} />

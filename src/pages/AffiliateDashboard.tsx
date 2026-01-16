@@ -51,26 +51,44 @@ export default function AffiliateDashboard() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      navigate('/auth');
+      navigate('/affiliate/login');
       return;
     }
 
-    const { data: affiliateData, error } = await (supabase as any)
+    const { data: affiliateData, error } = await supabase
       .from('affiliates')
       .select('*')
       .eq('user_id', session.user.id)
-      .eq('status', 'approved')
       .maybeSingle();
 
-    if (error || !affiliateData) {
-      navigate('/affiliate');
+    if (error) {
+      console.error('Error fetching affiliate:', error);
+      navigate('/affiliate/login');
+      return;
+    }
+
+    if (!affiliateData) {
+      toast.error("Aucun compte affilié trouvé");
+      navigate('/affiliate/login');
+      return;
+    }
+
+    if (affiliateData.status === 'pending') {
+      toast.error("Compte en attente de validation");
+      navigate('/affiliate/login');
+      return;
+    }
+
+    if (affiliateData.status === 'rejected') {
+      toast.error("Demande d'affiliation refusée");
+      navigate('/affiliate/login');
       return;
     }
 
     setAffiliate(affiliateData as Affiliate);
 
     // Fetch withdrawals
-    const { data: withdrawalsData } = await (supabase as any)
+    const { data: withdrawalsData } = await supabase
       .from('withdrawal_requests')
       .select('*')
       .eq('affiliate_id', affiliateData.id)
@@ -139,19 +157,25 @@ export default function AffiliateDashboard() {
 
   const affiliateLink = `${window.location.origin}?ref=${affiliate.affiliate_code}`;
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/affiliate/login');
+  };
+
   return (
     <div className="min-h-screen bg-primary">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-primary/80 border-b border-secondary/10">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/60 hover:bg-accent hover:text-primary hover:border-accent transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
           <Link to="/" className="text-2xl font-bold italic text-secondary">KAYNA</Link>
+          <span className="px-3 py-1 bg-accent/20 text-accent text-xs font-medium rounded-full">Affilié</span>
         </div>
+        <button 
+          onClick={handleLogout}
+          className="px-4 py-2 text-secondary/60 hover:text-secondary border border-secondary/20 rounded-lg hover:bg-secondary/5 transition-all text-sm"
+        >
+          Déconnexion
+        </button>
       </header>
 
       <main className="pt-28 pb-20 px-6 lg:px-12">
