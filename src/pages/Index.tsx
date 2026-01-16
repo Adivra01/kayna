@@ -15,10 +15,10 @@ const Index = () => {
   return (
     <div className="overflow-x-hidden">
       <Hero />
+      <AboutSection />
       <MarqueeText />
       <ProductGrid />
       <CategorySection />
-      <AboutSection />
       <QualitySection />
       <TestimonialSection />
       <CollectionSection />
