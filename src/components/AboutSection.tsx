@@ -15,6 +15,7 @@ const AboutSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Initial reveal animations
       gsap.from(textRef.current, {
         y: 80,
         opacity: 0,
@@ -38,6 +39,44 @@ const AboutSection = () => {
         },
       });
 
+      // Looping subtle glow animation on the accent text
+      gsap.to(".about-accent-text", {
+        textShadow: "0 0 30px hsl(var(--accent) / 0.6), 0 0 60px hsl(var(--accent) / 0.3)",
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+      });
+
+      // Looping subtle pulse on the CTA button
+      gsap.to(".about-cta-button", {
+        boxShadow: "0 0 40px hsl(var(--accent) / 0.5), 0 10px 40px hsl(var(--accent) / 0.3)",
+        scale: 1.02,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut",
+      });
+
+      // Looping floating animation on images
+      gsap.to(image1Ref.current, {
+        y: -10,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+      });
+
+      gsap.to(image2Ref.current, {
+        y: 10,
+        duration: 2.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+        delay: 0.5,
+      });
+
+      // Parallax on scroll
       gsap.to(image1Ref.current, {
         yPercent: -15,
         scrollTrigger: {
@@ -83,14 +122,14 @@ const AboutSection = () => {
           <div ref={textRef} className="lg:col-span-4 space-y-6">
             <h2 className="text-[3rem] lg:text-[4rem] font-bold leading-[0.95] text-foreground">
               Le combat
-              <span className="block italic text-accent">silencieux</span>
+              <span className="about-accent-text block italic text-accent">silencieux</span>
             </h2>
             
             <p className="text-lg text-muted-foreground leading-relaxed">
               KAYNA, c'est l'armure de ceux qui se battent <span className="text-foreground font-medium">chaque jour</span> pour devenir meilleurs.
             </p>
             
-            <a href="/about" className="inline-flex px-8 py-4 rounded-full bg-accent text-primary font-bold hover:scale-105 transition-all items-center gap-3 shadow-gold hover:shadow-gold-glow">
+            <a href="/about" className="about-cta-button inline-flex px-8 py-4 rounded-full bg-accent text-primary font-bold hover:scale-105 transition-all items-center gap-3 shadow-gold">
               <span>Notre histoire</span>
               <ArrowRight className="w-5 h-5" />
             </a>
