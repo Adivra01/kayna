@@ -13,7 +13,20 @@ import Footer from "@/components/Footer";
 import { products, Product } from "@/data/products";
 import { showToast } from "@/lib/toast";
 
+// Import rotating videos
+import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
+import hoodieVideo from "@/assets/videos/hoodie-rotate.mp4";
+import sweaterVideo from "@/assets/videos/sweater-rotate.mp4";
+
 gsap.registerPlugin(ScrollTrigger);
+
+// Map category to video
+const categoryVideoMap: Record<string, string> = {
+  tshirts: tshirtVideo,
+  hoodies: hoodieVideo,
+  sweaters: sweaterVideo,
+  jackets: hoodieVideo, // fallback to hoodie for jackets
+};
 
 const categories = [
   { id: "all", label: "Tous" },
@@ -171,51 +184,78 @@ const Shop = () => {
 
           {/* Products Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {filteredProducts.map((product, index) => (
-              <Link
-                key={product.id}
-                to={`/product/${product.slug}`}
-                ref={(el) => (cardsRef.current[index] = el)}
-                className="group"
-              >
-                <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500">
-                  <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/30 to-transparent opacity-50 group-hover:opacity-80 transition-opacity" />
-                  
-                  {/* Quick Actions */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                    <FavoriteButton
-                      isFavorite={isFavorite(product.id)}
-                      onToggle={() => toggleFavorite(product.id)}
-                      size="md"
+            {filteredProducts.map((product, index) => {
+              const productVideo = categoryVideoMap[product.category];
+              
+              return (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.slug}`}
+                  ref={(el) => (cardsRef.current[index] = el)}
+                  className="group perspective-1000"
+                >
+                  <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 transform-gpu group-hover:scale-[1.02]">
+                    {/* Static Image - shown by default */}
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
                     />
-                    <button 
-                      onClick={(e) => handleAddToCart(product, e)}
-                      className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-primary hover:scale-110 transition-all shadow-gold"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="text-secondary text-lg font-bold mb-1 group-hover:translate-y-[-4px] transition-transform">{product.title}</h3>
-                    <span className="text-accent font-bold text-lg">{product.price.toLocaleString()} FCFA</span>
-                  </div>
-
-                  {product.tag && (
-                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-accent text-primary rounded-full text-xs font-bold shadow-gold">
-                      {product.tag}
+                    
+                    {/* Rotating Video - shown on hover */}
+                    {productVideo && (
+                      <video
+                        src={productVideo}
+                        muted
+                        loop
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.pause();
+                          e.currentTarget.currentTime = 0;
+                        }}
+                      />
+                    )}
+                    
+                    {/* Premium gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                    
+                    {/* Shine effect on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))}
+                    
+                    {/* Quick Actions */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
+                      <FavoriteButton
+                        isFavorite={isFavorite(product.id)}
+                        onToggle={() => toggleFavorite(product.id)}
+                        size="md"
+                      />
+                      <button 
+                        onClick={(e) => handleAddToCart(product, e)}
+                        className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-primary hover:scale-110 transition-all shadow-gold backdrop-blur-sm"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                      <h3 className="text-secondary text-lg font-bold mb-1 drop-shadow-lg">{product.title}</h3>
+                      <span className="text-accent font-bold text-lg drop-shadow-md">{product.price.toLocaleString()} FCFA</span>
+                    </div>
+
+                    {product.tag && (
+                      <div className="absolute top-4 left-4 px-3 py-1.5 bg-accent text-primary rounded-full text-xs font-bold shadow-gold animate-pulse">
+                        {product.tag}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </main>
