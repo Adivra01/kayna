@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   ShoppingBag,
-  Users
+  Users,
+  UserCircle
 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ const navItems = [
   { title: "Analytique", url: "/admin", icon: BarChart3 },
   { title: "Produits", url: "/admin/products", icon: Package },
   { title: "Commandes", url: "/admin/orders", icon: ShoppingBag },
+  { title: "Clients", url: "/admin/clients", icon: UserCircle },
   { title: "Affiliés", url: "/admin/affiliates", icon: Users },
   { title: "Drop Time", url: "/admin/drop", icon: Timer },
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
