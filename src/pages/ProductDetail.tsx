@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw } from "lucide-react";
+import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw, ZoomIn } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
@@ -12,6 +12,11 @@ import Footer from "@/components/Footer";
 import { getProductBySlug, products } from "@/data/products";
 import { showToast } from "@/lib/toast";
 
+// Import videos for rotation effect
+import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
+import hoodieVideo from "@/assets/videos/hoodie-rotate.mp4";
+import sweaterVideo from "@/assets/videos/sweater-rotate.mp4";
+
 const ProductDetail = () => {
   const { trackProductView, trackAddToCart } = useTracking();
   const { slug } = useParams<{ slug: string }>();
@@ -19,15 +24,37 @@ const ProductDetail = () => {
   const product = getProductBySlug(slug || "");
   
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
   const { addItem, getTotalItems, toggleCart } = useCart();
   const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const mainImageRef = useRef<HTMLImageElement>(null);
+  const thumbnailsRef = useRef<HTMLDivElement>(null);
+
+  // Get video based on category
+  const getProductVideo = () => {
+    if (!product) return tshirtVideo;
+    if (product.category.toLowerCase().includes("hoodie")) return hoodieVideo;
+    if (product.category.toLowerCase().includes("sweater")) return sweaterVideo;
+    return tshirtVideo;
+  };
+
+  // Colors available
+  const colors = [
+    { name: "Noir", hex: "#0A0A0A" },
+    { name: "Blanc", hex: "#F5F5F0" },
+    { name: "Beige", hex: "#C9A86C" },
+  ];
 
   useEffect(() => {
     if (!product) {
@@ -36,27 +63,131 @@ const ProductDetail = () => {
     }
 
     window.scrollTo(0, 0);
+    setSelectedColor(colors[0].name);
     
     // Track product view
     trackProductView(product.id);
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(imageRef.current,
-        { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }
+      // Cinematic entrance for gallery
+      gsap.fromTo(galleryRef.current,
+        { opacity: 0, x: -60, rotateY: -15 },
+        { opacity: 1, x: 0, rotateY: 0, duration: 1.2, ease: "power3.out" }
       );
+      
       gsap.fromTo(contentRef.current,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.2 }
+        { opacity: 0, x: 60 },
+        { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.3 }
       );
+
+      // Thumbnails staggered entrance
+      gsap.fromTo(".thumbnail-item",
+        { opacity: 0, y: 30, scale: 0.8 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, delay: 0.5, ease: "back.out(1.5)" }
+      );
+
       gsap.fromTo(".feature-card",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.4 }
+        { opacity: 0, y: 20, rotateX: -20 },
+        { opacity: 1, y: 0, rotateX: 0, duration: 0.6, stagger: 0.1, delay: 0.6 }
       );
     });
 
     return () => ctx.revert();
   }, [product, navigate, slug, trackProductView]);
+
+  // Animate image change with 3D effect
+  useEffect(() => {
+    if (mainImageRef.current) {
+      gsap.fromTo(mainImageRef.current,
+        { opacity: 0, scale: 1.1, rotateY: 10 },
+        { opacity: 1, scale: 1, rotateY: 0, duration: 0.6, ease: "power2.out" }
+      );
+    }
+  }, [currentImageIndex]);
+
+  // Animate size/color change
+  const animateSizeChange = (size: string) => {
+    setSelectedSize(size);
+    
+    if (galleryRef.current) {
+      gsap.to(galleryRef.current, {
+        scale: 0.98,
+        rotateY: 3,
+        duration: 0.15,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(galleryRef.current, {
+            scale: 1,
+            rotateY: 0,
+            duration: 0.3,
+            ease: "elastic.out(1, 0.5)",
+          });
+        },
+      });
+    }
+  };
+
+  const animateColorChange = (color: string) => {
+    setSelectedColor(color);
+    
+    if (galleryRef.current) {
+      gsap.to(galleryRef.current, {
+        rotateY: 15,
+        scale: 0.95,
+        opacity: 0.8,
+        duration: 0.3,
+        ease: "power2.in",
+        onComplete: () => {
+          // Simulate color change - in real app would swap images
+          gsap.to(galleryRef.current, {
+            rotateY: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            ease: "power3.out",
+          });
+        },
+      });
+    }
+
+    // Flash effect
+    const flash = document.createElement("div");
+    flash.className = "fixed inset-0 bg-accent/10 pointer-events-none z-50";
+    document.body.appendChild(flash);
+    gsap.to(flash, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => flash.remove(),
+    });
+  };
+
+  // Mouse move for 3D tilt effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!galleryRef.current || isZoomed) return;
+    
+    const rect = galleryRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    
+    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+
+    gsap.to(galleryRef.current, {
+      rotateY: x * 10,
+      rotateX: -y * 10,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!galleryRef.current) return;
+    gsap.to(galleryRef.current, {
+      rotateY: 0,
+      rotateX: 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+  };
 
   if (!product) return null;
 
@@ -71,7 +202,7 @@ const ProductDetail = () => {
     
     for (let i = 0; i < quantity; i++) {
       addItem({
-        id: `${product.id}-${selectedSize}`,
+        id: `${product.id}-${selectedSize}-${selectedColor}`,
         title: product.title,
         price: product.price,
         image: product.images[0],
@@ -81,7 +212,13 @@ const ProductDetail = () => {
     }
     
     setIsAdded(true);
-    showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize}` });
+    showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize} — ${selectedColor}` });
+    
+    // Animate button
+    gsap.fromTo(".add-to-cart-btn",
+      { scale: 1 },
+      { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1 }
+    );
     
     setTimeout(() => setIsAdded(false), 2000);
   };
@@ -101,6 +238,28 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-primary">
       <CartDrawer />
+      
+      {/* Zoom Modal */}
+      {isZoomed && (
+        <div 
+          className="fixed inset-0 z-[100] bg-primary/95 backdrop-blur-xl flex items-center justify-center p-8 cursor-zoom-out"
+          onClick={() => setIsZoomed(false)}
+        >
+          <div className="relative max-w-6xl max-h-full animate-scale-in">
+            <img
+              src={product.images[currentImageIndex]}
+              alt={product.title}
+              className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+            />
+            <button 
+              className="absolute top-4 right-4 w-12 h-12 rounded-full bg-secondary/10 backdrop-blur-md flex items-center justify-center text-secondary hover:bg-accent hover:text-primary transition-all"
+              onClick={() => setIsZoomed(false)}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 flex items-center justify-between backdrop-blur-md bg-primary/80 border-b border-secondary/10">
@@ -144,28 +303,79 @@ const ProductDetail = () => {
       <main className="pt-20 sm:pt-24 pb-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-6 lg:gap-16">
-            {/* Left - Gallery */}
-            <div ref={imageRef} className="space-y-3 sm:space-y-4">
-              {/* Main Image */}
-              <div className="relative aspect-square sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-secondary/5 group">
-                <img
-                  src={product.images[currentImageIndex]}
-                  alt={product.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            {/* Left - Interactive 3D Gallery */}
+            <div 
+              ref={galleryRef} 
+              className="space-y-3 sm:space-y-4"
+              style={{ perspective: "1500px", transformStyle: "preserve-3d" }}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+            >
+              {/* Main Image with Video Toggle */}
+              <div 
+                className="relative aspect-square sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-secondary/5 group cursor-zoom-in"
+                data-cursor="product"
+                onClick={() => !showVideo && setIsZoomed(true)}
+              >
+                {showVideo ? (
+                  <video
+                    src={getProductVideo()}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    ref={mainImageRef}
+                    src={product.images[currentImageIndex]}
+                    alt={product.title}
+                    className="w-full h-full object-cover transition-transform duration-700"
+                  />
+                )}
+                
+                {/* 3D Shine effect */}
+                <div 
+                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(201, 168, 108, 0.15) 0%, transparent 50%)`,
+                  }}
                 />
                 
                 {/* Navigation Arrows */}
                 <button 
-                  onClick={prevImage}
-                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant"
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button 
-                  onClick={nextImage}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant"
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
                 >
                   <ChevronRight className="w-5 h-5" />
+                </button>
+
+                {/* Video Toggle */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowVideo(!showVideo); }}
+                  className={`absolute bottom-4 left-4 px-4 py-2 rounded-full backdrop-blur-md flex items-center gap-2 text-sm font-medium transition-all ${
+                    showVideo 
+                      ? "bg-accent text-primary" 
+                      : "bg-primary/60 text-secondary border border-secondary/20 hover:bg-accent hover:text-primary hover:border-accent"
+                  }`}
+                >
+                  <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                  {showVideo ? "Image" : "360°"}
+                </button>
+
+                {/* Zoom Icon */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setIsZoomed(true); }}
+                  className="absolute bottom-4 right-16 w-10 h-10 rounded-full bg-primary/60 backdrop-blur-md flex items-center justify-center text-secondary border border-secondary/20 opacity-0 group-hover:opacity-100 transition-all hover:bg-accent hover:text-primary hover:border-accent"
+                >
+                  <ZoomIn className="w-4 h-4" />
                 </button>
 
                 {/* Wishlist */}
@@ -188,19 +398,22 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Thumbnails - Hidden on mobile, swipe works */}
-              <div className="hidden sm:flex gap-3">
+              {/* Interactive Thumbnails */}
+              <div ref={thumbnailsRef} className="hidden sm:flex gap-3">
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`relative flex-1 aspect-square rounded-xl overflow-hidden transition-all ${
+                    className={`thumbnail-item relative flex-1 aspect-square rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
                       currentImageIndex === idx 
-                        ? "ring-2 ring-accent ring-offset-2 ring-offset-primary" 
-                        : "opacity-50 hover:opacity-100"
+                        ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold" 
+                        : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
+                    {currentImageIndex === idx && (
+                      <div className="absolute inset-0 bg-accent/10" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -237,7 +450,33 @@ const ProductDetail = () => {
                   {product.description}
                 </p>
 
-                {/* Size Selection */}
+                {/* Color Selection with 3D Animation */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-bold text-secondary">Couleur — <span className="text-accent">{selectedColor}</span></span>
+                  </div>
+                  <div className="flex gap-3">
+                    {colors.map((color) => (
+                      <button
+                        key={color.name}
+                        onClick={() => animateColorChange(color.name)}
+                        className={`relative w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 ${
+                          selectedColor === color.name
+                            ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold scale-110"
+                            : "hover:ring-2 hover:ring-secondary/30 hover:ring-offset-2 hover:ring-offset-primary"
+                        }`}
+                        style={{ backgroundColor: color.hex }}
+                        title={color.name}
+                      >
+                        {selectedColor === color.name && (
+                          <Check className={`absolute inset-0 m-auto w-5 h-5 ${color.hex === "#0A0A0A" ? "text-secondary" : "text-primary"}`} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Size Selection with 3D Animation */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="font-bold text-secondary">Taille</span>
@@ -247,10 +486,10 @@ const ProductDetail = () => {
                     {product.sizes.map((size) => (
                       <button
                         key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold transition-all ${
+                        onClick={() => animateSizeChange(size)}
+                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold transition-all duration-300 hover:scale-105 ${
                           selectedSize === size
-                            ? "bg-accent text-primary shadow-gold scale-105"
+                            ? "bg-accent text-primary shadow-gold scale-110"
                             : "bg-secondary/10 text-secondary hover:bg-secondary/20"
                         }`}
                       >
@@ -282,11 +521,12 @@ const ProductDetail = () => {
                   {/* Add to Cart Button */}
                   <button
                     onClick={handleAddToCart}
-                    className={`flex-1 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
+                    className={`add-to-cart-btn flex-1 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
                       isAdded 
                         ? "bg-green-500 text-white" 
                         : "bg-accent text-primary shadow-gold hover:shadow-gold-glow hover:scale-[1.02] active:scale-100"
                     }`}
+                    data-cursor="action"
                   >
                     {isAdded ? (
                       <>
@@ -304,17 +544,17 @@ const ProductDetail = () => {
 
                 {/* Features */}
                 <div className="grid grid-cols-3 gap-3 pt-4">
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl">
+                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
                     <Truck className="w-5 h-5 text-accent mb-2" />
                     <span className="text-xs sm:text-sm text-secondary font-medium">Livraison gratuite</span>
                     <span className="text-[10px] sm:text-xs text-secondary/50">dès 75€</span>
                   </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl">
+                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
                     <RotateCcw className="w-5 h-5 text-accent mb-2" />
                     <span className="text-xs sm:text-sm text-secondary font-medium">Retours gratuits</span>
                     <span className="text-[10px] sm:text-xs text-secondary/50">sous 30 jours</span>
                   </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl">
+                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
                     <Shield className="w-5 h-5 text-accent mb-2" />
                     <span className="text-xs sm:text-sm text-secondary font-medium">Paiement sécurisé</span>
                     <span className="text-[10px] sm:text-xs text-secondary/50">100% safe</span>
@@ -349,8 +589,9 @@ const ProductDetail = () => {
                     key={relProduct.id}
                     to={`/product/${relProduct.slug}`}
                     className="group"
+                    data-cursor="product"
                   >
-                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-secondary/5 aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500">
+                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-secondary/5 aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 group-hover:scale-[1.02]">
                       <img
                         src={relProduct.images[0]}
                         alt={relProduct.title}
