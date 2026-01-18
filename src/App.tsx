@@ -19,6 +19,7 @@ import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 import CustomCursor from "./components/CustomCursor";
 import PageTransition from "./components/PageTransition";
+import AudioControl from "./components/AudioControl";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -79,6 +80,7 @@ function AppContent() {
         </Routes>
       </PageTransition>
       <CartDrawer />
+      <AudioControl />
     </>
   );
 }
