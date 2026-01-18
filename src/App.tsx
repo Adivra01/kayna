@@ -18,6 +18,7 @@ import AffiliateDashboard from "./pages/AffiliateDashboard";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 import CustomCursor from "./components/CustomCursor";
+import PageTransition from "./components/PageTransition";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -52,29 +53,31 @@ function AppContent() {
   return (
     <>
       <DropCountdownBanner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/product/:slug" element={<ProductDetail />} />
-        <Route path="/auth" element={<ClientAuth />} />
-        <Route path="/favorites" element={<Favorites />} />
-        <Route path="/affiliate" element={<AffiliateSignup />} />
-        <Route path="/affiliate/login" element={<AffiliateLogin />} />
-        <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminAnalytics />} />
-        <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/orders" element={<AdminOrders />} />
-        <Route path="/admin/clients" element={<AdminClients />} />
-        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
-        <Route path="/admin/drop" element={<AdminDrop />} />
-        <Route path="/admin/settings" element={<AdminSettings />} />
-        
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <PageTransition>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/auth" element={<ClientAuth />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/affiliate" element={<AffiliateSignup />} />
+          <Route path="/affiliate/login" element={<AffiliateLogin />} />
+          <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminAnalytics />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/admin/clients" element={<AdminClients />} />
+          <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+          <Route path="/admin/drop" element={<AdminDrop />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </PageTransition>
       <CartDrawer />
     </>
   );
