@@ -5,52 +5,47 @@ import { useLocation } from 'react-router-dom';
 interface AudioTrack {
   id: string;
   name: string;
-  prompt: string;
-  duration: number;
+  url: string; // Static audio URL
   routes: string[];
 }
 
+// Using royalty-free ambient music URLs (placeholders - replace with actual hosted files)
 const AUDIO_TRACKS: AudioTrack[] = [
   {
     id: 'inner-certainty',
     name: 'Inner Certainty',
-    prompt: 'Minimalist ambient piano, very slow tempo 60-70 BPM, deep grave piano notes, warm dark atmospheric pad, subtle sub-bass, controlled silence between notes, introspective Drake/Damso instrumental vibe without vocals, luxury fashion brand background music, cinematic calm dominant mastery',
-    duration: 45,
+    url: 'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3', // Replace with actual ambient track
     routes: ['/'],
   },
   {
     id: 'silent-battle',
     name: 'Silent Battle',
-    prompt: 'Cinematic trap instrumental, muffled soft kick drums, dry sparse percussion, analog texture, constant subtle tension, no climax, inner battle lucidity mood, dark entrepreneur motivation without vocals, 75-80 BPM, minimal and sober',
-    duration: 45,
+    url: 'https://assets.mixkit.co/music/preview/mixkit-sleepy-cat-135.mp3', // Replace with actual ambient track
     routes: ['/shop', '/product'],
   },
   {
     id: 'discipline-mode',
     name: 'Discipline Mode',
-    prompt: 'Very discrete beat, repetitive hypnotic synth pattern, no dramatic moments, stable focus music, productive solitude vibe, nocturnal entrepreneur atmosphere, 70-75 BPM, ambient electronic minimal, routine effect loop',
-    duration: 45,
+    url: 'https://assets.mixkit.co/music/preview/mixkit-deep-meditation-109.mp3', // Replace with actual ambient track  
     routes: ['/formation', '/community', '/cercle'],
   },
   {
     id: 'ascension',
     name: 'Ascension',
-    prompt: 'Ethereal aerial strings, slow progression, ascending notes pattern, sense of space and elevation, discrete luxury achievement vibe, victoire silencieuse, 65-70 BPM, cinematic minimal, earned success feeling',
-    duration: 45,
+    url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3', // Replace with actual ambient track
     routes: ['/checkout', '/success', '/confirmation'],
   },
   {
     id: 'legacy',
     name: 'Legacy',
-    prompt: 'Ultra subtle african percussion, organic natural texture, breath sounds, natural reverb, spiritual modern timeless vibe, heritage transmission feeling, West Africa to world atmosphere, 60-65 BPM, ambient world music minimal',
-    duration: 45,
+    url: 'https://assets.mixkit.co/music/preview/mixkit-spirit-in-the-woods-139.mp3', // Replace with actual ambient track
     routes: ['/about', '/histoire', '/vision', '/brand'],
   },
 ];
 
 const STORAGE_KEY = 'kayna-audio-muted';
 const VOLUME_KEY = 'kayna-audio-volume';
-const DEFAULT_VOLUME = 0.15; // Very low volume for luxury feel
+const DEFAULT_VOLUME = 0.12; // Very low volume for luxury feel
 
 export const useAudioIdentity = () => {
   const location = useLocation();
@@ -64,7 +59,6 @@ export const useAudioIdentity = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
   const [hasInteracted, setHasInteracted] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -88,52 +82,6 @@ export const useAudioIdentity = () => {
     // Default to inner-certainty for unmatched routes
     return AUDIO_TRACKS[0];
   }, [location.pathname]);
-
-  // Generate music via edge function
-  const generateMusic = useCallback(async (track: AudioTrack): Promise<string | null> => {
-    if (audioCache[track.id]) {
-      return audioCache[track.id];
-    }
-
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-music`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            prompt: track.prompt,
-            duration: track.duration,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate music: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.audioContent) {
-        const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
-        setAudioCache(prev => ({ ...prev, [track.id]: audioUrl }));
-        return audioUrl;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error generating music:', error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [audioCache]);
 
   // Fade out current audio
   const fadeOut = useCallback((onComplete?: () => void) => {
@@ -194,9 +142,7 @@ export const useAudioIdentity = () => {
   const playTrack = useCallback(async (track: AudioTrack) => {
     if (!hasInteracted) return;
 
-    const audioUrl = await generateMusic(track);
-    
-    if (!audioUrl) return;
+    setIsLoading(true);
 
     fadeOut(() => {
       if (audioRef.current) {
@@ -204,19 +150,30 @@ export const useAudioIdentity = () => {
         audioRef.current.src = '';
       }
 
-      const audio = new Audio(audioUrl);
+      const audio = new Audio(track.url);
       audio.loop = true;
       audio.volume = 0;
+      audio.crossOrigin = 'anonymous';
       audioRef.current = audio;
       setCurrentTrackId(track.id);
 
-      if (!isMuted) {
-        audio.play().then(() => {
-          fadeIn(volume);
-        }).catch(console.error);
-      }
+      audio.addEventListener('canplaythrough', () => {
+        setIsLoading(false);
+        if (!isMuted) {
+          audio.play().then(() => {
+            fadeIn(volume);
+          }).catch(console.error);
+        }
+      }, { once: true });
+
+      audio.addEventListener('error', () => {
+        setIsLoading(false);
+        console.error('Audio load error');
+      }, { once: true });
+
+      audio.load();
     });
-  }, [hasInteracted, generateMusic, fadeOut, fadeIn, isMuted, volume]);
+  }, [hasInteracted, fadeOut, fadeIn, isMuted, volume]);
 
   // Handle route changes
   useEffect(() => {

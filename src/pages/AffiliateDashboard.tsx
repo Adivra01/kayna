@@ -13,7 +13,14 @@ import {
   Wallet,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Trophy,
+  Star,
+  Award,
+  Crown,
+  Gem,
+  Eye,
+  Gift
 } from 'lucide-react';
 
 interface Affiliate {
@@ -34,14 +41,51 @@ interface WithdrawalRequest {
   created_at: string;
 }
 
+interface EarnedTrophy {
+  id: string;
+  earned_at: string;
+  claimed: boolean;
+  trophy: {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    required_sales: number;
+    reward_description: string;
+  };
+}
+
+interface ProductView {
+  id: string;
+  product_id: string;
+  visitor_id: string;
+  created_at: string;
+  product?: {
+    title: string;
+    slug: string;
+  };
+}
+
+const trophyIcons: Record<string, any> = {
+  star: Star,
+  award: Award,
+  trophy: Trophy,
+  crown: Crown,
+  gem: Gem,
+};
+
 export default function AffiliateDashboard() {
   const navigate = useNavigate();
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [earnedTrophies, setEarnedTrophies] = useState<EarnedTrophy[]>([]);
+  const [allTrophies, setAllTrophies] = useState<any[]>([]);
+  const [productViews, setProductViews] = useState<ProductView[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'stats' | 'trophies' | 'products'>('stats');
 
   useEffect(() => {
     checkAffiliateStatus();
@@ -61,40 +105,41 @@ export default function AffiliateDashboard() {
       .eq('user_id', session.user.id)
       .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching affiliate:', error);
-      navigate('/affiliate/login');
-      return;
-    }
-
-    if (!affiliateData) {
+    if (error || !affiliateData) {
       toast.error("Aucun compte affilié trouvé");
-      navigate('/affiliate/login');
-      return;
-    }
-
-    if (affiliateData.status === 'pending') {
-      toast.error("Compte en attente de validation");
-      navigate('/affiliate/login');
-      return;
-    }
-
-    if (affiliateData.status === 'rejected') {
-      toast.error("Demande d'affiliation refusée");
-      navigate('/affiliate/login');
+      navigate('/affiliation');
       return;
     }
 
     setAffiliate(affiliateData as Affiliate);
 
-    // Fetch withdrawals
-    const { data: withdrawalsData } = await supabase
-      .from('withdrawal_requests')
-      .select('*')
-      .eq('affiliate_id', affiliateData.id)
-      .order('created_at', { ascending: false });
+    // Fetch all data in parallel
+    const [withdrawalsRes, trophiesRes, earnedTrophiesRes, productViewsRes] = await Promise.all([
+      supabase
+        .from('withdrawal_requests')
+        .select('*')
+        .eq('affiliate_id', affiliateData.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('affiliate_trophies')
+        .select('*')
+        .order('required_sales', { ascending: true }),
+      supabase
+        .from('affiliate_earned_trophies')
+        .select('*, trophy:affiliate_trophies(*)')
+        .eq('affiliate_id', affiliateData.id),
+      supabase
+        .from('affiliate_product_views')
+        .select('*, product:products(title, slug)')
+        .eq('affiliate_id', affiliateData.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+    ]);
 
-    setWithdrawals((withdrawalsData || []) as WithdrawalRequest[]);
+    setWithdrawals((withdrawalsRes.data || []) as WithdrawalRequest[]);
+    setAllTrophies(trophiesRes.data || []);
+    setEarnedTrophies((earnedTrophiesRes.data || []) as EarnedTrophy[]);
+    setProductViews((productViewsRes.data || []) as ProductView[]);
     setLoading(false);
   };
 
@@ -156,6 +201,7 @@ export default function AffiliateDashboard() {
   if (!affiliate) return null;
 
   const affiliateLink = `${window.location.origin}?ref=${affiliate.affiliate_code}`;
+  const earnedTrophyIds = earnedTrophies.map(et => et.trophy?.id);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -179,17 +225,17 @@ export default function AffiliateDashboard() {
       </header>
 
       <main className="pt-28 pb-20 px-6 lg:px-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold text-secondary mb-2">
               Dashboard Affilié
             </h1>
-            <p className="text-secondary/60">Bienvenue dans ton espace affilié KAYNA</p>
+            <p className="text-secondary/60">Transparence 100% sur tes performances</p>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
@@ -198,6 +244,15 @@ export default function AffiliateDashboard() {
               </div>
               <p className="text-3xl font-bold text-secondary">{affiliate.total_visits}</p>
               <p className="text-secondary/50 text-sm">Visites</p>
+            </div>
+            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                  <Eye className="w-5 h-5 text-cyan-400" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-secondary">{productViews.length}</p>
+              <p className="text-secondary/50 text-sm">Produits vus</p>
             </div>
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3">
@@ -220,11 +275,11 @@ export default function AffiliateDashboard() {
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-accent" />
+                  <Trophy className="w-5 h-5 text-accent" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-accent">{affiliate.pending_earnings.toLocaleString()}</p>
-              <p className="text-secondary/50 text-sm">FCFA disponibles</p>
+              <p className="text-3xl font-bold text-accent">{earnedTrophies.length}</p>
+              <p className="text-secondary/50 text-sm">Trophées</p>
             </div>
           </div>
 
@@ -258,59 +313,203 @@ export default function AffiliateDashboard() {
             </p>
           </div>
 
-          {/* Withdrawal Section */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-bold text-secondary">Retrait</h2>
-                <button
-                  onClick={() => setShowWithdrawalModal(true)}
-                  disabled={affiliate.pending_earnings <= 0}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  Demander un retrait
-                </button>
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                activeTab === 'stats' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
+              }`}
+            >
+              Statistiques
+            </button>
+            <button
+              onClick={() => setActiveTab('trophies')}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                activeTab === 'trophies' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              Trophées
+            </button>
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                activeTab === 'products' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
+              }`}
+            >
+              <Eye className="w-4 h-4" />
+              Produits vus
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'stats' && (
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Withdrawal Section */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-bold text-secondary">Retrait</h2>
+                  <button
+                    onClick={() => setShowWithdrawalModal(true)}
+                    disabled={affiliate.pending_earnings <= 0}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    Demander un retrait
+                  </button>
+                </div>
+                <div className="text-center py-8">
+                  <p className="text-4xl font-bold text-accent mb-2">
+                    {affiliate.pending_earnings.toLocaleString()} FCFA
+                  </p>
+                  <p className="text-secondary/50">Solde disponible</p>
+                </div>
               </div>
-              <div className="text-center py-8">
-                <p className="text-4xl font-bold text-accent mb-2">
-                  {affiliate.pending_earnings.toLocaleString()} FCFA
-                </p>
-                <p className="text-secondary/50">Solde disponible</p>
+
+              {/* Withdrawal History */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <h2 className="font-bold text-secondary mb-4">Historique des retraits</h2>
+                {withdrawals.length === 0 ? (
+                  <p className="text-secondary/50 text-center py-8">Aucun retrait</p>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {withdrawals.map((w) => (
+                      <div key={w.id} className="flex items-center justify-between p-3 bg-secondary/5 rounded-xl">
+                        <div>
+                          <p className="font-medium text-secondary">{w.amount.toLocaleString()} FCFA</p>
+                          <p className="text-secondary/40 text-xs">
+                            {new Date(w.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                        <span className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                          w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                          w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                        }`}>
+                          {w.status === 'approved' ? <CheckCircle className="w-3 h-3" /> :
+                           w.status === 'pending' ? <Clock className="w-3 h-3" /> :
+                           <XCircle className="w-3 h-3" />}
+                          {w.status === 'approved' ? 'Payé' : w.status === 'pending' ? 'En attente' : 'Refusé'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
+          )}
 
-            {/* Withdrawal History */}
-            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
-              <h2 className="font-bold text-secondary mb-4">Historique des retraits</h2>
-              {withdrawals.length === 0 ? (
-                <p className="text-secondary/50 text-center py-8">Aucun retrait</p>
-              ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {withdrawals.map((w) => (
-                    <div key={w.id} className="flex items-center justify-between p-3 bg-secondary/5 rounded-xl">
-                      <div>
-                        <p className="font-medium text-secondary">{w.amount.toLocaleString()} FCFA</p>
-                        <p className="text-secondary/40 text-xs">
-                          {new Date(w.created_at).toLocaleDateString('fr-FR')}
-                        </p>
-                      </div>
-                      <span className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-                        w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                        w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-red-500/20 text-red-400'
+          {activeTab === 'trophies' && (
+            <div className="space-y-6">
+              {/* Progress */}
+              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+                <h2 className="font-bold text-secondary mb-4 flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-accent" />
+                  Ta progression
+                </h2>
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-4xl font-bold text-accent">{affiliate.total_sales}</span>
+                  <span className="text-secondary/60">ventes réalisées</span>
+                </div>
+                <div className="h-2 bg-secondary/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-accent to-yellow-400 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min((affiliate.total_sales / 50) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-secondary/40 text-xs mt-2">Prochain niveau: Ambassadeur Diamant (50 ventes)</p>
+              </div>
+
+              {/* All Trophies */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allTrophies.map((trophy) => {
+                  const isEarned = earnedTrophyIds.includes(trophy.id);
+                  const IconComponent = trophyIcons[trophy.icon] || Trophy;
+                  
+                  return (
+                    <div 
+                      key={trophy.id}
+                      className={`relative border rounded-2xl p-6 transition-all ${
+                        isEarned 
+                          ? 'bg-accent/10 border-accent/30' 
+                          : 'bg-secondary/5 border-secondary/10 opacity-60'
+                      }`}
+                    >
+                      {isEarned && (
+                        <div className="absolute top-3 right-3">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                        </div>
+                      )}
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
+                        isEarned ? 'bg-accent/20' : 'bg-secondary/10'
                       }`}>
-                        {w.status === 'approved' ? <CheckCircle className="w-3 h-3" /> :
-                         w.status === 'pending' ? <Clock className="w-3 h-3" /> :
-                         <XCircle className="w-3 h-3" />}
-                        {w.status === 'approved' ? 'Payé' : w.status === 'pending' ? 'En attente' : 'Refusé'}
+                        <IconComponent className={`w-7 h-7 ${isEarned ? 'text-accent' : 'text-secondary/40'}`} />
+                      </div>
+                      <h3 className="font-bold text-secondary mb-1">{trophy.name}</h3>
+                      <p className="text-secondary/60 text-sm mb-3">{trophy.description}</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={`px-2 py-1 rounded-full ${
+                          isEarned ? 'bg-green-500/20 text-green-400' : 'bg-secondary/10 text-secondary/50'
+                        }`}>
+                          {trophy.required_sales} ventes
+                        </span>
+                      </div>
+                      {trophy.reward_description && (
+                        <div className="mt-4 flex items-start gap-2 text-sm">
+                          <Gift className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                          <span className="text-accent">{trophy.reward_description}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'products' && (
+            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+              <h2 className="font-bold text-secondary mb-4 flex items-center gap-2">
+                <Eye className="w-5 h-5 text-accent" />
+                Produits consultés par tes prospects
+              </h2>
+              {productViews.length === 0 ? (
+                <p className="text-secondary/50 text-center py-12">
+                  Aucun produit consulté pour l'instant.<br />
+                  Partage ton lien pour commencer à tracker !
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {productViews.map((view) => (
+                    <div key={view.id} className="flex items-center justify-between p-4 bg-secondary/5 rounded-xl">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                          <ShoppingBag className="w-5 h-5 text-accent" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-secondary">
+                            {view.product?.title || 'Produit supprimé'}
+                          </p>
+                          <p className="text-secondary/40 text-xs">
+                            Visiteur: {view.visitor_id?.slice(0, 12)}...
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-secondary/40 text-xs">
+                        {new Date(view.created_at).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </div>
+          )}
         </div>
       </main>
 
