@@ -176,8 +176,33 @@ export const useTracking = () => {
     trackEvent({ event_type: 'page_view' });
   }, [trackEvent]);
 
-  const trackProductView = useCallback((productId: string) => {
+  const trackProductView = useCallback(async (productId: string) => {
     trackEvent({ event_type: 'product_view', product_id: productId });
+    
+    // Also track for affiliate if there's an affiliate code
+    const affiliateCode = getAffiliateCode();
+    if (affiliateCode) {
+      try {
+        const { data: affiliate } = await (supabase as any)
+          .from('affiliates')
+          .select('id')
+          .eq('affiliate_code', affiliateCode)
+          .eq('status', 'approved')
+          .maybeSingle();
+        
+        if (affiliate) {
+          await (supabase as any)
+            .from('affiliate_product_views')
+            .insert({
+              affiliate_id: affiliate.id,
+              product_id: productId,
+              visitor_id: getVisitorId(),
+            });
+        }
+      } catch (error) {
+        console.error('Error tracking affiliate product view:', error);
+      }
+    }
   }, [trackEvent]);
 
   const trackAddToCart = useCallback((productId: string) => {

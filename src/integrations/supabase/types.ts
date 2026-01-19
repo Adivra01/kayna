@@ -59,6 +59,117 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_earned_trophies: {
+        Row: {
+          affiliate_id: string
+          claimed: boolean | null
+          claimed_at: string | null
+          earned_at: string
+          id: string
+          trophy_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          claimed?: boolean | null
+          claimed_at?: string | null
+          earned_at?: string
+          id?: string
+          trophy_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          claimed?: boolean | null
+          claimed_at?: string | null
+          earned_at?: string
+          id?: string
+          trophy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_earned_trophies_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_earned_trophies_trophy_id_fkey"
+            columns: ["trophy_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_trophies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_product_views: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          product_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_product_views_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_trophies: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          required_sales: number
+          reward_description: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          required_sales: number
+          reward_description?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          required_sales?: number
+          reward_description?: string | null
+        }
+        Relationships: []
+      }
       affiliate_visits: {
         Row: {
           affiliate_id: string
