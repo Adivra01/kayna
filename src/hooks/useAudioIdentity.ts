@@ -5,53 +5,53 @@ import { useLocation } from 'react-router-dom';
 interface AudioTrack {
   id: string;
   name: string;
-  url: string; // Static audio URL
+  url: string;
   routes: string[];
 }
 
-// Using royalty-free ambient music URLs (placeholders - replace with actual hosted files)
+// Using reliable public domain ambient audio
 const AUDIO_TRACKS: AudioTrack[] = [
   {
     id: 'inner-certainty',
     name: 'Inner Certainty',
-    url: 'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3', // Replace with actual ambient track
+    url: 'https://cdn.pixabay.com/audio/2024/11/29/audio_5db2dfe3fb.mp3', // Ambient meditation
     routes: ['/'],
   },
   {
     id: 'silent-battle',
     name: 'Silent Battle',
-    url: 'https://assets.mixkit.co/music/preview/mixkit-sleepy-cat-135.mp3', // Replace with actual ambient track
+    url: 'https://cdn.pixabay.com/audio/2024/08/11/audio_e67a796d37.mp3', // Dark ambient
     routes: ['/shop', '/product'],
   },
   {
     id: 'discipline-mode',
     name: 'Discipline Mode',
-    url: 'https://assets.mixkit.co/music/preview/mixkit-deep-meditation-109.mp3', // Replace with actual ambient track  
+    url: 'https://cdn.pixabay.com/audio/2023/10/08/audio_6e5f696901.mp3', // Focus ambient
     routes: ['/formation', '/community', '/cercle'],
   },
   {
     id: 'ascension',
     name: 'Ascension',
-    url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3', // Replace with actual ambient track
+    url: 'https://cdn.pixabay.com/audio/2024/04/18/audio_5e3c76e06d.mp3', // Uplifting ambient
     routes: ['/checkout', '/success', '/confirmation'],
   },
   {
     id: 'legacy',
     name: 'Legacy',
-    url: 'https://assets.mixkit.co/music/preview/mixkit-spirit-in-the-woods-139.mp3', // Replace with actual ambient track
+    url: 'https://cdn.pixabay.com/audio/2024/09/16/audio_e4efec9401.mp3', // Cinematic ambient
     routes: ['/about', '/histoire', '/vision', '/brand'],
   },
 ];
 
 const STORAGE_KEY = 'kayna-audio-muted';
 const VOLUME_KEY = 'kayna-audio-volume';
-const DEFAULT_VOLUME = 0.12; // Very low volume for luxury feel
+const DEFAULT_VOLUME = 0.15;
 
 export const useAudioIdentity = () => {
   const location = useLocation();
   const [isMuted, setIsMuted] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : false;
+    return stored ? JSON.parse(stored) : true; // Start muted by default
   });
   const [volume, setVolume] = useState(() => {
     const stored = localStorage.getItem(VOLUME_KEY);
@@ -62,7 +62,7 @@ export const useAudioIdentity = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Determine which track to play based on current route
   const getCurrentTrack = useCallback((): AudioTrack | null => {
@@ -91,8 +91,8 @@ export const useAudioIdentity = () => {
     }
 
     const audio = audioRef.current;
-    const fadeStep = 0.01;
-    const fadeInterval = 50;
+    const fadeStep = 0.02;
+    const fadeInterval = 30;
 
     if (fadeIntervalRef.current) {
       clearInterval(fadeIntervalRef.current);
@@ -119,8 +119,8 @@ export const useAudioIdentity = () => {
     const audio = audioRef.current;
     audio.volume = 0;
     
-    const fadeStep = 0.01;
-    const fadeInterval = 50;
+    const fadeStep = 0.02;
+    const fadeInterval = 30;
 
     if (fadeIntervalRef.current) {
       clearInterval(fadeIntervalRef.current);
@@ -140,86 +140,87 @@ export const useAudioIdentity = () => {
 
   // Play a track
   const playTrack = useCallback(async (track: AudioTrack) => {
-    if (!hasInteracted) return;
+    if (!hasInteracted || isMuted) return;
 
     setIsLoading(true);
 
+    // Fade out current track if playing
     fadeOut(() => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
+        audioRef.current = null;
       }
 
-      const audio = new Audio(track.url);
+      const audio = new Audio();
+      audio.crossOrigin = 'anonymous';
       audio.loop = true;
       audio.volume = 0;
-      audio.crossOrigin = 'anonymous';
+      audio.preload = 'auto';
+      
       audioRef.current = audio;
       setCurrentTrackId(track.id);
 
-      audio.addEventListener('canplaythrough', () => {
+      const handleCanPlay = () => {
         setIsLoading(false);
-        if (!isMuted) {
+        if (!isMuted && hasInteracted) {
           audio.play().then(() => {
             fadeIn(volume);
-          }).catch(console.error);
+          }).catch((err) => {
+            console.warn('Audio play failed:', err);
+            setIsLoading(false);
+          });
         }
-      }, { once: true });
+      };
 
-      audio.addEventListener('error', () => {
+      const handleError = (e: Event) => {
+        console.warn('Audio load error:', e);
         setIsLoading(false);
-        console.error('Audio load error');
-      }, { once: true });
+      };
 
+      audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
+      audio.addEventListener('error', handleError, { once: true });
+
+      // Set source and load
+      audio.src = track.url;
       audio.load();
     });
-  }, [hasInteracted, fadeOut, fadeIn, isMuted, volume]);
+  }, [hasInteracted, isMuted, fadeOut, fadeIn, volume]);
 
   // Handle route changes
   useEffect(() => {
     const track = getCurrentTrack();
-    if (track && track.id !== currentTrackId && hasInteracted) {
+    if (track && track.id !== currentTrackId && hasInteracted && !isMuted) {
       playTrack(track);
     }
-  }, [location.pathname, getCurrentTrack, currentTrackId, hasInteracted, playTrack]);
+  }, [location.pathname, getCurrentTrack, currentTrackId, hasInteracted, isMuted, playTrack]);
 
-  // Handle user interaction to enable audio
-  useEffect(() => {
-    const handleInteraction = () => {
-      if (!hasInteracted) {
-        setHasInteracted(true);
+  // Handle mute toggle
+  const toggleMute = useCallback(() => {
+    setHasInteracted(true);
+    
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      
+      if (newMuted) {
+        // Muting - fade out
+        fadeOut();
+      } else {
+        // Unmuting - play current track
         const track = getCurrentTrack();
         if (track) {
           playTrack(track);
         }
       }
-    };
+      
+      return newMuted;
+    });
+  }, [fadeOut, getCurrentTrack, playTrack]);
 
-    window.addEventListener('click', handleInteraction, { once: true });
-    window.addEventListener('keydown', handleInteraction, { once: true });
-    window.addEventListener('touchstart', handleInteraction, { once: true });
-
-    return () => {
-      window.removeEventListener('click', handleInteraction);
-      window.removeEventListener('keydown', handleInteraction);
-      window.removeEventListener('touchstart', handleInteraction);
-    };
-  }, [hasInteracted, getCurrentTrack, playTrack]);
-
-  // Handle mute state changes
+  // Persist mute state
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(isMuted));
-    
-    if (audioRef.current) {
-      if (isMuted) {
-        fadeOut();
-      } else if (hasInteracted) {
-        audioRef.current.play().then(() => {
-          fadeIn(volume);
-        }).catch(console.error);
-      }
-    }
-  }, [isMuted, fadeOut, fadeIn, hasInteracted, volume]);
+  }, [isMuted]);
 
   // Handle volume changes
   useEffect(() => {
@@ -241,10 +242,6 @@ export const useAudioIdentity = () => {
         audioRef.current.src = '';
       }
     };
-  }, []);
-
-  const toggleMute = useCallback(() => {
-    setIsMuted(prev => !prev);
   }, []);
 
   const updateVolume = useCallback((newVolume: number) => {
