@@ -14,31 +14,31 @@ const AUDIO_TRACKS: AudioTrack[] = [
   {
     id: 'inner-certainty',
     name: 'Inner Certainty',
-    url: 'https://cdn.pixabay.com/audio/2024/11/29/audio_5db2dfe3fb.mp3', // Ambient meditation
+    url: 'https://cdn.pixabay.com/audio/2024/11/29/audio_5db2dfe3fb.mp3',
     routes: ['/'],
   },
   {
     id: 'silent-battle',
     name: 'Silent Battle',
-    url: 'https://cdn.pixabay.com/audio/2024/08/11/audio_e67a796d37.mp3', // Dark ambient
+    url: 'https://cdn.pixabay.com/audio/2024/08/11/audio_e67a796d37.mp3',
     routes: ['/shop', '/product'],
   },
   {
     id: 'discipline-mode',
     name: 'Discipline Mode',
-    url: 'https://cdn.pixabay.com/audio/2023/10/08/audio_6e5f696901.mp3', // Focus ambient
+    url: 'https://cdn.pixabay.com/audio/2023/10/08/audio_6e5f696901.mp3',
     routes: ['/formation', '/community', '/cercle'],
   },
   {
     id: 'ascension',
     name: 'Ascension',
-    url: 'https://cdn.pixabay.com/audio/2024/04/18/audio_5e3c76e06d.mp3', // Uplifting ambient
+    url: 'https://cdn.pixabay.com/audio/2024/04/18/audio_5e3c76e06d.mp3',
     routes: ['/checkout', '/success', '/confirmation'],
   },
   {
     id: 'legacy',
     name: 'Legacy',
-    url: 'https://cdn.pixabay.com/audio/2024/09/16/audio_e4efec9401.mp3', // Cinematic ambient
+    url: 'https://cdn.pixabay.com/audio/2024/09/16/audio_e4efec9401.mp3',
     routes: ['/about', '/histoire', '/vision', '/brand'],
   },
 ];
@@ -49,20 +49,37 @@ const DEFAULT_VOLUME = 0.15;
 
 export const useAudioIdentity = () => {
   const location = useLocation();
-  const [isMuted, setIsMuted] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : true; // Start muted by default
-  });
-  const [volume, setVolume] = useState(() => {
-    const stored = localStorage.getItem(VOLUME_KEY);
-    return stored ? parseFloat(stored) : DEFAULT_VOLUME;
-  });
+  
+  const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [shouldPlay, setShouldPlay] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initializedRef = useRef(false);
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    
+    try {
+      const storedMuted = localStorage.getItem(STORAGE_KEY);
+      const storedVolume = localStorage.getItem(VOLUME_KEY);
+      
+      if (storedMuted !== null) {
+        setIsMuted(JSON.parse(storedMuted));
+      }
+      if (storedVolume !== null) {
+        setVolume(parseFloat(storedVolume));
+      }
+    } catch (e) {
+      console.warn('Failed to read audio settings from localStorage');
+    }
+  }, []);
 
   // Determine which track to play based on current route
   const getCurrentTrack = useCallback((): AudioTrack | null => {
@@ -79,113 +96,112 @@ export const useAudioIdentity = () => {
       }
     }
     
-    // Default to inner-certainty for unmatched routes
     return AUDIO_TRACKS[0];
   }, [location.pathname]);
 
-  // Fade out current audio
-  const fadeOut = useCallback((onComplete?: () => void) => {
-    if (!audioRef.current) {
-      onComplete?.();
-      return;
-    }
-
-    const audio = audioRef.current;
-    const fadeStep = 0.02;
-    const fadeInterval = 30;
-
+  // Clear fade interval helper
+  const clearFadeInterval = useCallback(() => {
     if (fadeIntervalRef.current) {
       clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
     }
-
-    fadeIntervalRef.current = setInterval(() => {
-      if (audio.volume > fadeStep) {
-        audio.volume = Math.max(0, audio.volume - fadeStep);
-      } else {
-        audio.volume = 0;
-        audio.pause();
-        if (fadeIntervalRef.current) {
-          clearInterval(fadeIntervalRef.current);
-        }
-        onComplete?.();
-      }
-    }, fadeInterval);
   }, []);
+
+  // Fade out current audio
+  const fadeOut = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      if (!audioRef.current) {
+        resolve();
+        return;
+      }
+
+      const audio = audioRef.current;
+      clearFadeInterval();
+
+      fadeIntervalRef.current = setInterval(() => {
+        if (audio.volume > 0.02) {
+          audio.volume = Math.max(0, audio.volume - 0.02);
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          clearFadeInterval();
+          resolve();
+        }
+      }, 30);
+    });
+  }, [clearFadeInterval]);
 
   // Fade in audio
   const fadeIn = useCallback((targetVolume: number) => {
-    if (!audioRef.current || isMuted) return;
+    if (!audioRef.current) return;
 
     const audio = audioRef.current;
     audio.volume = 0;
-    
-    const fadeStep = 0.02;
-    const fadeInterval = 30;
-
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-    }
+    clearFadeInterval();
 
     fadeIntervalRef.current = setInterval(() => {
-      if (audio.volume < targetVolume - fadeStep) {
-        audio.volume = Math.min(targetVolume, audio.volume + fadeStep);
+      if (audio.volume < targetVolume - 0.02) {
+        audio.volume = Math.min(targetVolume, audio.volume + 0.02);
       } else {
         audio.volume = targetVolume;
-        if (fadeIntervalRef.current) {
-          clearInterval(fadeIntervalRef.current);
-        }
+        clearFadeInterval();
       }
-    }, fadeInterval);
-  }, [isMuted]);
+    }, 30);
+  }, [clearFadeInterval]);
 
   // Play a track
   const playTrack = useCallback(async (track: AudioTrack) => {
-    if (!hasInteracted || isMuted) return;
-
     setIsLoading(true);
 
-    // Fade out current track if playing
-    fadeOut(() => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current = null;
+    await fadeOut();
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.loop = true;
+    audio.volume = 0;
+    audio.preload = 'auto';
+    
+    audioRef.current = audio;
+    setCurrentTrackId(track.id);
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      audio.play().then(() => {
+        fadeIn(volume);
+      }).catch((err) => {
+        console.warn('Audio play failed:', err);
+        setIsLoading(false);
+      });
+    };
+
+    const handleError = () => {
+      console.warn('Audio load error');
+      setIsLoading(false);
+    };
+
+    audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
+    audio.addEventListener('error', handleError, { once: true });
+
+    audio.src = track.url;
+    audio.load();
+  }, [fadeOut, fadeIn, volume]);
+
+  // Effect to handle shouldPlay state changes
+  useEffect(() => {
+    if (shouldPlay && hasInteracted && !isMuted) {
+      const track = getCurrentTrack();
+      if (track) {
+        playTrack(track);
       }
-
-      const audio = new Audio();
-      audio.crossOrigin = 'anonymous';
-      audio.loop = true;
-      audio.volume = 0;
-      audio.preload = 'auto';
-      
-      audioRef.current = audio;
-      setCurrentTrackId(track.id);
-
-      const handleCanPlay = () => {
-        setIsLoading(false);
-        if (!isMuted && hasInteracted) {
-          audio.play().then(() => {
-            fadeIn(volume);
-          }).catch((err) => {
-            console.warn('Audio play failed:', err);
-            setIsLoading(false);
-          });
-        }
-      };
-
-      const handleError = (e: Event) => {
-        console.warn('Audio load error:', e);
-        setIsLoading(false);
-      };
-
-      audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
-      audio.addEventListener('error', handleError, { once: true });
-
-      // Set source and load
-      audio.src = track.url;
-      audio.load();
-    });
-  }, [hasInteracted, isMuted, fadeOut, fadeIn, volume]);
+      setShouldPlay(false);
+    }
+  }, [shouldPlay, hasInteracted, isMuted, getCurrentTrack, playTrack]);
 
   // Handle route changes
   useEffect(() => {
@@ -203,28 +219,31 @@ export const useAudioIdentity = () => {
       const newMuted = !prev;
       
       if (newMuted) {
-        // Muting - fade out
         fadeOut();
       } else {
-        // Unmuting - play current track
-        const track = getCurrentTrack();
-        if (track) {
-          playTrack(track);
-        }
+        setShouldPlay(true);
       }
       
       return newMuted;
     });
-  }, [fadeOut, getCurrentTrack, playTrack]);
+  }, [fadeOut]);
 
   // Persist mute state
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(isMuted));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(isMuted));
+    } catch (e) {
+      console.warn('Failed to save mute state');
+    }
   }, [isMuted]);
 
   // Handle volume changes
   useEffect(() => {
-    localStorage.setItem(VOLUME_KEY, volume.toString());
+    try {
+      localStorage.setItem(VOLUME_KEY, volume.toString());
+    } catch (e) {
+      console.warn('Failed to save volume');
+    }
     
     if (audioRef.current && !isMuted) {
       audioRef.current.volume = volume;
@@ -234,15 +253,13 @@ export const useAudioIdentity = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
+      clearFadeInterval();
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
       }
     };
-  }, []);
+  }, [clearFadeInterval]);
 
   const updateVolume = useCallback((newVolume: number) => {
     setVolume(Math.max(0, Math.min(1, newVolume)));
