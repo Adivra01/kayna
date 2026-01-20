@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
-import ClientAuth from "./pages/ClientAuth";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import LockedSite from "./pages/LockedSite";
 import Favorites from "./pages/Favorites";
@@ -60,7 +60,7 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
-          <Route path="/auth" element={<ClientAuth />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/affiliate" element={<AffiliateSignup />} />
           <Route path="/affiliate/login" element={<AffiliateLogin />} />
