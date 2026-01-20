@@ -13,32 +13,34 @@ const AudioControl = () => {
       onMouseLeave={() => setShowVolume(false)}
     >
       {/* Volume slider */}
-      <div 
-        className={`
-          flex items-center gap-2 px-4 py-2 rounded-full
-          bg-primary/90 backdrop-blur-md border border-accent/20
-          transition-all duration-500 ease-out
-          ${showVolume ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}
-        `}
-      >
-        <input
-          type="range"
-          min="0"
-          max="0.4"
-          step="0.01"
-          value={volume}
-          onChange={(e) => updateVolume(parseFloat(e.target.value))}
-          className="w-20 h-1 bg-accent/30 rounded-full appearance-none cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-3
-            [&::-webkit-slider-thumb]:h-3
-            [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-accent
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-webkit-slider-thumb]:transition-transform
-            [&::-webkit-slider-thumb]:hover:scale-125"
-        />
-      </div>
+      {!isMuted && (
+        <div 
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-full
+            bg-primary/90 backdrop-blur-md border border-accent/20
+            transition-all duration-500 ease-out
+            ${showVolume ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}
+          `}
+        >
+          <input
+            type="range"
+            min="0"
+            max="0.5"
+            step="0.01"
+            value={volume}
+            onChange={(e) => updateVolume(parseFloat(e.target.value))}
+            className="w-20 h-1 bg-accent/30 rounded-full appearance-none cursor-pointer
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-webkit-slider-thumb]:w-3
+              [&::-webkit-slider-thumb]:h-3
+              [&::-webkit-slider-thumb]:rounded-full
+              [&::-webkit-slider-thumb]:bg-accent
+              [&::-webkit-slider-thumb]:cursor-pointer
+              [&::-webkit-slider-thumb]:transition-transform
+              [&::-webkit-slider-thumb]:hover:scale-125"
+          />
+        </div>
+      )}
 
       {/* Track info tooltip */}
       <div 
