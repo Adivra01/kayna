@@ -1,12 +1,14 @@
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Timer, Trash2, Sparkles } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useCartCountdown } from "@/hooks/useCartCountdown";
+import { useLocalization } from "@/hooks/useLocalization";
 import { useEffect, useState } from "react";
 import gsap from "gsap";
 
 const CartDrawer = () => {
   const { items, isOpen, setCartOpen, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
   const { formattedTime, isExpiring } = useCartCountdown();
+  const { t, formatPrice, isRTL } = useLocalization();
   const [freeShippingThreshold] = useState(100000);
   const totalPrice = getTotalPrice();
   const freeShippingProgress = Math.min((totalPrice / freeShippingThreshold) * 100, 100);
@@ -15,24 +17,23 @@ const CartDrawer = () => {
   useEffect(() => {
     if (isOpen) {
       gsap.fromTo(".cart-drawer", 
-        { x: "100%" },
+        { x: isRTL ? "-100%" : "100%" },
         { x: 0, duration: 0.4, ease: "power3.out" }
       );
       gsap.fromTo(".cart-overlay",
         { opacity: 0 },
         { opacity: 1, duration: 0.3 }
       );
-      // Animate cart items
       gsap.fromTo(".cart-item",
-        { opacity: 0, x: 20 },
+        { opacity: 0, x: isRTL ? -20 : 20 },
         { opacity: 1, x: 0, duration: 0.4, stagger: 0.08, delay: 0.2, ease: "power2.out" }
       );
     }
-  }, [isOpen]);
+  }, [isOpen, isRTL]);
 
   const handleClose = () => {
     gsap.to(".cart-drawer", {
-      x: "100%",
+      x: isRTL ? "-100%" : "100%",
       duration: 0.3,
       ease: "power3.in",
       onComplete: () => setCartOpen(false),
@@ -42,7 +43,7 @@ const CartDrawer = () => {
 
   const handleRemoveItem = (id: string) => {
     gsap.to(`[data-item-id="${id}"]`, {
-      x: 100,
+      x: isRTL ? -100 : 100,
       opacity: 0,
       duration: 0.3,
       ease: "power2.in",
@@ -64,16 +65,16 @@ const CartDrawer = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div className="fixed inset-0 z-[100]" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="cart-overlay absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={handleClose} />
       
-      <div className="cart-drawer absolute right-0 top-0 bottom-0 w-full max-w-md bg-primary border-l border-secondary/10 flex flex-col">
+      <div className={`cart-drawer absolute ${isRTL ? 'left-0' : 'right-0'} top-0 bottom-0 w-full max-w-md bg-primary border-${isRTL ? 'r' : 'l'} border-secondary/10 flex flex-col`}>
         {/* Header with countdown */}
         <div className="p-6 border-b border-secondary/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ShoppingBag className="w-5 h-5 text-accent" />
-              <h2 className="text-xl font-bold text-secondary">Panier</h2>
+              <h2 className="text-xl font-bold text-secondary">{t.cart.title}</h2>
               <span className="px-2 py-0.5 bg-accent/20 text-accent text-xs font-bold rounded-full">
                 {items.length}
               </span>
@@ -92,7 +93,7 @@ const CartDrawer = () => {
             }`}>
               <Timer className={`w-4 h-4 ${isExpiring ? "text-red-400 animate-pulse" : "text-accent"}`} />
               <span className={`text-sm font-medium ${isExpiring ? "text-red-400" : "text-accent"}`}>
-                {isExpiring ? "⚡ Vite ! " : ""}Temps restant :
+                {isExpiring ? "⚡ " : ""}{t.cart.expiresIn}:
               </span>
               <span className={`font-mono font-bold ${isExpiring ? "text-red-400" : "text-accent"}`}>
                 {formattedTime}
@@ -106,8 +107,8 @@ const CartDrawer = () => {
               {remainingForFreeShipping > 0 ? (
                 <>
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-secondary/60">Livraison gratuite dans</span>
-                    <span className="text-accent font-medium">{remainingForFreeShipping.toLocaleString()} FCFA</span>
+                    <span className="text-secondary/60">{t.cart.freeShippingProgress.replace('{amount}', '')}</span>
+                    <span className="text-accent font-medium">{formatPrice(remainingForFreeShipping)}</span>
                   </div>
                   <div className="h-1.5 bg-secondary/10 rounded-full overflow-hidden">
                     <div 
@@ -119,7 +120,7 @@ const CartDrawer = () => {
               ) : (
                 <div className="flex items-center gap-2 py-2 px-4 bg-green-500/10 border border-green-500/30 rounded-xl">
                   <Sparkles className="w-4 h-4 text-green-400" />
-                  <span className="text-green-400 text-sm font-medium">🎉 Livraison gratuite débloquée !</span>
+                  <span className="text-green-400 text-sm font-medium">🎉 {t.cart.freeShippingReached}</span>
                 </div>
               )}
             </div>
@@ -131,9 +132,9 @@ const CartDrawer = () => {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <ShoppingBag className="w-16 h-16 text-secondary/20 mb-4" />
-              <p className="text-secondary/60 mb-2">Ton panier est vide</p>
+              <p className="text-secondary/60 mb-2">{t.cart.empty}</p>
               <button onClick={handleClose} className="text-accent font-medium hover:underline">
-                Continuer le shopping
+                {t.common.continue}
               </button>
             </div>
           ) : (
@@ -154,7 +155,7 @@ const CartDrawer = () => {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  {item.size && <p className="text-xs text-secondary/50">Taille: {item.size}</p>}
+                  {item.size && <p className="text-xs text-secondary/50">{t.product.size}: {item.size}</p>}
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-2">
                       <button 
@@ -171,7 +172,7 @@ const CartDrawer = () => {
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <span className="font-bold text-accent">{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                    <span className="font-bold text-accent">{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 </div>
               </div>
@@ -183,16 +184,16 @@ const CartDrawer = () => {
         {items.length > 0 && (
           <div className="p-6 border-t border-secondary/10 space-y-4 bg-secondary/5">
             <div className="flex justify-between items-center">
-              <span className="text-secondary/60">Total</span>
-              <span className="text-2xl font-bold text-secondary">{getTotalPrice().toLocaleString()} FCFA</span>
+              <span className="text-secondary/60">{t.cart.total}</span>
+              <span className="text-2xl font-bold text-secondary">{formatPrice(getTotalPrice())}</span>
             </div>
             <button className="w-full py-4 bg-accent text-primary rounded-full font-bold flex items-center justify-center gap-2 shadow-gold hover:shadow-gold-glow hover:scale-[1.02] transition-all active:scale-[0.98]">
-              <span>Commander</span>
+              <span>{t.cart.checkout}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
             <button onClick={clearCart} className="w-full text-center text-secondary/50 text-sm hover:text-red-400 transition-colors flex items-center justify-center gap-2">
               <Trash2 className="w-4 h-4" />
-              <span>Vider le panier</span>
+              <span>{t.cart.clear}</span>
             </button>
           </div>
         )}
