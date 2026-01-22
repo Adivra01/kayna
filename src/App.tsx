@@ -28,6 +28,7 @@ import AdminAffiliates from "./pages/admin/AdminAffiliates";
 import AdminDrop from "./pages/admin/AdminDrop";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminClients from "./pages/admin/AdminClients";
+import AdminCoupons from "./pages/admin/AdminCoupons";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ function AppContent() {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/clients" element={<AdminClients />} />
           <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+          <Route path="/admin/coupons" element={<AdminCoupons />} />
           <Route path="/admin/drop" element={<AdminDrop />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           

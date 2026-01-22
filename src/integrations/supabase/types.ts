@@ -408,6 +408,60 @@ export type Database = {
           },
         ]
       }
+      discount_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_amount: number | null
+          product_ids: string[] | null
+          scope: string
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          product_ids?: string[] | null
+          scope?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          product_ids?: string[] | null
+          scope?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -728,12 +782,15 @@ export type Database = {
           is_active: boolean | null
           out_of_stock: boolean | null
           price: number
+          printful_sync_product_id: string | null
+          printful_variants: Json | null
           sizes: string[] | null
           slug: string
           stock_quantity: number | null
           tag: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           category: string
@@ -746,12 +803,15 @@ export type Database = {
           is_active?: boolean | null
           out_of_stock?: boolean | null
           price: number
+          printful_sync_product_id?: string | null
+          printful_variants?: Json | null
           sizes?: string[] | null
           slug: string
           stock_quantity?: number | null
           tag?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           category?: string
@@ -764,12 +824,15 @@ export type Database = {
           is_active?: boolean | null
           out_of_stock?: boolean | null
           price?: number
+          printful_sync_product_id?: string | null
+          printful_variants?: Json | null
           sizes?: string[] | null
           slug?: string
           stock_quantity?: number | null
           tag?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
