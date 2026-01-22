@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTracking, usePageTracking } from "@/hooks/useTracking";
+import { useLocalization } from "@/hooks/useLocalization";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
@@ -53,6 +54,7 @@ const categories = [
 
 const Shop = () => {
   usePageTracking();
+  const { t, formatPrice, isRTL } = useLocalization();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -60,6 +62,14 @@ const Shop = () => {
   const { addItem, getTotalItems, toggleCart } = useCart();
   const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  // Dynamic categories based on language
+  const categories = [
+    { id: "all", label: t.shop.all },
+    { id: "tshirts", label: t.shop.tshirts },
+    { id: "hoodies", label: t.shop.hoodies },
+    { id: "sweaters", label: t.shop.sweaters },
+  ];
 
   // Fetch products from database
   useEffect(() => {
@@ -130,7 +140,7 @@ const Shop = () => {
     
     // Check if out of stock
     if (product.out_of_stock) {
-      showToast.error("Ce produit est en rupture de stock");
+      showToast.error(t.product.outOfStock);
       return;
     }
     
@@ -141,11 +151,11 @@ const Shop = () => {
       image: product.images[0],
       category: product.category,
     });
-    showToast.cart("Ajouté au panier !", { description: product.title });
+    showToast.cart(t.product.added, { description: product.title });
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
       <CartDrawer />
       
       {/* Header */}
@@ -153,8 +163,8 @@ const Shop = () => {
         <Link to="/" className="text-2xl font-bold italic text-foreground">KAYNA</Link>
         
         <nav className="hidden lg:flex items-center gap-8 text-sm text-muted-foreground">
-          <Link to="/shop" className="text-accent font-medium">Shop</Link>
-          <Link to="/about" className="hover:text-accent transition-colors">Histoire</Link>
+          <Link to="/shop" className="text-accent font-medium">{t.nav.shop}</Link>
+          <Link to="/about" className="hover:text-accent transition-colors">{t.nav.about}</Link>
         </nav>
         
         <div className="flex items-center gap-3">
@@ -193,9 +203,9 @@ const Shop = () => {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
             <div>
               <h1 className="text-[3rem] lg:text-[4rem] font-bold leading-none text-foreground mb-2">
-                Shop<span className="italic text-accent">.</span>
+                {t.shop.title}<span className="italic text-accent">.</span>
               </h1>
-              <p className="text-muted-foreground">{filteredProducts.length} produits</p>
+              <p className="text-muted-foreground">{filteredProducts.length} {filteredProducts.length === 1 ? t.cart.item : t.cart.items}</p>
             </div>
             
             {/* Desktop Filters */}
@@ -335,7 +345,7 @@ const Shop = () => {
                       {/* Content */}
                       <div className="absolute bottom-0 left-0 right-0 p-5 transform transition-transform duration-500 group-hover:translate-y-[-8px]">
                         <h3 className="text-secondary text-lg font-bold mb-1 drop-shadow-lg">{product.title}</h3>
-                        <span className="text-accent font-bold text-lg drop-shadow-md">{product.price.toLocaleString()} FCFA</span>
+                        <span className="text-accent font-bold text-lg drop-shadow-md">{formatPrice(product.price)}</span>
                       </div>
 
                       {product.tag && !isOutOfStock && (

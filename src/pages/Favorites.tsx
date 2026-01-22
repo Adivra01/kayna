@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Instagram, ShoppingBag, Heart, ArrowLeft, Trash2 } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCart } from '@/hooks/useCart';
+import { useLocalization } from '@/hooks/useLocalization';
 import { supabase } from '@/integrations/supabase/client';
 import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
@@ -21,6 +22,7 @@ interface ProductData {
 
 export default function Favorites() {
   const navigate = useNavigate();
+  const { t, formatPrice, isRTL } = useLocalization();
   const { favorites, loading, toggleFavorite, isAuthenticated } = useFavorites();
   const { addItem, getTotalItems, toggleCart } = useCart();
   const [products, setProducts] = useState<ProductData[]>([]);
@@ -137,11 +139,11 @@ export default function Favorites() {
           <div className="flex items-center gap-3 mb-12">
             <Heart className="w-8 h-8 text-accent fill-accent" />
             <div>
-              <h1 className="text-[2.5rem] lg:text-[3.5rem] font-bold leading-none text-foreground">
-                Mes favoris<span className="italic text-accent">.</span>
+            <h1 className="text-[2.5rem] lg:text-[3.5rem] font-bold leading-none text-foreground">
+                {t.nav.favorites}<span className="italic text-accent">.</span>
               </h1>
               <p className="text-muted-foreground mt-2">
-                {products.length} produit{products.length > 1 ? 's' : ''} sauvegardé{products.length > 1 ? 's' : ''}
+                {products.length} {products.length === 1 ? t.cart.item : t.cart.items}
               </p>
             </div>
           </div>
@@ -149,15 +151,15 @@ export default function Favorites() {
           {products.length === 0 ? (
             <div className="text-center py-20">
               <Heart className="w-20 h-20 text-muted-foreground/30 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Aucun favori</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t.cart.empty.replace('panier', 'favoris')}</h2>
               <p className="text-muted-foreground mb-6">
-                Explore notre collection et sauvegarde tes pièces préférées
+                {t.hero.subtitle}
               </p>
               <Link 
                 to="/shop"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-accent text-primary rounded-full font-bold shadow-gold hover:shadow-gold-glow transition-all"
               >
-                Découvrir la collection
+                {t.hero.cta}
               </Link>
             </div>
           ) : (
@@ -198,7 +200,7 @@ export default function Favorites() {
                     {/* Out of stock badge */}
                     {product.out_of_stock && (
                       <div className="absolute top-4 left-4 px-3 py-1.5 bg-muted text-muted-foreground rounded-full text-xs font-bold">
-                        Rupture de stock
+                        {t.product.outOfStock}
                       </div>
                     )}
                     
@@ -208,7 +210,7 @@ export default function Favorites() {
                         {product.title}
                       </h3>
                       <span className="text-accent font-bold text-lg">
-                        {product.price.toLocaleString()} FCFA
+                        {formatPrice(product.price)}
                       </span>
                     </div>
                   </div>

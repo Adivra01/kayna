@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTracking } from "@/hooks/useTracking";
+import { useLocalization } from "@/hooks/useLocalization";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
@@ -37,6 +38,7 @@ interface Product {
 
 const ProductDetail = () => {
   const { trackProductView, trackAddToCart } = useTracking();
+  const { t, formatPrice, isRTL } = useLocalization();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   
@@ -626,12 +628,12 @@ const ProductDetail = () => {
                     {product.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-3xl sm:text-4xl font-bold text-accent">{product.price}€</span>
+                    <span className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(product.price)}</span>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-accent text-accent" />
                       ))}
-                      <span className="text-secondary/60 text-sm ml-2">(127 avis)</span>
+                      <span className="text-secondary/60 text-sm ml-2">(127 {t.product.reviews})</span>
                     </div>
                   </div>
                 </div>
@@ -639,7 +641,7 @@ const ProductDetail = () => {
 
                 {/* Colors */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-secondary">Couleur: <span className="text-accent">{selectedColor}</span></h3>
+                  <h3 className="font-medium text-secondary">{t.product.color}: <span className="text-accent">{selectedColor}</span></h3>
                   <div className="flex gap-3">
                     {colors.map((color) => (
                       <button
@@ -663,7 +665,7 @@ const ProductDetail = () => {
 
                 {/* Sizes */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-secondary">Taille: <span className="text-accent">{selectedSize || "Sélectionner"}</span></h3>
+                  <h3 className="font-medium text-secondary">{t.product.size}: <span className="text-accent">{selectedSize || t.product.selectSize}</span></h3>
                   <div className="flex flex-wrap gap-2">
                     {product.sizes.map((size) => (
                       <button
@@ -683,7 +685,7 @@ const ProductDetail = () => {
 
                 {/* Quantity */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-secondary">Quantité</h3>
+                  <h3 className="font-medium text-secondary">{t.product.quantity}</h3>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -717,14 +719,14 @@ const ProductDetail = () => {
                     {isAdded ? (
                       <>
                         <Check className="w-5 h-5" />
-                        Ajouté !
+                        {t.product.added}
                       </>
                     ) : product.out_of_stock ? (
-                      "Rupture de stock"
+                      t.product.outOfStock
                     ) : (
                       <>
                         <ShoppingBag className="w-5 h-5" />
-                        Ajouter au panier — {(product.price * quantity).toFixed(0)}€
+                        {t.product.addToCart} — {formatPrice(product.price * quantity)}
                       </>
                     )}
                   </button>
@@ -741,22 +743,22 @@ const ProductDetail = () => {
                 <div className="grid grid-cols-3 gap-3 pt-6">
                   <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
                     <Truck className="w-6 h-6 mx-auto mb-2 text-accent" />
-                    <span className="text-xs text-secondary/70">Livraison gratuite</span>
+                    <span className="text-xs text-secondary/70">{t.product.shipping}</span>
                   </div>
                   <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
                     <Shield className="w-6 h-6 mx-auto mb-2 text-accent" />
-                    <span className="text-xs text-secondary/70">Paiement sécurisé</span>
+                    <span className="text-xs text-secondary/70">{t.product.quality}</span>
                   </div>
                   <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
                     <RotateCcw className="w-6 h-6 mx-auto mb-2 text-accent" />
-                    <span className="text-xs text-secondary/70">Retours 14 jours</span>
+                    <span className="text-xs text-secondary/70">{t.product.returns}</span>
                   </div>
                 </div>
 
                 {/* Details */}
                 {product.details && product.details.length > 0 && (
                   <div className="pt-6 border-t border-secondary/10">
-                    <h3 className="font-bold text-secondary mb-4">Détails du produit</h3>
+                    <h3 className="font-bold text-secondary mb-4">{t.product.details}</h3>
                     <ul className="space-y-2">
                       {product.details.map((detail, idx) => (
                         <li key={idx} className="flex items-start gap-3 text-secondary/70">
@@ -774,7 +776,7 @@ const ProductDetail = () => {
           {/* Related Products */}
           {relatedProducts.length > 0 && (
             <section className="mt-20 sm:mt-32">
-              <h2 className="text-2xl sm:text-3xl font-bold text-secondary mb-8">Tu vas aussi aimer</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-secondary mb-8">{t.product.relatedProducts}</h2>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {relatedProducts.map((related) => (
                   <Link
@@ -790,7 +792,7 @@ const ProductDetail = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="font-bold text-secondary group-hover:text-accent transition-colors">{related.title}</h3>
-                      <span className="text-accent font-bold">{related.price}€</span>
+                      <span className="text-accent font-bold">{formatPrice(related.price)}</span>
                     </div>
                     
                     <FavoriteButton
