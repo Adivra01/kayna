@@ -14,7 +14,8 @@ import {
   RefreshCw,
   Link2,
   Unlink,
-  Download
+  Download,
+  Star
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -154,6 +155,7 @@ export default function AdminProducts() {
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0); // Index de l'image principale (existing + new)
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -398,6 +400,8 @@ export default function AdminProducts() {
   const openForm = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
+      // Ne garder QUE les couleurs qui sont dans le produit, pas les couleurs par défaut
+      const productColors = product.colors && product.colors.length > 0 ? product.colors : [];
       setFormData({
         title: product.title,
         slug: product.slug,
@@ -406,7 +410,7 @@ export default function AdminProducts() {
         category: product.category,
         tag: product.tag || "",
         sizes: product.sizes || FIXED_SIZES,
-        colors: product.colors || ["noir", "blanc", "beige"],
+        colors: productColors, // Uniquement les couleurs sélectionnées du produit
         details: product.details?.length ? product.details : [""],
         is_active: product.is_active,
         stock_quantity: product.stock_quantity || 0,
@@ -415,6 +419,7 @@ export default function AdminProducts() {
         printful_variants: product.printful_variants || [],
       });
       setExistingImages(product.images || []);
+      setPrimaryImageIndex(0); // La première image est l'image principale
     } else {
       setEditingProduct(null);
       setFormData({
@@ -425,7 +430,7 @@ export default function AdminProducts() {
         category: "tshirts",
         tag: "",
         sizes: FIXED_SIZES,
-        colors: ["noir", "blanc", "beige"],
+        colors: [], // Aucune couleur par défaut pour un nouveau produit
         details: [""],
         is_active: true,
         stock_quantity: null,
@@ -434,6 +439,7 @@ export default function AdminProducts() {
         printful_variants: [],
       });
       setExistingImages([]);
+      setPrimaryImageIndex(0);
     }
     setImageFiles([]);
     setShowForm(true);
@@ -444,6 +450,7 @@ export default function AdminProducts() {
     setEditingProduct(null);
     setImageFiles([]);
     setExistingImages([]);
+    setPrimaryImageIndex(0);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -453,11 +460,31 @@ export default function AdminProducts() {
   };
 
   const removeImage = (index: number, isExisting: boolean) => {
+    const totalExisting = existingImages.length;
+    
     if (isExisting) {
       setExistingImages(prev => prev.filter((_, i) => i !== index));
+      // Ajuster l'index de l'image principale si nécessaire
+      if (index === primaryImageIndex) {
+        setPrimaryImageIndex(0);
+      } else if (index < primaryImageIndex) {
+        setPrimaryImageIndex(prev => prev - 1);
+      }
     } else {
       setImageFiles(prev => prev.filter((_, i) => i !== index));
+      const globalIndex = totalExisting + index;
+      // Ajuster l'index de l'image principale si nécessaire
+      if (globalIndex === primaryImageIndex) {
+        setPrimaryImageIndex(0);
+      } else if (globalIndex < primaryImageIndex) {
+        setPrimaryImageIndex(prev => prev - 1);
+      }
     }
+  };
+
+  // Définir l'image principale
+  const setPrimaryImage = (index: number) => {
+    setPrimaryImageIndex(index);
   };
 
   const addDetail = () => {
@@ -519,6 +546,14 @@ export default function AdminProducts() {
         uploadedUrls.push(publicUrl);
       }
 
+      // Réordonner les images pour mettre l'image principale en premier
+      let orderedImages = [...uploadedUrls];
+      if (primaryImageIndex > 0 && primaryImageIndex < uploadedUrls.length) {
+        const primaryImage = orderedImages[primaryImageIndex];
+        orderedImages.splice(primaryImageIndex, 1);
+        orderedImages.unshift(primaryImage);
+      }
+
       const productData = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title),
@@ -529,7 +564,7 @@ export default function AdminProducts() {
         sizes: formData.sizes,
         colors: formData.colors,
         details: formData.details.filter(d => d.trim()),
-        images: uploadedUrls,
+        images: orderedImages, // Images ordonnées avec l'image principale en premier
         is_active: formData.is_active,
         stock_quantity: formData.stock_quantity,
         out_of_stock: formData.out_of_stock,
@@ -1152,31 +1187,91 @@ export default function AdminProducts() {
                       <span className="text-secondary/40 font-normal ml-2">(remplacez les images Printful par les vôtres)</span>
                     )}
                   </label>
+                  <p className="text-xs text-secondary/50 mb-3">
+                    Cliquez sur l'étoile pour définir l'image principale (affichée en premier sur le site)
+                  </p>
                   <div className="grid grid-cols-4 gap-3 mb-3">
-                    {existingImages.map((url, index) => (
-                      <div key={`existing-${index}`} className="aspect-square relative rounded-xl overflow-hidden">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index, true)}
-                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
+                    {existingImages.map((url, index) => {
+                      const isPrimary = index === primaryImageIndex;
+                      return (
+                        <div 
+                          key={`existing-${index}`} 
+                          className={`aspect-square relative rounded-xl overflow-hidden group/img ${isPrimary ? 'ring-2 ring-accent ring-offset-2 ring-offset-primary' : ''}`}
                         >
-                          <X className="w-3 h-3 text-white" />
-                        </button>
-                      </div>
-                    ))}
-                    {imageFiles.map((file, index) => (
-                      <div key={`new-${index}`} className="aspect-square relative rounded-xl overflow-hidden">
-                        <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index, false)}
-                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          
+                          {/* Badge image principale */}
+                          {isPrimary && (
+                            <div className="absolute top-1 left-1 px-2 py-0.5 bg-accent text-primary text-xs font-bold rounded-full">
+                              Principal
+                            </div>
+                          )}
+                          
+                          {/* Bouton définir comme principal */}
+                          <button
+                            type="button"
+                            onClick={() => setPrimaryImage(index)}
+                            className={`absolute bottom-1 left-1 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                              isPrimary 
+                                ? 'bg-accent text-primary' 
+                                : 'bg-secondary/80 text-secondary/60 opacity-0 group-hover/img:opacity-100 hover:bg-accent hover:text-primary'
+                            }`}
+                            title="Définir comme image principale"
+                          >
+                            <Star className={`w-4 h-4 ${isPrimary ? 'fill-current' : ''}`} />
+                          </button>
+                          
+                          {/* Bouton supprimer */}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index, true)}
+                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {imageFiles.map((file, index) => {
+                      const globalIndex = existingImages.length + index;
+                      const isPrimary = globalIndex === primaryImageIndex;
+                      return (
+                        <div 
+                          key={`new-${index}`} 
+                          className={`aspect-square relative rounded-xl overflow-hidden group/img ${isPrimary ? 'ring-2 ring-accent ring-offset-2 ring-offset-primary' : ''}`}
                         >
-                          <X className="w-3 h-3 text-white" />
-                        </button>
-                      </div>
-                    ))}
+                          <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+                          
+                          {/* Badge nouvelle image */}
+                          <div className={`absolute top-1 left-1 px-2 py-0.5 text-xs font-bold rounded-full ${isPrimary ? 'bg-accent text-primary' : 'bg-blue-500 text-white'}`}>
+                            {isPrimary ? 'Principal' : 'Nouveau'}
+                          </div>
+                          
+                          {/* Bouton définir comme principal */}
+                          <button
+                            type="button"
+                            onClick={() => setPrimaryImage(globalIndex)}
+                            className={`absolute bottom-1 left-1 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                              isPrimary 
+                                ? 'bg-accent text-primary' 
+                                : 'bg-secondary/80 text-secondary/60 opacity-0 group-hover/img:opacity-100 hover:bg-accent hover:text-primary'
+                            }`}
+                            title="Définir comme image principale"
+                          >
+                            <Star className={`w-4 h-4 ${isPrimary ? 'fill-current' : ''}`} />
+                          </button>
+                          
+                          {/* Bouton supprimer */}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index, false)}
+                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        </div>
+                      );
+                    })}
                     <label className="aspect-square rounded-xl border-2 border-dashed border-secondary/20 flex flex-col items-center justify-center cursor-pointer hover:border-accent transition-colors">
                       <ImagePlus className="w-6 h-6 text-secondary/40 mb-1" />
                       <span className="text-xs text-secondary/40">Ajouter</span>
