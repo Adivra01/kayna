@@ -405,37 +405,38 @@ const ProductDetail = () => {
       <main className="pt-20 sm:pt-24 pb-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-6 lg:gap-16">
-            {/* Left - Interactive 3D Gallery */}
-            <div 
-              ref={galleryRef} 
-              className="space-y-3 sm:space-y-4"
-              style={{ perspective: "1500px", transformStyle: "preserve-3d" }}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-            >
-              {/* Main Image with Video Toggle */}
+            {/* Left - Interactive 3D Gallery + Description */}
+            <div className="space-y-6">
               <div 
-                className="relative aspect-square sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-secondary/5 group cursor-zoom-in"
-                data-cursor="product"
-                onClick={() => !showVideo && setIsZoomed(true)}
+                ref={galleryRef} 
+                className="space-y-3 sm:space-y-4"
+                style={{ perspective: "1500px", transformStyle: "preserve-3d" }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
-                {showVideo ? (
-                  <video
-                    src={getProductVideo()}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img
-                    ref={mainImageRef}
-                    src={product.images[currentImageIndex] || "/placeholder.svg"}
-                    alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-700"
-                  />
-                )}
+                {/* Main Image with Video Toggle */}
+                <div 
+                  className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-secondary/5 group cursor-zoom-in"
+                  data-cursor="product"
+                  onClick={() => !showVideo && setIsZoomed(true)}
+                >
+                  {showVideo ? (
+                    <video
+                      src={getProductVideo()}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-auto object-contain"
+                    />
+                  ) : (
+                    <img
+                      ref={mainImageRef}
+                      src={product.images[currentImageIndex] || "/placeholder.svg"}
+                      alt={product.title}
+                      className="w-full h-auto object-contain transition-transform duration-700"
+                    />
+                  )}
                 
                 {/* 3D Shine effect */}
                 <div 
@@ -533,6 +534,17 @@ const ProductDetail = () => {
                   ))}
                 </div>
               )}
+              </div>
+
+              {/* Description - Under gallery on left */}
+              {product.description && (
+                <div className="mt-6 p-6 bg-secondary/5 rounded-2xl border border-secondary/10">
+                  <h3 className="font-bold text-secondary mb-3 text-lg">Description</h3>
+                  <p className="text-secondary/70 leading-relaxed whitespace-pre-line">
+                    {product.description}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Right - Product Info */}
@@ -561,12 +573,6 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Description */}
-                {product.description && (
-                  <p className="text-secondary/70 text-lg leading-relaxed">
-                    {product.description}
-                  </p>
-                )}
 
                 {/* Colors */}
                 <div className="space-y-3">

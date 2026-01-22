@@ -293,6 +293,9 @@ export default function AdminProducts() {
         p => p.printful_sync_product_id === printfulProduct.id.toString()
       );
 
+      // Try to get description from Printful (if available in sync product)
+      const printfulDescription = (detail.sync_product as any).description || null;
+
       const productData = {
         title: detail.sync_product.name,
         slug: detail.sync_product.name
@@ -301,7 +304,7 @@ export default function AdminProducts() {
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/(^-|-$)/g, ""),
-        description: null,
+        description: printfulDescription,
         price: basePrice * 655.957, // Convert EUR to FCFA
         category,
         tag: null,
@@ -325,6 +328,11 @@ export default function AdminProducts() {
         // Only update images if none exist locally
         if (existingProduct.images.length === 0) {
           updateData.images = productData.images;
+        }
+
+        // Update description if not set locally and Printful has one
+        if (!existingProduct.description && productData.description) {
+          updateData.description = productData.description;
         }
         
         const { error } = await supabase
