@@ -95,7 +95,7 @@ export default function AffiliateDashboard() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      navigate('/affiliate/login');
+      navigate('/auth');
       return;
     }
 
@@ -107,7 +107,7 @@ export default function AffiliateDashboard() {
 
     if (error || !affiliateData) {
       toast.error("Aucun compte affilié trouvé");
-      navigate('/affiliation');
+      navigate('/');
       return;
     }
 
@@ -205,7 +205,7 @@ export default function AffiliateDashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/affiliate/login');
+    navigate('/');
   };
 
   return (
