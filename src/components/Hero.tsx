@@ -80,11 +80,17 @@ const Hero = () => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setAffiliateCode(null);
-    toast.success("Déconnexion réussie");
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setAffiliateCode(null);
+      toast.success("Déconnexion réussie");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
   };
 
   const copyAffiliateLink = () => {
@@ -393,8 +399,14 @@ const Hero = () => {
                 <span>Mon compte</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-primary border-secondary/20">
-                {affiliateCode && (
+              {affiliateCode && (
                   <>
+                    <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                      <Link to="/affiliate/dashboard">
+                        <User className="w-4 h-4 mr-2" />
+                        Mon espace affilié
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={copyAffiliateLink} className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                       <Link2 className="w-4 h-4 mr-2" />
                       Copier mon lien ({affiliateCode})
@@ -465,16 +477,26 @@ const Hero = () => {
             {user ? (
               <>
                 {affiliateCode && (
-                  <button 
-                    onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
-                    className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
-                  >
-                    <Link2 className="w-5 h-5" />
-                    Mon lien d'affiliation
-                  </button>
+                  <>
+                    <Link 
+                      to="/affiliate/dashboard" 
+                      onClick={() => setMobileMenuOpen(false)} 
+                      className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
+                    >
+                      <User className="w-5 h-5" />
+                      Mon espace affilié
+                    </Link>
+                    <button 
+                      onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
+                      className="text-xl font-light text-secondary/70 hover:text-accent transition-colors flex items-center gap-2"
+                    >
+                      <Link2 className="w-5 h-5" />
+                      Copier mon lien
+                    </button>
+                  </>
                 )}
                 <button 
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                   className="text-2xl font-light text-red-400 hover:text-red-300 transition-colors flex items-center gap-2"
                 >
                   <LogOut className="w-5 h-5" />

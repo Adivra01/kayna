@@ -62,7 +62,7 @@ const ClientAuth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+      if (event === "SIGNED_IN" && session?.user) {
         // Check if admin
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -73,7 +73,8 @@ const ClientAuth = () => {
         if (roleData?.role === "admin") {
           navigate("/admin");
         } else {
-          navigate("/shop");
+          // Client - redirect to home page (shop)
+          navigate("/");
         }
       }
     });
