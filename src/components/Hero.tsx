@@ -319,7 +319,7 @@ const Hero = () => {
           <Link to="/affiliate" className="text-secondary/70 hover:text-accent transition-colors duration-300">Affiliation</Link>
           <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">Shop</Link>
           <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">Histoire</Link>
-          <Link to="/client-auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">Connexion</Link>
+          <Link to="/auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">Connexion</Link>
         </nav>
         
         <div className="relative flex gap-3">
@@ -373,7 +373,7 @@ const Hero = () => {
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Histoire
             </Link>
-            <Link to="/client-auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
+            <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Connexion
             </Link>
           </nav>
