@@ -60,7 +60,7 @@ export default function AdminProducts() {
     colors: ["noir", "blanc", "beige"],
     details: [""],
     is_active: true,
-    stock_quantity: 100,
+    stock_quantity: null as number | null,
     out_of_stock: false,
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -145,7 +145,7 @@ export default function AdminProducts() {
         colors: ["noir", "blanc", "beige"],
         details: [""],
         is_active: true,
-        stock_quantity: 100,
+        stock_quantity: null,
         out_of_stock: false,
       });
       setExistingImages([]);
@@ -577,21 +577,30 @@ export default function AdminProducts() {
                 {/* Stock Management */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-secondary mb-2">Quantité en stock</label>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Quantité en stock <span className="text-secondary/40">(facultatif)</span>
+                    </label>
                     <input
                       type="number"
                       min="0"
-                      value={formData.stock_quantity}
+                      value={formData.stock_quantity ?? ""}
                       onChange={(e) => {
-                        const qty = parseInt(e.target.value) || 0;
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          stock_quantity: qty,
-                          out_of_stock: qty === 0 ? true : prev.out_of_stock
-                        }));
+                        const value = e.target.value;
+                        if (value === "") {
+                          setFormData(prev => ({ ...prev, stock_quantity: null as any }));
+                        } else {
+                          const qty = parseInt(value) || 0;
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            stock_quantity: qty,
+                            out_of_stock: qty === 0 ? true : prev.out_of_stock
+                          }));
+                        }
                       }}
-                      className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
+                      placeholder="Non défini"
+                      className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent"
                     />
+                    <p className="text-xs text-secondary/40 mt-1">Laissez vide si non géré</p>
                   </div>
                   <div className="flex flex-col justify-end">
                     <div className="flex items-center justify-between py-3 px-4 bg-secondary/5 rounded-xl h-[50px]">
@@ -610,6 +619,7 @@ export default function AdminProducts() {
                         />
                       </button>
                     </div>
+                    <p className="text-xs text-secondary/40 mt-1">Marquer manuellement en rupture</p>
                   </div>
                 </div>
 
