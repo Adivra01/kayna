@@ -150,6 +150,40 @@ serve(async (req) => {
         result = await response.json();
         break;
 
+      // Get webhooks
+      case "get-webhooks":
+        response = await fetch(`${PRINTFUL_API_URL}/webhooks`, { headers });
+        result = await response.json();
+        break;
+
+      // Register webhooks
+      case "register-webhooks":
+        if (!data?.url || !data?.types) {
+          return new Response(
+            JSON.stringify({ error: "url and types required" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        response = await fetch(`${PRINTFUL_API_URL}/webhooks`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            url: data.url,
+            types: data.types,
+          }),
+        });
+        result = await response.json();
+        break;
+
+      // Delete webhooks
+      case "delete-webhooks":
+        response = await fetch(`${PRINTFUL_API_URL}/webhooks`, {
+          method: "DELETE",
+          headers,
+        });
+        result = await response.json();
+        break;
+
       default:
         return new Response(
           JSON.stringify({ error: "Invalid action", valid_actions: [
@@ -162,7 +196,10 @@ serve(async (req) => {
             "create-order",
             "get-order",
             "get-shipping-rates",
-            "get-countries"
+            "get-countries",
+            "get-webhooks",
+            "register-webhooks",
+            "delete-webhooks"
           ]}),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
