@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw, ZoomIn } from "lucide-react";
-import { SiTiktok } from "react-icons/si";
+import { ShoppingBag, ArrowLeft, Heart, Check, ChevronLeft, ChevronRight, ZoomIn, Ruler } from "lucide-react";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -11,6 +10,12 @@ import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { getProductBySlug, products } from "@/data/products";
 import { showToast } from "@/lib/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Import videos for rotation effect
 import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
@@ -24,22 +29,17 @@ const ProductDetail = () => {
   const product = getProductBySlug(slug || "");
   
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedColor, setSelectedColor] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
   
   const { addItem, getTotalItems, toggleCart } = useCart();
   const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   
-  const imageRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
-  const mainImageRef = useRef<HTMLImageElement>(null);
-  const thumbnailsRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get video based on category
   const getProductVideo = () => {
@@ -49,13 +49,6 @@ const ProductDetail = () => {
     return tshirtVideo;
   };
 
-  // Colors available
-  const colors = [
-    { name: "Noir", hex: "#0A0A0A" },
-    { name: "Blanc", hex: "#F5F5F0" },
-    { name: "Beige", hex: "#C9A86C" },
-  ];
-
   useEffect(() => {
     if (!product) {
       navigate("/shop");
@@ -63,7 +56,6 @@ const ProductDetail = () => {
     }
 
     window.scrollTo(0, 0);
-    setSelectedColor(colors[0].name);
     
     // Track product view
     trackProductView(product.id);
@@ -71,169 +63,80 @@ const ProductDetail = () => {
     const ctx = gsap.context(() => {
       // Cinematic entrance for gallery
       gsap.fromTo(galleryRef.current,
-        { opacity: 0, x: -60, rotateY: -15 },
-        { opacity: 1, x: 0, rotateY: 0, duration: 1.2, ease: "power3.out" }
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
       );
       
       gsap.fromTo(contentRef.current,
-        { opacity: 0, x: 60 },
-        { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.3 }
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.2 }
       );
 
-      // Thumbnails staggered entrance
-      gsap.fromTo(".thumbnail-item",
-        { opacity: 0, y: 30, scale: 0.8 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, delay: 0.5, ease: "back.out(1.5)" }
-      );
-
-      gsap.fromTo(".feature-card",
-        { opacity: 0, y: 20, rotateX: -20 },
-        { opacity: 1, y: 0, rotateX: 0, duration: 0.6, stagger: 0.1, delay: 0.6 }
+      // Images staggered entrance
+      gsap.fromTo(".gallery-image",
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, delay: 0.3, ease: "power2.out" }
       );
     });
 
     return () => ctx.revert();
   }, [product, navigate, slug, trackProductView]);
 
-  // Animate image change with 3D effect
-  useEffect(() => {
-    if (mainImageRef.current) {
-      gsap.fromTo(mainImageRef.current,
-        { opacity: 0, scale: 1.1, rotateY: 10 },
-        { opacity: 1, scale: 1, rotateY: 0, duration: 0.6, ease: "power2.out" }
-      );
-    }
-  }, [currentImageIndex]);
-
-  // Animate size/color change
-  const animateSizeChange = (size: string) => {
-    setSelectedSize(size);
-    
-    if (galleryRef.current) {
-      gsap.to(galleryRef.current, {
-        scale: 0.98,
-        rotateY: 3,
-        duration: 0.15,
-        ease: "power2.out",
-        onComplete: () => {
-          gsap.to(galleryRef.current, {
-            scale: 1,
-            rotateY: 0,
-            duration: 0.3,
-            ease: "elastic.out(1, 0.5)",
-          });
-        },
-      });
-    }
-  };
-
-  const animateColorChange = (color: string) => {
-    setSelectedColor(color);
-    
-    if (galleryRef.current) {
-      gsap.to(galleryRef.current, {
-        rotateY: 15,
-        scale: 0.95,
-        opacity: 0.8,
-        duration: 0.3,
-        ease: "power2.in",
-        onComplete: () => {
-          // Simulate color change - in real app would swap images
-          gsap.to(galleryRef.current, {
-            rotateY: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 0.5,
-            ease: "power3.out",
-          });
-        },
-      });
-    }
-
-    // Flash effect
-    const flash = document.createElement("div");
-    flash.className = "fixed inset-0 bg-accent/10 pointer-events-none z-50";
-    document.body.appendChild(flash);
-    gsap.to(flash, {
-      opacity: 0,
-      duration: 0.5,
-      onComplete: () => flash.remove(),
-    });
-  };
-
-  // Mouse move for 3D tilt effect
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!galleryRef.current || isZoomed) return;
-    
-    const rect = galleryRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    
-    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-
-    gsap.to(galleryRef.current, {
-      rotateY: x * 10,
-      rotateX: -y * 10,
-      duration: 0.5,
-      ease: "power2.out",
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (!galleryRef.current) return;
-    gsap.to(galleryRef.current, {
-      rotateY: 0,
-      rotateX: 0,
-      duration: 0.5,
-      ease: "power2.out",
-    });
-  };
-
   if (!product) return null;
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      showToast.error("Sélectionne une taille");
+      showToast.error("Sélectionnez une taille");
       return;
     }
     
     // Track add to cart
     trackAddToCart(product.id);
     
-    for (let i = 0; i < quantity; i++) {
-      addItem({
-        id: `${product.id}-${selectedSize}-${selectedColor}`,
-        title: product.title,
-        price: product.price,
-        image: product.images[0],
-        category: product.category,
-        size: selectedSize,
-      });
-    }
+    addItem({
+      id: `${product.id}-${selectedSize}`,
+      title: product.title,
+      price: product.price,
+      image: product.images[0],
+      category: product.category,
+      size: selectedSize,
+    });
     
     setIsAdded(true);
-    showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize} — ${selectedColor}` });
+    showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize}` });
     
     // Animate button
     gsap.fromTo(".add-to-cart-btn",
       { scale: 1 },
-      { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1 }
+      { scale: 1.02, duration: 0.1, yoyo: true, repeat: 1 }
     );
     
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+  const scrollGallery = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const scrollAmount = container.clientWidth * 0.8;
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
   };
 
   const relatedProducts = products
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
+
+  // Size guide data
+  const sizeGuideData = [
+    { size: "XS", chest: "86-91", waist: "71-76", hips: "86-91" },
+    { size: "S", chest: "91-96", waist: "76-81", hips: "91-96" },
+    { size: "M", chest: "96-101", waist: "81-86", hips: "96-101" },
+    { size: "L", chest: "101-106", waist: "86-91", hips: "101-106" },
+    { size: "XL", chest: "106-111", waist: "91-96", hips: "106-111" },
+    { size: "XXL", chest: "111-116", waist: "96-101", hips: "111-116" },
+  ];
 
   return (
     <div className="min-h-screen bg-primary">
@@ -242,17 +145,17 @@ const ProductDetail = () => {
       {/* Zoom Modal */}
       {isZoomed && (
         <div 
-          className="fixed inset-0 z-[100] bg-primary/95 backdrop-blur-xl flex items-center justify-center p-8 cursor-zoom-out"
+          className="fixed inset-0 z-[100] bg-primary/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out"
           onClick={() => setIsZoomed(false)}
         >
           <div className="relative max-w-6xl max-h-full animate-scale-in">
             <img
               src={product.images[currentImageIndex]}
               alt={product.title}
-              className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+              className="max-w-full max-h-[90vh] object-contain"
             />
             <button 
-              className="absolute top-4 right-4 w-12 h-12 rounded-full bg-secondary/10 backdrop-blur-md flex items-center justify-center text-secondary hover:bg-accent hover:text-primary transition-all"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary/10 backdrop-blur-md flex items-center justify-center text-secondary hover:bg-accent hover:text-primary transition-all"
               onClick={() => setIsZoomed(false)}
             >
               ×
@@ -260,38 +163,70 @@ const ProductDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Size Guide Dialog */}
+      <Dialog open={showSizeGuide} onOpenChange={setShowSizeGuide}>
+        <DialogContent className="bg-primary border-secondary/20 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-secondary text-xl font-bold">Guide des tailles</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p className="text-secondary/70 text-sm mb-4">Toutes les mesures sont en centimètres</p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-secondary/20">
+                  <th className="py-3 text-left text-secondary font-bold">Taille</th>
+                  <th className="py-3 text-center text-secondary font-bold">Poitrine</th>
+                  <th className="py-3 text-center text-secondary font-bold">Taille</th>
+                  <th className="py-3 text-center text-secondary font-bold">Hanches</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sizeGuideData.map((row) => (
+                  <tr key={row.size} className="border-b border-secondary/10">
+                    <td className="py-3 text-secondary font-medium">{row.size}</td>
+                    <td className="py-3 text-center text-secondary/70">{row.chest}</td>
+                    <td className="py-3 text-center text-secondary/70">{row.waist}</td>
+                    <td className="py-3 text-center text-secondary/70">{row.hips}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
       
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 flex items-center justify-between backdrop-blur-md bg-primary/80 border-b border-secondary/10">
-        <div className="flex items-center gap-3 sm:gap-6">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <Link to="/" className="text-xl sm:text-2xl font-bold italic text-secondary">KAYNA</Link>
-        </div>
+      {/* Header - Breadcrumb */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between backdrop-blur-md bg-primary/90 border-b border-secondary/5">
+        <nav className="flex items-center gap-2 text-xs sm:text-sm text-secondary/60">
+          <Link to="/" className="hover:text-accent transition-colors">Accueil</Link>
+          <span>›</span>
+          <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
+          <span>›</span>
+          <span className="capitalize hover:text-accent transition-colors">{product.category}</span>
+          <span>›</span>
+          <span className="text-secondary truncate max-w-[150px] sm:max-w-none">{product.title}</span>
+        </nav>
         
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2">
           <Link 
             to="/favorites"
-            className="relative w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+            className="relative w-9 h-9 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
           >
             <Heart className="w-4 h-4" />
             {getFavoritesCount() > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-primary text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-primary text-[10px] font-bold rounded-full flex items-center justify-center">
                 {getFavoritesCount()}
               </span>
             )}
           </Link>
-          <a href="https://www.instagram.com/kayna.xxv" target="_blank" rel="noopener noreferrer" className="hidden sm:flex w-10 h-10 rounded-full border border-secondary/20 items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all">
-            <Instagram className="w-4 h-4" />
-          </a>
           <button 
             onClick={toggleCart}
-            className="relative w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+            className="relative w-9 h-9 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/70 hover:bg-accent hover:text-primary hover:border-accent transition-all"
           >
             <ShoppingBag className="w-4 h-4" />
             {getTotalItems() > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-primary text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-primary text-[10px] font-bold rounded-full flex items-center justify-center">
                 {getTotalItems()}
               </span>
             )}
@@ -300,274 +235,72 @@ const ProductDetail = () => {
       </header>
 
       {/* Main Content */}
-      <main className="pt-20 sm:pt-24 pb-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-16">
-            {/* Left - Interactive 3D Gallery */}
-            <div 
-              ref={galleryRef} 
-              className="space-y-3 sm:space-y-4"
-              style={{ perspective: "1500px", transformStyle: "preserve-3d" }}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-            >
-              {/* Main Image with Video Toggle */}
-              <div 
-                className="relative aspect-square sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-secondary/5 group cursor-zoom-in"
-                data-cursor="product"
-                onClick={() => !showVideo && setIsZoomed(true)}
+      <main className="pt-14">
+        {/* Gallery Section - Full Width Horizontal */}
+        <div ref={galleryRef} className="relative">
+          {/* Navigation Arrows */}
+          <button 
+            onClick={() => scrollGallery('left')}
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/80 backdrop-blur-sm flex items-center justify-center text-secondary border border-secondary/20 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => scrollGallery('right')}
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/80 backdrop-blur-sm flex items-center justify-center text-secondary border border-secondary/20 hover:bg-accent hover:text-primary hover:border-accent transition-all"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Horizontal Scrolling Gallery */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {product.images.map((img, idx) => (
+              <div
+                key={idx}
+                className="gallery-image flex-shrink-0 w-[85vw] sm:w-[45vw] lg:w-[28vw] h-[60vh] sm:h-[70vh] lg:h-[75vh] snap-start relative group cursor-zoom-in"
+                onClick={() => { setCurrentImageIndex(idx); setIsZoomed(true); }}
               >
-                {showVideo ? (
-                  <video
-                    src={getProductVideo()}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <img
-                    ref={mainImageRef}
-                    src={product.images[currentImageIndex]}
-                    alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-700"
-                  />
-                )}
-                
-                {/* 3D Shine effect */}
-                <div 
-                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{
-                    background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(201, 168, 108, 0.15) 0%, transparent 50%)`,
-                  }}
+                <img
+                  src={img}
+                  alt={`${product.title} - Vue ${idx + 1}`}
+                  className="w-full h-full object-cover"
                 />
-                
-                {/* Navigation Arrows */}
-                <button 
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-
-                {/* Video Toggle */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowVideo(!showVideo); }}
-                  className={`absolute bottom-4 left-4 px-4 py-2 rounded-full backdrop-blur-md flex items-center gap-2 text-sm font-medium transition-all ${
-                    showVideo 
-                      ? "bg-accent text-primary" 
-                      : "bg-primary/60 text-secondary border border-secondary/20 hover:bg-accent hover:text-primary hover:border-accent"
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
-                  {showVideo ? "Image" : "360°"}
-                </button>
-
-                {/* Zoom Icon */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setIsZoomed(true); }}
-                  className="absolute bottom-4 right-16 w-10 h-10 rounded-full bg-primary/60 backdrop-blur-md flex items-center justify-center text-secondary border border-secondary/20 opacity-0 group-hover:opacity-100 transition-all hover:bg-accent hover:text-primary hover:border-accent"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-
-                {/* Wishlist */}
-                <FavoriteButton
-                  isFavorite={isFavorite(product.id)}
-                  onToggle={() => toggleFavorite(product.id)}
-                  size="lg"
-                  className="absolute top-3 sm:top-4 right-3 sm:right-4 shadow-elegant"
-                />
-
-                {product.tag && (
-                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4 px-4 py-2 bg-accent text-primary rounded-full text-xs sm:text-sm font-bold shadow-gold">
-                    {product.tag}
-                  </div>
-                )}
-
-                {/* Image Counter Mobile */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-primary/80 backdrop-blur-sm rounded-full text-secondary text-xs font-medium lg:hidden">
-                  {currentImageIndex + 1} / {product.images.length}
+                {/* Zoom indicator on hover */}
+                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ZoomIn className="w-8 h-8 text-secondary/80" />
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
 
-              {/* Interactive Thumbnails */}
-              <div ref={thumbnailsRef} className="hidden sm:flex gap-3">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    className={`thumbnail-item relative flex-1 aspect-square rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
-                      currentImageIndex === idx 
-                        ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold" 
-                        : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                    {currentImageIndex === idx && (
-                      <div className="absolute inset-0 bg-accent/10" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Product Info Section */}
+        <div ref={contentRef} className="container mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+            {/* Left Column - Title & Description */}
+            <div className="space-y-6">
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-wide text-secondary">
+                {product.title}
+              </h1>
 
-            {/* Right - Product Info */}
-            <div ref={contentRef} className="lg:py-4">
-              <div className="lg:sticky lg:top-28 space-y-6">
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-sm text-secondary/50">
-                  <Link to="/shop" className="hover:text-accent transition-colors">Shop</Link>
-                  <span>/</span>
-                  <span className="capitalize">{product.category}</span>
-                </div>
-
-                {/* Title & Price */}
-                <div>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-secondary mb-4">
-                    {product.title}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-3xl sm:text-4xl font-bold text-accent">{product.price}€</span>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                      ))}
-                      <span className="text-secondary/50 text-sm ml-2">(127 avis)</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-base sm:text-lg text-secondary/70 leading-relaxed">
+              {/* Description */}
+              <div className="space-y-4">
+                <p className="text-secondary/70 leading-relaxed">
                   {product.description}
                 </p>
-
-                {/* Color Selection with 3D Animation */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-secondary">Couleur — <span className="text-accent">{selectedColor}</span></span>
-                  </div>
-                  <div className="flex gap-3">
-                    {colors.map((color) => (
-                      <button
-                        key={color.name}
-                        onClick={() => animateColorChange(color.name)}
-                        className={`relative w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 ${
-                          selectedColor === color.name
-                            ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold scale-110"
-                            : "hover:ring-2 hover:ring-secondary/30 hover:ring-offset-2 hover:ring-offset-primary"
-                        }`}
-                        style={{ backgroundColor: color.hex }}
-                        title={color.name}
-                      >
-                        {selectedColor === color.name && (
-                          <Check className={`absolute inset-0 m-auto w-5 h-5 ${color.hex === "#0A0A0A" ? "text-secondary" : "text-primary"}`} />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Size Selection with 3D Animation */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-secondary">Taille</span>
-                    <button className="text-sm text-accent hover:underline">Guide des tailles</button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => animateSizeChange(size)}
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold transition-all duration-300 hover:scale-105 ${
-                          selectedSize === size
-                            ? "bg-accent text-primary shadow-gold scale-110"
-                            : "bg-secondary/10 text-secondary hover:bg-secondary/20"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Quantity & Add to Cart */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Quantity */}
-                  <div className="flex items-center gap-4 bg-secondary/10 rounded-xl p-2 w-fit">
-                    <button 
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-secondary hover:bg-secondary/10 transition-colors"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center font-bold text-secondary">{quantity}</span>
-                    <button 
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-secondary hover:bg-secondary/10 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Add to Cart Button */}
-                  <button
-                    onClick={handleAddToCart}
-                    className={`add-to-cart-btn flex-1 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
-                      isAdded 
-                        ? "bg-green-500 text-white" 
-                        : "bg-accent text-primary shadow-gold hover:shadow-gold-glow hover:scale-[1.02] active:scale-100"
-                    }`}
-                    data-cursor="action"
-                  >
-                    {isAdded ? (
-                      <>
-                        <Check className="w-5 h-5" />
-                        <span>Ajouté !</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag className="w-5 h-5" />
-                        <span>Ajouter — {product.price * quantity}€</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Features */}
-                <div className="grid grid-cols-3 gap-3 pt-4">
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <Truck className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Livraison gratuite</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">dès 75€</span>
-                  </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <RotateCcw className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Retours gratuits</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">sous 30 jours</span>
-                  </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <Shield className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Paiement sécurisé</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">100% safe</span>
-                  </div>
-                </div>
-
+                
                 {/* Product Details */}
-                <div className="pt-6 border-t border-secondary/10">
-                  <h3 className="font-bold text-secondary mb-4">Détails produit</h3>
+                <div className="pt-4 border-t border-secondary/10">
+                  <h3 className="font-semibold text-secondary mb-3 text-sm uppercase tracking-wider">Détails</h3>
                   <ul className="space-y-2">
                     {product.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-secondary/70">
-                        <div className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
+                      <li key={idx} className="flex items-center gap-2 text-secondary/60 text-sm">
+                        <span className="w-1 h-1 rounded-full bg-accent" />
                         {detail}
                       </li>
                     ))}
@@ -575,40 +308,121 @@ const ProductDetail = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-16 sm:mt-24">
-              <h2 className="text-2xl sm:text-3xl font-bold text-secondary mb-6 sm:mb-8">
-                Tu pourrais aussi aimer
-              </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                {relatedProducts.map((relProduct) => (
-                  <Link
-                    key={relProduct.id}
-                    to={`/product/${relProduct.slug}`}
-                    className="group"
-                    data-cursor="product"
+            {/* Right Column - Size, Price, Add to Cart */}
+            <div className="space-y-6 lg:pl-8">
+              {/* Size Selection Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-secondary font-semibold uppercase tracking-wider text-sm">
+                  Sélectionnez la taille
+                </span>
+                <button 
+                  onClick={() => setShowSizeGuide(true)}
+                  className="text-secondary/70 text-sm underline underline-offset-4 hover:text-accent transition-colors flex items-center gap-1"
+                >
+                  <Ruler className="w-3 h-3" />
+                  Guide des tailles
+                </button>
+              </div>
+
+              {/* Size Options */}
+              <div className="flex flex-wrap gap-3">
+                {product.sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`min-w-[48px] h-10 px-4 rounded-sm font-medium text-sm transition-all ${
+                      selectedSize === size
+                        ? "bg-secondary text-primary"
+                        : "bg-transparent text-secondary border border-secondary/30 hover:border-secondary"
+                    }`}
                   >
-                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-secondary/5 aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 group-hover:scale-[1.02]">
-                      <img
-                        src={relProduct.images[0]}
-                        alt={relProduct.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/30 to-transparent opacity-50 group-hover:opacity-80 transition-opacity" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
-                        <h3 className="text-secondary text-sm sm:text-lg font-bold mb-1">{relProduct.title}</h3>
-                        <span className="text-accent font-bold">{relProduct.price}€</span>
-                      </div>
-                    </div>
-                  </Link>
+                    {size}
+                  </button>
                 ))}
               </div>
+
+              {/* Price */}
+              <div className="pt-4">
+                <span className="text-2xl sm:text-3xl font-bold text-secondary">
+                  {product.price.toLocaleString('fr-FR')} €
+                </span>
+              </div>
+
+              {/* Add to Cart & Favorite */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleAddToCart}
+                  className={`add-to-cart-btn flex-1 py-4 font-semibold uppercase tracking-wider text-sm transition-all ${
+                    isAdded 
+                      ? "bg-green-600 text-white" 
+                      : selectedSize 
+                        ? "bg-accent text-primary hover:bg-accent/90" 
+                        : "bg-secondary/80 text-primary cursor-pointer"
+                  }`}
+                >
+                  {isAdded ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Check className="w-4 h-4" />
+                      Ajouté !
+                    </span>
+                  ) : selectedSize ? (
+                    "Ajouter au panier"
+                  ) : (
+                    "Sélectionnez la taille"
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => toggleFavorite(product.id)}
+                  className={`w-14 h-14 flex items-center justify-center border transition-all ${
+                    isFavorite(product.id)
+                      ? "bg-accent border-accent text-primary"
+                      : "border-secondary/30 text-secondary hover:border-secondary"
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite(product.id) ? "fill-current" : ""}`} />
+                </button>
+              </div>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="container mx-auto px-4 sm:px-8 lg:px-12 py-12 sm:py-16 border-t border-secondary/10">
+            <h2 className="text-xl sm:text-2xl font-bold text-secondary mb-6 sm:mb-8 uppercase tracking-wider">
+              Vous aimerez aussi
+            </h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {relatedProducts.map((relProduct) => (
+                <Link
+                  key={relProduct.id}
+                  to={`/product/${relProduct.slug}`}
+                  className="group"
+                >
+                  <div className="relative overflow-hidden bg-secondary/5 aspect-[3/4]">
+                    <img
+                      src={relProduct.images[0]}
+                      alt={relProduct.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <FavoriteButton
+                      isFavorite={isFavorite(relProduct.id)}
+                      onToggle={() => toggleFavorite(relProduct.id)}
+                      size="sm"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    <h3 className="text-secondary text-sm font-medium truncate">{relProduct.title}</h3>
+                    <span className="text-secondary/70 text-sm">{relProduct.price} €</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />
