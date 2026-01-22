@@ -389,10 +389,9 @@ const Hero = () => {
         </Link>
         
         <nav className="relative hidden lg:flex items-center gap-8 text-sm">
-          <button onClick={() => scrollToSection("bestsellers")} className="text-secondary/70 hover:text-accent transition-colors duration-300">Bestsellers</button>
-          <button onClick={() => scrollToSection("categories")} className="text-secondary/70 hover:text-accent transition-colors duration-300">Catégories</button>
           <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">Shop</Link>
           <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">Histoire</Link>
+          <Link to="/affiliate/dashboard" className="text-secondary/70 hover:text-accent transition-colors duration-300">Affiliation</Link>
           
           {user ? (
             <DropdownMenu>
@@ -484,19 +483,16 @@ const Hero = () => {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-primary/98 backdrop-blur-2xl" onClick={() => setMobileMenuOpen(false)} />
           <nav className="absolute top-24 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
-            <button onClick={() => scrollToSection("bestsellers")} className="text-2xl font-light text-secondary/70 hover:text-accent transition-colors">
-              Bestsellers
-            </button>
-            <button onClick={() => scrollToSection("categories")} className="text-2xl font-light text-secondary/70 hover:text-accent transition-colors">
-              Catégories
-            </button>
-            <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Shop
             </Link>
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Histoire
             </Link>
+            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
+              Affiliation
+            </Link>
+            <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             
             {user ? (
               <>
