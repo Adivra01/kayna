@@ -59,9 +59,9 @@ const Footer = () => {
             <h3 className="text-secondary font-bold mb-3 sm:mb-4 text-sm sm:text-base">Info</h3>
             <ul className="space-y-2 sm:space-y-3 text-sm">
               <li><Link to="/about" className="text-secondary/60 hover:text-accent transition-colors">{t.nav.about}</Link></li>
-              <li><a href="#" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.contact}</a></li>
-              <li><a href="#" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.faq}</a></li>
-              <li><a href="#" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.delivery}</a></li>
+              <li><a href="mailto:contact@kayna.store" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.contact}</a></li>
+              <li><Link to="/faq" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.faq}</Link></li>
+              <li><Link to="/terms" className="text-secondary/60 hover:text-accent transition-colors">{t.footer.delivery}</Link></li>
             </ul>
           </div>
 
@@ -103,10 +103,10 @@ const Footer = () => {
             © 2025 KAYNA. {t.footer.allRights}
           </p>
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
-            <a href="#" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.legalNotice}</a>
-            <a href="#" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.terms}</a>
-            <a href="#" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.privacy}</a>
-            <Link to="/admin/auth" className="text-secondary/40 hover:text-accent transition-colors">Admin</Link>
+            <Link to="/legal" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.legalNotice}</Link>
+            <Link to="/terms" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.terms}</Link>
+            <Link to="/privacy" className="text-secondary/40 hover:text-secondary transition-colors">{t.footer.privacy}</Link>
+            <Link to="/auth" className="text-secondary/40 hover:text-accent transition-colors">Admin</Link>
           </div>
         </div>
       </div>

@@ -593,19 +593,43 @@ const ProductDetail = () => {
                         <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                           <Truck className="w-5 h-5 text-accent" />
                         </div>
-                        <span className="font-bold text-secondary text-lg">Livraison & Retours</span>
+                        <span className="font-bold text-secondary text-lg">{t.product.shippingTitle || "Livraison & Politique"}</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-secondary/50 transition-transform group-open:rotate-90" />
                     </summary>
-                    <div className="px-5 pb-5 pt-2 border-t border-secondary/10 space-y-3">
+                    <div className="px-5 pb-5 pt-2 border-t border-secondary/10 space-y-4">
+                      {/* Délai de livraison */}
                       <div className="flex items-start gap-3 text-secondary/70">
-                        <Truck className="w-5 h-5 text-accent flex-shrink-0" />
-                        <span>Livraison gratuite à partir de 100 000 FCFA</span>
+                        <Truck className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-secondary">{t.product.deliveryTime || "Livraison : 3 à 15 jours"}</p>
+                          <p className="text-sm">{t.product.deliveryNote || "Le délai varie selon votre pays de destination"}</p>
+                        </div>
                       </div>
+                      
+                      {/* Livraison gratuite */}
                       <div className="flex items-start gap-3 text-secondary/70">
-                        <RotateCcw className="w-5 h-5 text-accent flex-shrink-0" />
-                        <span>Retours gratuits sous 30 jours</span>
+                        <Shield className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-secondary">{t.product.freeShipping}</p>
+                          <p className="text-sm">100 000 FCFA</p>
+                        </div>
                       </div>
+                      
+                      {/* Politique de non-retour */}
+                      <div className="flex items-start gap-3 p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                        <RotateCcw className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-red-400">{t.product.noReturns || "Pas de retours ni remboursements"}</p>
+                          <p className="text-sm text-secondary/60">{t.product.noReturnsNote || "Toutes les ventes sont définitives. Vérifiez bien votre taille avant de commander."}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Lien vers CGV */}
+                      <Link to="/terms" className="inline-flex items-center gap-2 text-accent text-sm hover:underline mt-2">
+                        {t.product.seeTerms || "Voir les conditions générales de vente"}
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
                     </div>
                   </details>
                 </div>
