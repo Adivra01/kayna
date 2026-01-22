@@ -37,6 +37,7 @@ interface CreateOrderRequest {
   items: OrderItem[];
   discount_code?: string;
   affiliate_code?: string;
+  payment_method?: string;
 }
 
 serve(async (req) => {
@@ -137,8 +138,8 @@ serve(async (req) => {
       }
     }
 
-    // Estimate shipping cost (we'll use a flat rate for now, or call Printful shipping API)
-    const shippingCost = 5.99; // Default flat rate
+    // Shipping cost (flat rate for now)
+    const shippingCost = 5000;
 
     const total = subtotal - discountAmount + shippingCost;
 
@@ -165,6 +166,7 @@ serve(async (req) => {
         affiliate_code: orderRequest.affiliate_code,
         status: "pending",
         payment_status: "pending",
+        payment_method: orderRequest.payment_method,
       })
       .select()
       .single();
