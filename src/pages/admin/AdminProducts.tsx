@@ -9,11 +9,25 @@ import {
   ImagePlus, 
   X, 
   Eye, 
-  EyeOff,
   Archive,
-  Search
+  Search,
+  RefreshCw,
+  Link2,
+  Unlink,
+  Download
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface PrintfulVariant {
+  variant_id: number;
+  sync_variant_id: number;
+  name: string;
+  size: string;
+  color: string;
+  retail_price: string;
+  sku: string;
+  [key: string]: string | number; // Index signature for Json compatibility
+}
 
 interface Product {
   id: string;
@@ -31,6 +45,73 @@ interface Product {
   stock_quantity: number;
   out_of_stock: boolean;
   created_at: string;
+  printful_sync_product_id: string | null;
+  printful_variants: PrintfulVariant[];
+}
+
+interface PrintfulProduct {
+  id: number;
+  external_id: string;
+  name: string;
+  variants: number;
+  synced: number;
+  thumbnail_url: string;
+  is_ignored: boolean;
+}
+
+interface PrintfulProductDetail {
+  sync_product: {
+    id: number;
+    external_id: string;
+    name: string;
+    variants: number;
+    synced: number;
+    thumbnail_url: string;
+  };
+  sync_variants: Array<{
+    id: number;
+    external_id: string;
+    sync_product_id: number;
+    name: string;
+    synced: boolean;
+    variant_id: number;
+    main_category_id: number;
+    warehouse_product_variant_id: number | null;
+    retail_price: string;
+    sku: string;
+    currency: string;
+    is_ignored: boolean;
+    product: {
+      variant_id: number;
+      product_id: number;
+      image: string;
+      name: string;
+    };
+    files: Array<{
+      id: number;
+      type: string;
+      hash: string;
+      url: string | null;
+      filename: string;
+      mime_type: string;
+      size: number;
+      width: number;
+      height: number;
+      dpi: number | null;
+      status: string;
+      created: number;
+      thumbnail_url: string;
+      preview_url: string;
+      visible: boolean;
+      is_temporary: boolean;
+    }>;
+    options: Array<{
+      id: string;
+      value: string;
+    }>;
+    size: string;
+    color: string;
+  }>;
 }
 
 const FIXED_SIZES = ["S", "M", "L", "XL", "XXL"];
@@ -47,6 +128,12 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterActive, setFilterActive] = useState<"all" | "active" | "archived">("all");
+  
+  // Printful sync states
+  const [showPrintfulSync, setShowPrintfulSync] = useState(false);
+  const [printfulProducts, setPrintfulProducts] = useState<PrintfulProduct[]>([]);
+  const [loadingPrintful, setLoadingPrintful] = useState(false);
+  const [syncingProduct, setSyncingProduct] = useState<number | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -62,6 +149,8 @@ export default function AdminProducts() {
     is_active: true,
     stock_quantity: null as number | null,
     out_of_stock: false,
+    printful_sync_product_id: null as string | null,
+    printful_variants: [] as PrintfulVariant[],
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -82,7 +171,6 @@ export default function AdminProducts() {
       return;
     }
     
-    // Map data to include default values for new fields (cast to any for new columns)
     const mappedProducts = (data || []).map((p: any) => ({
       id: p.id,
       slug: p.slug,
@@ -99,10 +187,195 @@ export default function AdminProducts() {
       stock_quantity: p.stock_quantity ?? 0,
       out_of_stock: p.out_of_stock ?? false,
       created_at: p.created_at,
+      printful_sync_product_id: p.printful_sync_product_id,
+      printful_variants: p.printful_variants || [],
     })) as Product[];
     
     setProducts(mappedProducts);
     setLoading(false);
+  };
+
+  const fetchPrintfulProducts = async () => {
+    setLoadingPrintful(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/printful`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get-products" }),
+        }
+      );
+      const data = await response.json();
+      
+      if (data.result) {
+        setPrintfulProducts(data.result);
+      } else {
+        toast.error("Erreur lors du chargement des produits Printful");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion à Printful");
+    } finally {
+      setLoadingPrintful(false);
+    }
+  };
+
+  const syncPrintfulProduct = async (printfulProduct: PrintfulProduct) => {
+    setSyncingProduct(printfulProduct.id);
+    try {
+      // Get detailed product info with variants
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/printful`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            action: "get-product", 
+            data: { product_id: printfulProduct.id } 
+          }),
+        }
+      );
+      const data = await response.json();
+      
+      if (!data.result) {
+        toast.error("Erreur lors de la récupération des détails");
+        return;
+      }
+
+      const detail: PrintfulProductDetail = data.result;
+      
+      // Extract unique sizes and colors from variants
+      const sizes = [...new Set(detail.sync_variants.map(v => v.size).filter(Boolean))];
+      const colors = [...new Set(detail.sync_variants.map(v => v.color?.toLowerCase()).filter(Boolean))];
+      
+      // Get images from variants (mockup previews)
+      const images: string[] = [];
+      for (const variant of detail.sync_variants) {
+        for (const file of variant.files) {
+          if (file.type === "preview" && file.preview_url && !images.includes(file.preview_url)) {
+            images.push(file.preview_url);
+          }
+        }
+      }
+      
+      // Use thumbnail if no preview images
+      if (images.length === 0 && detail.sync_product.thumbnail_url) {
+        images.push(detail.sync_product.thumbnail_url);
+      }
+
+      // Get price from first variant
+      const basePrice = detail.sync_variants[0]?.retail_price 
+        ? parseFloat(detail.sync_variants[0].retail_price) 
+        : 0;
+
+      // Prepare variants data
+      const printfulVariants: PrintfulVariant[] = detail.sync_variants.map(v => ({
+        variant_id: v.variant_id,
+        sync_variant_id: v.id,
+        name: v.name,
+        size: v.size || "",
+        color: v.color || "",
+        retail_price: v.retail_price,
+        sku: v.sku,
+      }));
+
+      // Determine category from product name
+      let category = "tshirts";
+      const nameLower = detail.sync_product.name.toLowerCase();
+      if (nameLower.includes("hoodie") || nameLower.includes("sweat")) {
+        category = "hoodies";
+      } else if (nameLower.includes("pull") || nameLower.includes("sweater")) {
+        category = "sweaters";
+      }
+
+      // Check if product already exists with this Printful ID
+      const existingProduct = products.find(
+        p => p.printful_sync_product_id === printfulProduct.id.toString()
+      );
+
+      const productData = {
+        title: detail.sync_product.name,
+        slug: detail.sync_product.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
+        description: null,
+        price: basePrice * 655.957, // Convert EUR to FCFA
+        category,
+        tag: null,
+        sizes: sizes.length > 0 ? sizes : FIXED_SIZES,
+        colors: colors.length > 0 ? colors : ["noir", "blanc", "beige"],
+        details: [],
+        images,
+        is_active: true,
+        printful_sync_product_id: printfulProduct.id.toString(),
+        printful_variants: printfulVariants,
+      };
+
+      if (existingProduct) {
+        // Update existing - keep local images and price if they were customized
+        const updateData: Record<string, unknown> = {
+          sizes: productData.sizes,
+          colors: productData.colors,
+          printful_variants: productData.printful_variants as unknown,
+        };
+        
+        // Only update images if none exist locally
+        if (existingProduct.images.length === 0) {
+          updateData.images = productData.images;
+        }
+        
+        const { error } = await supabase
+          .from("products")
+          .update(updateData)
+          .eq("id", existingProduct.id);
+
+        if (error) throw error;
+        toast.success(`Variantes mises à jour pour "${existingProduct.title}"`);
+      } else {
+        // Create new product
+        const insertData = {
+          ...productData,
+          printful_variants: productData.printful_variants as unknown,
+        };
+        
+        const { error } = await supabase
+          .from("products")
+          .insert(insertData as any);
+
+        if (error) throw error;
+        toast.success(`Produit "${productData.title}" importé !`);
+      }
+
+      fetchProducts();
+      setShowPrintfulSync(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la synchronisation");
+    } finally {
+      setSyncingProduct(null);
+    }
+  };
+
+  const unlinkPrintful = async (productId: string) => {
+    if (!confirm("Déconnecter ce produit de Printful ? Les variantes seront supprimées.")) return;
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        printful_sync_product_id: null,
+        printful_variants: [],
+      })
+      .eq("id", productId);
+
+    if (error) {
+      toast.error("Erreur lors de la déconnexion");
+      return;
+    }
+
+    toast.success("Produit déconnecté de Printful");
+    fetchProducts();
   };
 
   const generateSlug = (title: string) => {
@@ -130,6 +403,8 @@ export default function AdminProducts() {
         is_active: product.is_active,
         stock_quantity: product.stock_quantity || 0,
         out_of_stock: product.out_of_stock || false,
+        printful_sync_product_id: product.printful_sync_product_id,
+        printful_variants: product.printful_variants || [],
       });
       setExistingImages(product.images || []);
     } else {
@@ -147,6 +422,8 @@ export default function AdminProducts() {
         is_active: true,
         stock_quantity: null,
         out_of_stock: false,
+        printful_sync_product_id: null,
+        printful_variants: [],
       });
       setExistingImages([]);
     }
@@ -248,12 +525,15 @@ export default function AdminProducts() {
         is_active: formData.is_active,
         stock_quantity: formData.stock_quantity,
         out_of_stock: formData.out_of_stock,
+        // Keep Printful connection
+        printful_sync_product_id: formData.printful_sync_product_id,
+        printful_variants: formData.printful_variants as unknown,
       };
 
       if (editingProduct) {
         const { error } = await supabase
           .from("products")
-          .update(productData)
+          .update(productData as any)
           .eq("id", editingProduct.id);
         
         if (error) throw error;
@@ -261,7 +541,7 @@ export default function AdminProducts() {
       } else {
         const { error } = await supabase
           .from("products")
-          .insert(productData);
+          .insert(productData as any);
         
         if (error) throw error;
         toast.success("Produit créé !");
@@ -318,6 +598,11 @@ export default function AdminProducts() {
     return matchesSearch && matchesFilter;
   });
 
+  // Check which Printful products are already synced
+  const syncedPrintfulIds = products
+    .filter(p => p.printful_sync_product_id)
+    .map(p => p.printful_sync_product_id);
+
   return (
     <AdminLayout>
       <div className="p-6 lg:p-8">
@@ -327,13 +612,25 @@ export default function AdminProducts() {
             <h1 className="text-2xl sm:text-3xl font-bold text-secondary">Produits</h1>
             <p className="text-secondary/60">{products.length} produit{products.length > 1 ? "s" : ""}</p>
           </div>
-          <button
-            onClick={() => openForm()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-primary rounded-xl font-bold shadow-gold hover:shadow-gold-glow hover:scale-105 transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Nouveau produit</span>
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setShowPrintfulSync(true);
+                fetchPrintfulProducts();
+              }}
+              className="inline-flex items-center gap-2 px-5 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Sync Printful</span>
+            </button>
+            <button
+              onClick={() => openForm()}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-primary rounded-xl font-bold shadow-gold hover:shadow-gold-glow hover:scale-105 transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Nouveau produit</span>
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -426,16 +723,25 @@ export default function AdminProducts() {
                     </button>
                   </div>
 
-                  {!product.is_active && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-secondary/80 text-primary text-xs font-bold rounded-full">
-                      Archivé
-                    </div>
-                  )}
-                  {product.tag && product.is_active && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-accent text-primary text-xs font-bold rounded-full">
-                      {product.tag}
-                    </div>
-                  )}
+                  {/* Badges */}
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    {!product.is_active && (
+                      <span className="px-2 py-1 bg-secondary/80 text-primary text-xs font-bold rounded-full">
+                        Archivé
+                      </span>
+                    )}
+                    {product.tag && product.is_active && (
+                      <span className="px-2 py-1 bg-accent text-primary text-xs font-bold rounded-full">
+                        {product.tag}
+                      </span>
+                    )}
+                    {product.printful_sync_product_id && (
+                      <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                        <Link2 className="w-3 h-3" />
+                        Printful
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-secondary mb-1 truncate">{product.title}</h3>
@@ -445,8 +751,11 @@ export default function AdminProducts() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className={`px-2 py-1 rounded-full ${product.out_of_stock ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                      {product.out_of_stock ? 'Rupture' : `Stock: ${product.stock_quantity}`}
+                      {product.out_of_stock ? 'Rupture' : `Stock: ${product.stock_quantity || '∞'}`}
                     </span>
+                    {product.printful_variants?.length > 0 && (
+                      <span className="text-purple-400">{product.printful_variants.length} variantes</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -455,15 +764,132 @@ export default function AdminProducts() {
         )}
       </div>
 
+      {/* Printful Sync Modal */}
+      {showPrintfulSync && (
+        <div className="fixed inset-0 z-50 bg-primary/95 backdrop-blur-sm overflow-y-auto">
+          <div className="min-h-screen py-8 px-4">
+            <div className="max-w-3xl mx-auto bg-secondary/5 border border-secondary/10 rounded-3xl p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-secondary flex items-center gap-3">
+                    <RefreshCw className="w-6 h-6 text-purple-500" />
+                    Synchroniser Printful
+                  </h2>
+                  <p className="text-secondary/60 mt-1">Importez vos produits depuis votre store Printful</p>
+                </div>
+                <button
+                  onClick={() => setShowPrintfulSync(false)}
+                  className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/60 hover:bg-secondary/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {loadingPrintful ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+                </div>
+              ) : printfulProducts.length === 0 ? (
+                <div className="text-center py-20">
+                  <Package className="w-16 h-16 text-secondary/20 mx-auto mb-4" />
+                  <p className="text-secondary/60">Aucun produit dans votre store Printful</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {printfulProducts.map((product) => {
+                    const isSynced = syncedPrintfulIds.includes(product.id.toString());
+                    const isSyncing = syncingProduct === product.id;
+                    
+                    return (
+                      <div
+                        key={product.id}
+                        className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                          isSynced 
+                            ? "bg-purple-500/10 border-purple-500/30" 
+                            : "bg-secondary/5 border-secondary/10 hover:border-purple-500/50"
+                        }`}
+                      >
+                        <img
+                          src={product.thumbnail_url}
+                          alt={product.name}
+                          className="w-20 h-20 rounded-xl object-cover"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-bold text-secondary">{product.name}</h3>
+                          <p className="text-sm text-secondary/60">
+                            {product.variants} variante{product.variants > 1 ? "s" : ""} • 
+                            {product.synced} synchronisée{product.synced > 1 ? "s" : ""}
+                          </p>
+                          {isSynced && (
+                            <span className="inline-flex items-center gap-1 text-xs text-purple-400 mt-1">
+                              <Link2 className="w-3 h-3" />
+                              Déjà connecté
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => syncPrintfulProduct(product)}
+                          disabled={isSyncing}
+                          className={`px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                            isSynced
+                              ? "bg-purple-600 text-white hover:bg-purple-700"
+                              : "bg-purple-600 text-white hover:bg-purple-700"
+                          } disabled:opacity-50`}
+                        >
+                          {isSyncing ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Sync...
+                            </>
+                          ) : isSynced ? (
+                            <>
+                              <RefreshCw className="w-4 h-4" />
+                              Resync
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-4 h-4" />
+                              Importer
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-8 p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                <h4 className="font-bold text-purple-400 mb-2">💡 Bon à savoir</h4>
+                <ul className="text-sm text-secondary/70 space-y-1">
+                  <li>• Les variantes Printful sont synchronisées pour les commandes</li>
+                  <li>• Vous pouvez modifier le prix, les images et la description librement</li>
+                  <li>• La connexion Printful reste active pour le traitement des commandes</li>
+                  <li>• Resync met à jour les variantes sans toucher vos personnalisations</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 bg-primary/95 backdrop-blur-sm overflow-y-auto">
           <div className="min-h-screen py-8 px-4">
             <div className="max-w-2xl mx-auto bg-secondary/5 border border-secondary/10 rounded-3xl p-6 sm:p-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-secondary">
-                  {editingProduct ? "Modifier le produit" : "Nouveau produit"}
-                </h2>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-secondary">
+                    {editingProduct ? "Modifier le produit" : "Nouveau produit"}
+                  </h2>
+                  {formData.printful_sync_product_id && (
+                    <span className="inline-flex items-center gap-1 text-sm text-purple-400 mt-1">
+                      <Link2 className="w-4 h-4" />
+                      Connecté à Printful (ID: {formData.printful_sync_product_id})
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={closeForm}
                   className="w-10 h-10 rounded-full border border-secondary/20 flex items-center justify-center text-secondary/60 hover:bg-secondary/10 transition-colors"
@@ -471,6 +897,29 @@ export default function AdminProducts() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Printful info banner */}
+              {formData.printful_sync_product_id && (
+                <div className="mb-6 p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-purple-400">Produit Printful</h4>
+                      <p className="text-sm text-secondary/60">
+                        {formData.printful_variants.length} variantes liées • 
+                        Modifiez librement le prix et les images
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => editingProduct && unlinkPrintful(editingProduct.id)}
+                      className="px-3 py-1.5 text-sm text-red-400 border border-red-400/30 rounded-lg hover:bg-red-400/10 transition-colors flex items-center gap-1"
+                    >
+                      <Unlink className="w-3 h-3" />
+                      Déconnecter
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Title */}
@@ -574,6 +1023,24 @@ export default function AdminProducts() {
                   </div>
                 </div>
 
+                {/* Printful Variants (read-only) */}
+                {formData.printful_variants.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Variantes Printful 
+                      <span className="text-secondary/40 font-normal ml-2">(synchronisées automatiquement)</span>
+                    </label>
+                    <div className="max-h-40 overflow-y-auto space-y-2 p-3 bg-secondary/5 rounded-xl border border-secondary/10">
+                      {formData.printful_variants.map((variant, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <span className="text-secondary/70">{variant.name}</span>
+                          <span className="text-purple-400">{variant.retail_price}€</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Stock Management */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -671,7 +1138,12 @@ export default function AdminProducts() {
 
                 {/* Images */}
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-2">Images</label>
+                  <label className="block text-sm font-medium text-secondary mb-2">
+                    Images
+                    {formData.printful_sync_product_id && (
+                      <span className="text-secondary/40 font-normal ml-2">(remplacez les images Printful par les vôtres)</span>
+                    )}
+                  </label>
                   <div className="grid grid-cols-4 gap-3 mb-3">
                     {existingImages.map((url, index) => (
                       <div key={`existing-${index}`} className="aspect-square relative rounded-xl overflow-hidden">
