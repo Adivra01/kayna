@@ -289,21 +289,12 @@ const Shop = () => {
                         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
                       />
                       
-                      {/* Rotating Video - shown on hover */}
-                      {productVideo && !isOutOfStock && (
-                        <video
-                          src={productVideo}
-                          muted
-                          loop
-                          playsInline
-                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                          onMouseEnter={(e) => e.currentTarget.play()}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.pause();
-                            e.currentTarget.currentTime = 0;
-                          }}
-                        />
-                      )}
+                      {/* Second image - shown on hover (fallback to first if only one image) */}
+                      <img
+                        src={product.images[1] || product.images[0]}
+                        alt={`${product.title} - vue alternative`}
+                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      />
                       
                       {/* Premium gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
