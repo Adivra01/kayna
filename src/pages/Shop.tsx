@@ -268,8 +268,8 @@ const Shop = () => {
               <p className="text-muted-foreground">Aucun produit disponible pour le moment</p>
             </div>
           ) : (
-            /* Products Grid */
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            /* Products Grid - Responsive for all devices */
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
               {filteredProducts.map((product, index) => {
                 const productVideo = categoryVideoMap[product.category];
                 const isOutOfStock = product.out_of_stock;
@@ -281,7 +281,7 @@ const Shop = () => {
                     ref={(el) => (cardsRef.current[index] = el)}
                     className="group perspective-1000"
                   >
-                    <div className={`relative rounded-2xl lg:rounded-3xl overflow-hidden bg-card aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 transform-gpu group-hover:scale-[1.02] ${isOutOfStock ? 'opacity-70' : ''}`}>
+                    <div className={`relative rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden bg-card aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 transform-gpu group-hover:scale-[1.02] ${isOutOfStock ? 'opacity-70' : ''}`}>
                       {/* Static Image - shown by default */}
                       <img
                         src={product.images[0]}
@@ -343,9 +343,9 @@ const Shop = () => {
                       </div>
                       
                       {/* Content */}
-                      <div className="absolute bottom-0 left-0 right-0 p-5 transform transition-transform duration-500 group-hover:translate-y-[-8px]">
-                        <h3 className="text-secondary text-lg font-bold mb-1 drop-shadow-lg">{product.title}</h3>
-                        <span className="text-accent font-bold text-lg drop-shadow-md">{formatPrice(product.price)}</span>
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 lg:p-5 transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                        <h3 className="text-secondary text-sm sm:text-base lg:text-lg font-bold mb-1 drop-shadow-lg line-clamp-2">{product.title}</h3>
+                        <span className="text-accent font-bold text-sm sm:text-base lg:text-lg drop-shadow-md">{formatPrice(product.price)}</span>
                       </div>
 
                       {product.tag && !isOutOfStock && (

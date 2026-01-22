@@ -19,6 +19,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfSale from "./pages/TermsOfSale";
 import LegalNotice from "./pages/LegalNotice";
 import FAQ from "./pages/FAQ";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 import CustomCursor from "./components/CustomCursor";
@@ -73,6 +75,8 @@ function AppContent() {
           <Route path="/terms" element={<TermsOfSale />} />
           <Route path="/legal" element={<LegalNotice />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminAnalytics />} />
