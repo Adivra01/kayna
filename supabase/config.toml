@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.printful]
 verify_jwt = false
+
+[functions.printful-webhook]
+verify_jwt = false
+
+[functions.create-printful-order]
+verify_jwt = false
+
+[functions.submit-order-to-printful]
+verify_jwt = false
