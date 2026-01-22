@@ -278,10 +278,10 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Info Section */}
+        {/* Product Info Section - Two Columns */}
         <div ref={contentRef} className="container mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* Left Column - Title & Description */}
+            {/* Left Column - Title, Description, Details */}
             <div className="space-y-6">
               {/* Title */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-wide text-secondary">
@@ -289,71 +289,105 @@ const ProductDetail = () => {
               </h1>
 
               {/* Description */}
-              <div className="space-y-4">
-                <p className="text-secondary/70 leading-relaxed">
-                  {product.description}
-                </p>
-                
-                {/* Product Details */}
-                <div className="pt-4 border-t border-secondary/10">
-                  <h3 className="font-semibold text-secondary mb-3 text-sm uppercase tracking-wider">Détails</h3>
-                  <ul className="space-y-2">
-                    {product.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-secondary/60 text-sm">
-                        <span className="w-1 h-1 rounded-full bg-accent" />
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <p className="text-secondary/70 leading-relaxed">
+                {product.description}
+              </p>
+              
+              {/* Product Details */}
+              <div className="pt-4 border-t border-secondary/10">
+                <h3 className="font-semibold text-secondary mb-3 text-sm uppercase tracking-wider">Détails & Matériaux</h3>
+                <ul className="space-y-2">
+                  {product.details.map((detail, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-secondary/60 text-sm">
+                      <span className="w-1 h-1 rounded-full bg-accent" />
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
               </div>
+
+              {/* Size Guide */}
+              <button 
+                onClick={() => setShowSizeGuide(true)}
+                className="text-secondary/70 text-sm underline underline-offset-4 hover:text-accent transition-colors flex items-center gap-1"
+              >
+                <Ruler className="w-3 h-3" />
+                Guide des tailles
+              </button>
             </div>
 
-            {/* Right Column - Size, Price, Add to Cart */}
-            <div className="space-y-6 lg:pl-8">
-              {/* Size Selection Header */}
-              <div className="flex items-center justify-between">
-                <span className="text-secondary font-semibold uppercase tracking-wider text-sm">
-                  Sélectionnez la taille
-                </span>
-                <button 
-                  onClick={() => setShowSizeGuide(true)}
-                  className="text-secondary/70 text-sm underline underline-offset-4 hover:text-accent transition-colors flex items-center gap-1"
-                >
-                  <Ruler className="w-3 h-3" />
-                  Guide des tailles
-                </button>
-              </div>
-
-              {/* Size Options */}
-              <div className="flex flex-wrap gap-3">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`min-w-[48px] h-10 px-4 rounded-sm font-medium text-sm transition-all ${
-                      selectedSize === size
-                        ? "bg-secondary text-primary"
-                        : "bg-transparent text-secondary border border-secondary/30 hover:border-secondary"
-                    }`}
+            {/* Right Column - Recommendations */}
+            <div className="space-y-6">
+              <h2 className="text-lg font-bold text-secondary uppercase tracking-wider">
+                Vous aimerez aussi
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {relatedProducts.map((relProduct) => (
+                  <Link
+                    key={relProduct.id}
+                    to={`/product/${relProduct.slug}`}
+                    className="group"
                   >
-                    {size}
-                  </button>
+                    <div className="relative overflow-hidden bg-secondary/5 aspect-[3/4]">
+                      <img
+                        src={relProduct.images[0]}
+                        alt={relProduct.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <FavoriteButton
+                        isFavorite={isFavorite(relProduct.id)}
+                        onToggle={() => toggleFavorite(relProduct.id)}
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                    <div className="mt-2 space-y-0.5">
+                      <h3 className="text-secondary text-xs font-medium truncate">{relProduct.title}</h3>
+                      <p className="text-secondary/70 text-xs">{relProduct.price} €</p>
+                    </div>
+                  </Link>
                 ))}
               </div>
+            </div>
+          </div>
 
+          {/* Bottom Section - Price, Size, Add to Cart */}
+          <div className="mt-12 pt-8 border-t border-secondary/10">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
               {/* Price */}
-              <div className="pt-4">
-                <span className="text-2xl sm:text-3xl font-bold text-secondary">
+              <div>
+                <span className="text-3xl sm:text-4xl font-bold text-secondary">
                   {product.price.toLocaleString('fr-FR')} €
                 </span>
               </div>
 
+              {/* Size Selection */}
+              <div className="flex flex-col gap-3">
+                <span className="text-secondary font-semibold uppercase tracking-wider text-sm">
+                  Taille
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-w-[44px] h-10 px-3 rounded-sm font-medium text-sm transition-all ${
+                        selectedSize === size
+                          ? "bg-secondary text-primary"
+                          : "bg-transparent text-secondary border border-secondary/30 hover:border-secondary"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Add to Cart & Favorite */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className={`add-to-cart-btn flex-1 py-4 font-semibold uppercase tracking-wider text-sm transition-all ${
+                  className={`add-to-cart-btn px-8 py-4 font-semibold uppercase tracking-wider text-sm transition-all ${
                     isAdded 
                       ? "bg-green-600 text-white" 
                       : selectedSize 
@@ -387,42 +421,6 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="container mx-auto px-4 sm:px-8 lg:px-12 py-12 sm:py-16 border-t border-secondary/10">
-            <h2 className="text-xl sm:text-2xl font-bold text-secondary mb-6 sm:mb-8 uppercase tracking-wider">
-              Vous aimerez aussi
-            </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {relatedProducts.map((relProduct) => (
-                <Link
-                  key={relProduct.id}
-                  to={`/product/${relProduct.slug}`}
-                  className="group"
-                >
-                  <div className="relative overflow-hidden bg-secondary/5 aspect-[3/4]">
-                    <img
-                      src={relProduct.images[0]}
-                      alt={relProduct.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <FavoriteButton
-                      isFavorite={isFavorite(relProduct.id)}
-                      onToggle={() => toggleFavorite(relProduct.id)}
-                      size="sm"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    />
-                  </div>
-                  <div className="mt-3 space-y-1">
-                    <h3 className="text-secondary text-sm font-medium truncate">{relProduct.title}</h3>
-                    <span className="text-secondary/70 text-sm">{relProduct.price} €</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       <Footer />
