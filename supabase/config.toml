@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.submit-order-to-printful]
 verify_jwt = false
+
+[functions.setup-printful-webhooks]
+verify_jwt = false
