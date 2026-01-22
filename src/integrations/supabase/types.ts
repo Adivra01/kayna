@@ -437,6 +437,250 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          order_id: string
+          printful_sync_product_id: string | null
+          printful_variant_id: string | null
+          product_id: string | null
+          product_image: string | null
+          product_title: string
+          quantity: number
+          size: string | null
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          printful_sync_product_id?: string | null
+          printful_variant_id?: string | null
+          product_id?: string | null
+          product_image?: string | null
+          product_title: string
+          quantity?: number
+          size?: string | null
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          printful_sync_product_id?: string | null
+          printful_variant_id?: string | null
+          product_id?: string | null
+          product_image?: string | null
+          product_title?: string
+          quantity?: number
+          size?: string | null
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          order_id: string
+          printful_status: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          order_id: string
+          printful_status?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          order_id?: string
+          printful_status?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          affiliate_code: string | null
+          affiliate_id: string | null
+          created_at: string
+          customer_name: string
+          delivered_at: string | null
+          discount_amount: number
+          discount_code: string | null
+          email: string
+          id: string
+          order_number: string
+          paid_at: string | null
+          payment_id: string | null
+          payment_method: string | null
+          payment_status: string | null
+          phone: string | null
+          printful_estimated_delivery: string | null
+          printful_order_id: string | null
+          printful_shipping_carrier: string | null
+          printful_status: string | null
+          printful_tracking_number: string | null
+          printful_tracking_url: string | null
+          shipped_at: string | null
+          shipping_address_1: string
+          shipping_address_2: string | null
+          shipping_city: string
+          shipping_cost: number
+          shipping_country: string
+          shipping_state: string | null
+          shipping_zip: string
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          affiliate_code?: string | null
+          affiliate_id?: string | null
+          created_at?: string
+          customer_name: string
+          delivered_at?: string | null
+          discount_amount?: number
+          discount_code?: string | null
+          email: string
+          id?: string
+          order_number: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          printful_estimated_delivery?: string | null
+          printful_order_id?: string | null
+          printful_shipping_carrier?: string | null
+          printful_status?: string | null
+          printful_tracking_number?: string | null
+          printful_tracking_url?: string | null
+          shipped_at?: string | null
+          shipping_address_1: string
+          shipping_address_2?: string | null
+          shipping_city: string
+          shipping_cost?: number
+          shipping_country: string
+          shipping_state?: string | null
+          shipping_zip: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          affiliate_code?: string | null
+          affiliate_id?: string | null
+          created_at?: string
+          customer_name?: string
+          delivered_at?: string | null
+          discount_amount?: number
+          discount_code?: string | null
+          email?: string
+          id?: string
+          order_number?: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          printful_estimated_delivery?: string | null
+          printful_order_id?: string | null
+          printful_shipping_carrier?: string | null
+          printful_status?: string | null
+          printful_tracking_number?: string | null
+          printful_tracking_url?: string | null
+          shipped_at?: string | null
+          shipping_address_1?: string
+          shipping_address_2?: string | null
+          shipping_city?: string
+          shipping_cost?: number
+          shipping_country?: string
+          shipping_state?: string | null
+          shipping_zip?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      printful_webhook_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          event_type: string
+          id: string
+          payload: Json
+          processed: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          processed?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed?: boolean | null
+        }
+        Relationships: []
+      }
       product_colors: {
         Row: {
           color_hex: string
@@ -687,6 +931,7 @@ export type Database = {
     }
     Functions: {
       generate_affiliate_code: { Args: never; Returns: string }
+      generate_order_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
