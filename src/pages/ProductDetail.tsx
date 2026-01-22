@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw, ZoomIn } from "lucide-react";
+import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw, ZoomIn, Loader2 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
@@ -9,19 +9,40 @@ import { useTracking } from "@/hooks/useTracking";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
-import { getProductBySlug, products } from "@/data/products";
 import { showToast } from "@/lib/toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import videos for rotation effect
 import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
 import hoodieVideo from "@/assets/videos/hoodie-rotate.mp4";
 import sweaterVideo from "@/assets/videos/sweater-rotate.mp4";
 
+interface Product {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  price: number;
+  category: string;
+  tag: string | null;
+  sizes: string[];
+  colors: string[];
+  details: string[];
+  images: string[];
+  is_active: boolean;
+  out_of_stock: boolean;
+  stock_quantity: number | null;
+  video_url?: string | null;
+}
+
 const ProductDetail = () => {
   const { trackProductView, trackAddToCart } = useTracking();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const product = getProductBySlug(slug || "");
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
@@ -41,8 +62,9 @@ const ProductDetail = () => {
   const mainImageRef = useRef<HTMLImageElement>(null);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
 
-  // Get video based on category
+  // Get video based on category or custom video
   const getProductVideo = () => {
+    if (product?.video_url) return product.video_url;
     if (!product) return tshirtVideo;
     if (product.category.toLowerCase().includes("hoodie")) return hoodieVideo;
     if (product.category.toLowerCase().includes("sweater")) return sweaterVideo;
@@ -56,20 +78,93 @@ const ProductDetail = () => {
     { name: "Beige", hex: "#C9A86C" },
   ];
 
+  // Fetch product from Supabase
   useEffect(() => {
-    if (!product) {
-      navigate("/shop");
-      return;
-    }
+    const fetchProduct = async () => {
+      if (!slug) {
+        navigate("/shop");
+        return;
+      }
 
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("slug", slug)
+        .eq("is_active", true)
+        .single();
+
+      if (error || !data) {
+        console.error("Product not found:", error);
+        navigate("/shop");
+        return;
+      }
+
+      const productData: Product = {
+        id: data.id,
+        slug: data.slug,
+        title: data.title,
+        description: data.description,
+        price: Number(data.price),
+        category: data.category,
+        tag: data.tag,
+        sizes: data.sizes || ["S", "M", "L", "XL"],
+        colors: data.colors || ["noir", "blanc", "beige"],
+        details: data.details || [],
+        images: data.images || [],
+        is_active: data.is_active ?? true,
+        out_of_stock: data.out_of_stock ?? false,
+        stock_quantity: data.stock_quantity,
+        video_url: (data as any).video_url || null,
+      };
+
+      setProduct(productData);
+      setSelectedColor(colors[0].name);
+      
+      // Track product view
+      trackProductView(productData.id);
+
+      // Fetch related products
+      const { data: related } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category", productData.category)
+        .eq("is_active", true)
+        .neq("id", productData.id)
+        .limit(4);
+
+      if (related) {
+        setRelatedProducts(related.map(p => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          description: p.description,
+          price: Number(p.price),
+          category: p.category,
+          tag: p.tag,
+          sizes: p.sizes || ["S", "M", "L", "XL"],
+          colors: p.colors || ["noir", "blanc", "beige"],
+          details: p.details || [],
+          images: p.images || [],
+          is_active: p.is_active ?? true,
+          out_of_stock: p.out_of_stock ?? false,
+          stock_quantity: p.stock_quantity,
+        })));
+      }
+
+      setLoading(false);
+    };
+
+    fetchProduct();
     window.scrollTo(0, 0);
-    setSelectedColor(colors[0].name);
-    
-    // Track product view
-    trackProductView(product.id);
+  }, [slug, navigate, trackProductView]);
+
+  // GSAP animations after product loads
+  useEffect(() => {
+    if (!product || loading) return;
 
     const ctx = gsap.context(() => {
-      // Cinematic entrance for gallery
       gsap.fromTo(galleryRef.current,
         { opacity: 0, x: -60, rotateY: -15 },
         { opacity: 1, x: 0, rotateY: 0, duration: 1.2, ease: "power3.out" }
@@ -80,7 +175,6 @@ const ProductDetail = () => {
         { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.3 }
       );
 
-      // Thumbnails staggered entrance
       gsap.fromTo(".thumbnail-item",
         { opacity: 0, y: 30, scale: 0.8 },
         { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, delay: 0.5, ease: "back.out(1.5)" }
@@ -93,7 +187,7 @@ const ProductDetail = () => {
     });
 
     return () => ctx.revert();
-  }, [product, navigate, slug, trackProductView]);
+  }, [product, loading]);
 
   // Animate image change with 3D effect
   useEffect(() => {
@@ -105,7 +199,6 @@ const ProductDetail = () => {
     }
   }, [currentImageIndex]);
 
-  // Animate size/color change
   const animateSizeChange = (size: string) => {
     setSelectedSize(size);
     
@@ -138,7 +231,6 @@ const ProductDetail = () => {
         duration: 0.3,
         ease: "power2.in",
         onComplete: () => {
-          // Simulate color change - in real app would swap images
           gsap.to(galleryRef.current, {
             rotateY: 0,
             scale: 1,
@@ -150,7 +242,6 @@ const ProductDetail = () => {
       });
     }
 
-    // Flash effect
     const flash = document.createElement("div");
     flash.className = "fixed inset-0 bg-accent/10 pointer-events-none z-50";
     document.body.appendChild(flash);
@@ -161,7 +252,6 @@ const ProductDetail = () => {
     });
   };
 
-  // Mouse move for 3D tilt effect
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!galleryRef.current || isZoomed) return;
     
@@ -189,6 +279,15 @@ const ProductDetail = () => {
     });
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+      </div>
+    );
+  }
+
   if (!product) return null;
 
   const handleAddToCart = () => {
@@ -196,8 +295,12 @@ const ProductDetail = () => {
       showToast.error("Sélectionne une taille");
       return;
     }
+
+    if (product.out_of_stock) {
+      showToast.error("Ce produit est en rupture de stock");
+      return;
+    }
     
-    // Track add to cart
     trackAddToCart(product.id);
     
     for (let i = 0; i < quantity; i++) {
@@ -205,7 +308,7 @@ const ProductDetail = () => {
         id: `${product.id}-${selectedSize}-${selectedColor}`,
         title: product.title,
         price: product.price,
-        image: product.images[0],
+        image: product.images[0] || "/placeholder.svg",
         category: product.category,
         size: selectedSize,
       });
@@ -214,7 +317,6 @@ const ProductDetail = () => {
     setIsAdded(true);
     showToast.cart("Ajouté au panier !", { description: `${product.title} — Taille ${selectedSize} — ${selectedColor}` });
     
-    // Animate button
     gsap.fromTo(".add-to-cart-btn",
       { scale: 1 },
       { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1 }
@@ -224,23 +326,23 @@ const ProductDetail = () => {
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    if (product.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    if (product.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
   };
-
-  const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-primary">
       <CartDrawer />
       
       {/* Zoom Modal */}
-      {isZoomed && (
+      {isZoomed && product.images[currentImageIndex] && (
         <div 
           className="fixed inset-0 z-[100] bg-primary/95 backdrop-blur-xl flex items-center justify-center p-8 cursor-zoom-out"
           onClick={() => setIsZoomed(false)}
@@ -329,7 +431,7 @@ const ProductDetail = () => {
                 ) : (
                   <img
                     ref={mainImageRef}
-                    src={product.images[currentImageIndex]}
+                    src={product.images[currentImageIndex] || "/placeholder.svg"}
                     alt={product.title}
                     className="w-full h-full object-cover transition-transform duration-700"
                   />
@@ -344,18 +446,22 @@ const ProductDetail = () => {
                 />
                 
                 {/* Navigation Arrows */}
-                <button 
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
+                {product.images.length > 1 && (
+                  <>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/90 backdrop-blur-sm flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-accent shadow-elegant hover:scale-110"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
 
                 {/* Video Toggle */}
                 <button
@@ -392,31 +498,41 @@ const ProductDetail = () => {
                   </div>
                 )}
 
+                {product.out_of_stock && (
+                  <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm flex items-center justify-center">
+                    <span className="text-secondary font-bold text-xl">Rupture de stock</span>
+                  </div>
+                )}
+
                 {/* Image Counter Mobile */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-primary/80 backdrop-blur-sm rounded-full text-secondary text-xs font-medium lg:hidden">
-                  {currentImageIndex + 1} / {product.images.length}
-                </div>
+                {product.images.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-primary/80 backdrop-blur-sm rounded-full text-secondary text-xs font-medium lg:hidden">
+                    {currentImageIndex + 1} / {product.images.length}
+                  </div>
+                )}
               </div>
 
               {/* Interactive Thumbnails */}
-              <div ref={thumbnailsRef} className="hidden sm:flex gap-3">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    className={`thumbnail-item relative flex-1 aspect-square rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
-                      currentImageIndex === idx 
-                        ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold" 
-                        : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                    {currentImageIndex === idx && (
-                      <div className="absolute inset-0 bg-accent/10" />
-                    )}
-                  </button>
-                ))}
-              </div>
+              {product.images.length > 1 && (
+                <div ref={thumbnailsRef} className="hidden sm:flex gap-3">
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`thumbnail-item relative flex-1 aspect-square rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
+                        currentImageIndex === idx 
+                          ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold" 
+                          : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      {currentImageIndex === idx && (
+                        <div className="absolute inset-0 bg-accent/10" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right - Product Info */}
@@ -440,57 +556,54 @@ const ProductDetail = () => {
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-accent text-accent" />
                       ))}
-                      <span className="text-secondary/50 text-sm ml-2">(127 avis)</span>
+                      <span className="text-secondary/60 text-sm ml-2">(127 avis)</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-base sm:text-lg text-secondary/70 leading-relaxed">
-                  {product.description}
-                </p>
+                {product.description && (
+                  <p className="text-secondary/70 text-lg leading-relaxed">
+                    {product.description}
+                  </p>
+                )}
 
-                {/* Color Selection with 3D Animation */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-secondary">Couleur — <span className="text-accent">{selectedColor}</span></span>
-                  </div>
+                {/* Colors */}
+                <div className="space-y-3">
+                  <h3 className="font-medium text-secondary">Couleur: <span className="text-accent">{selectedColor}</span></h3>
                   <div className="flex gap-3">
                     {colors.map((color) => (
                       <button
                         key={color.name}
                         onClick={() => animateColorChange(color.name)}
-                        className={`relative w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 ${
+                        className={`w-10 h-10 rounded-full border-2 transition-all hover:scale-110 ${
                           selectedColor === color.name
-                            ? "ring-2 ring-accent ring-offset-2 ring-offset-primary shadow-gold scale-110"
-                            : "hover:ring-2 hover:ring-secondary/30 hover:ring-offset-2 hover:ring-offset-primary"
+                            ? "border-accent shadow-gold scale-110"
+                            : "border-secondary/20 hover:border-accent/50"
                         }`}
                         style={{ backgroundColor: color.hex }}
                         title={color.name}
                       >
                         {selectedColor === color.name && (
-                          <Check className={`absolute inset-0 m-auto w-5 h-5 ${color.hex === "#0A0A0A" ? "text-secondary" : "text-primary"}`} />
+                          <Check className={`w-5 h-5 mx-auto ${color.name === "Blanc" ? "text-primary" : "text-secondary"}`} />
                         )}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Size Selection with 3D Animation */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-secondary">Taille</span>
-                    <button className="text-sm text-accent hover:underline">Guide des tailles</button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                {/* Sizes */}
+                <div className="space-y-3">
+                  <h3 className="font-medium text-secondary">Taille: <span className="text-accent">{selectedSize || "Sélectionner"}</span></h3>
+                  <div className="flex flex-wrap gap-2">
                     {product.sizes.map((size) => (
                       <button
                         key={size}
                         onClick={() => animateSizeChange(size)}
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold transition-all duration-300 hover:scale-105 ${
+                        className={`w-14 h-12 rounded-lg font-medium transition-all hover:scale-105 ${
                           selectedSize === size
-                            ? "bg-accent text-primary shadow-gold scale-110"
-                            : "bg-secondary/10 text-secondary hover:bg-secondary/20"
+                            ? "bg-accent text-primary shadow-gold"
+                            : "bg-secondary/10 text-secondary hover:bg-accent/20"
                         }`}
                       >
                         {size}
@@ -499,114 +612,128 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* Quantity & Add to Cart */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Quantity */}
-                  <div className="flex items-center gap-4 bg-secondary/10 rounded-xl p-2 w-fit">
-                    <button 
+                {/* Quantity */}
+                <div className="space-y-3">
+                  <h3 className="font-medium text-secondary">Quantité</h3>
+                  <div className="flex items-center gap-3">
+                    <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-secondary hover:bg-secondary/10 transition-colors"
+                      className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary hover:bg-accent hover:text-primary transition-all"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-8 text-center font-bold text-secondary">{quantity}</span>
-                    <button 
+                    <span className="w-12 text-center text-xl font-bold text-secondary">{quantity}</span>
+                    <button
                       onClick={() => setQuantity(quantity + 1)}
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-secondary hover:bg-secondary/10 transition-colors"
+                      className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary hover:bg-accent hover:text-primary transition-all"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
 
-                  {/* Add to Cart Button */}
+                {/* Add to Cart */}
+                <div className="flex gap-3 pt-4">
                   <button
                     onClick={handleAddToCart}
-                    className={`add-to-cart-btn flex-1 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
-                      isAdded 
-                        ? "bg-green-500 text-white" 
-                        : "bg-accent text-primary shadow-gold hover:shadow-gold-glow hover:scale-[1.02] active:scale-100"
+                    disabled={product.out_of_stock}
+                    className={`add-to-cart-btn flex-1 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all ${
+                      product.out_of_stock
+                        ? "bg-secondary/20 text-secondary/50 cursor-not-allowed"
+                        : isAdded
+                        ? "bg-green-500 text-white"
+                        : "bg-accent text-primary hover:scale-[1.02] shadow-gold"
                     }`}
-                    data-cursor="action"
                   >
                     {isAdded ? (
                       <>
                         <Check className="w-5 h-5" />
-                        <span>Ajouté !</span>
+                        Ajouté !
                       </>
+                    ) : product.out_of_stock ? (
+                      "Rupture de stock"
                     ) : (
                       <>
                         <ShoppingBag className="w-5 h-5" />
-                        <span>Ajouter — {product.price * quantity}€</span>
+                        Ajouter au panier — {(product.price * quantity).toFixed(0)}€
                       </>
                     )}
                   </button>
+                  
+                  <FavoriteButton
+                    isFavorite={isFavorite(product.id)}
+                    onToggle={() => toggleFavorite(product.id)}
+                    size="lg"
+                    className="!w-14 !h-14 border-2 border-secondary/20"
+                  />
                 </div>
 
                 {/* Features */}
-                <div className="grid grid-cols-3 gap-3 pt-4">
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <Truck className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Livraison gratuite</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">dès 75€</span>
+                <div className="grid grid-cols-3 gap-3 pt-6">
+                  <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                    <Truck className="w-6 h-6 mx-auto mb-2 text-accent" />
+                    <span className="text-xs text-secondary/70">Livraison gratuite</span>
                   </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <RotateCcw className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Retours gratuits</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">sous 30 jours</span>
+                  <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                    <Shield className="w-6 h-6 mx-auto mb-2 text-accent" />
+                    <span className="text-xs text-secondary/70">Paiement sécurisé</span>
                   </div>
-                  <div className="feature-card flex flex-col items-center text-center p-3 sm:p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-all cursor-default">
-                    <Shield className="w-5 h-5 text-accent mb-2" />
-                    <span className="text-xs sm:text-sm text-secondary font-medium">Paiement sécurisé</span>
-                    <span className="text-[10px] sm:text-xs text-secondary/50">100% safe</span>
+                  <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                    <RotateCcw className="w-6 h-6 mx-auto mb-2 text-accent" />
+                    <span className="text-xs text-secondary/70">Retours 14 jours</span>
                   </div>
                 </div>
 
-                {/* Product Details */}
-                <div className="pt-6 border-t border-secondary/10">
-                  <h3 className="font-bold text-secondary mb-4">Détails produit</h3>
-                  <ul className="space-y-2">
-                    {product.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-secondary/70">
-                        <div className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {/* Details */}
+                {product.details && product.details.length > 0 && (
+                  <div className="pt-6 border-t border-secondary/10">
+                    <h3 className="font-bold text-secondary mb-4">Détails du produit</h3>
+                    <ul className="space-y-2">
+                      {product.details.map((detail, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-secondary/70">
+                          <Check className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div className="mt-16 sm:mt-24">
-              <h2 className="text-2xl sm:text-3xl font-bold text-secondary mb-6 sm:mb-8">
-                Tu pourrais aussi aimer
-              </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                {relatedProducts.map((relProduct) => (
+            <section className="mt-20 sm:mt-32">
+              <h2 className="text-2xl sm:text-3xl font-bold text-secondary mb-8">Tu vas aussi aimer</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {relatedProducts.map((related) => (
                   <Link
-                    key={relProduct.id}
-                    to={`/product/${relProduct.slug}`}
-                    className="group"
-                    data-cursor="product"
+                    key={related.id}
+                    to={`/product/${related.slug}`}
+                    className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-secondary/5"
                   >
-                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-secondary/5 aspect-[3/4] shadow-elegant hover:shadow-gold transition-all duration-500 group-hover:scale-[1.02]">
-                      <img
-                        src={relProduct.images[0]}
-                        alt={relProduct.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/30 to-transparent opacity-50 group-hover:opacity-80 transition-opacity" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
-                        <h3 className="text-secondary text-sm sm:text-lg font-bold mb-1">{relProduct.title}</h3>
-                        <span className="text-accent font-bold">{relProduct.price}€</span>
-                      </div>
+                    <img
+                      src={related.images[0] || "/placeholder.svg"}
+                      alt={related.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="font-bold text-secondary group-hover:text-accent transition-colors">{related.title}</h3>
+                      <span className="text-accent font-bold">{related.price}€</span>
                     </div>
+                    
+                    <FavoriteButton
+                      isFavorite={isFavorite(related.id)}
+                      onToggle={() => toggleFavorite(related.id)}
+                      size="sm"
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           )}
         </div>
       </main>
