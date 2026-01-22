@@ -3,24 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
-  ArrowLeft, 
   Copy, 
   TrendingUp, 
   DollarSign, 
   Users, 
   ShoppingBag,
   ExternalLink,
-  Wallet,
   Clock,
   CheckCircle,
   XCircle,
-  Trophy,
-  Star,
-  Award,
-  Crown,
-  Gem,
-  Eye,
-  Gift
+  Wallet,
+  ArrowRight
 } from 'lucide-react';
 
 interface Affiliate {
@@ -31,6 +24,7 @@ interface Affiliate {
   total_earnings: number;
   pending_earnings: number;
   commission_rate: number;
+  created_at: string;
 }
 
 interface WithdrawalRequest {
@@ -41,106 +35,55 @@ interface WithdrawalRequest {
   created_at: string;
 }
 
-interface EarnedTrophy {
-  id: string;
-  earned_at: string;
-  claimed: boolean;
-  trophy: {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    required_sales: number;
-    reward_description: string;
-  };
-}
-
-interface ProductView {
-  id: string;
-  product_id: string;
-  visitor_id: string;
-  created_at: string;
-  product?: {
-    title: string;
-    slug: string;
-  };
-}
-
-const trophyIcons: Record<string, any> = {
-  star: Star,
-  award: Award,
-  trophy: Trophy,
-  crown: Crown,
-  gem: Gem,
-};
-
 export default function AffiliateDashboard() {
   const navigate = useNavigate();
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
-  const [earnedTrophies, setEarnedTrophies] = useState<EarnedTrophy[]>([]);
-  const [allTrophies, setAllTrophies] = useState<any[]>([]);
-  const [productViews, setProductViews] = useState<ProductView[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestingWithdrawal, setRequestingWithdrawal] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'stats' | 'trophies' | 'products'>('stats');
 
   useEffect(() => {
     checkAffiliateStatus();
   }, []);
 
   const checkAffiliateStatus = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      navigate('/auth');
-      return;
-    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
 
-    const { data: affiliateData, error } = await supabase
-      .from('affiliates')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
+      const { data: affiliateData, error } = await supabase
+        .from('affiliates')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-    if (error || !affiliateData) {
-      toast.error("Aucun compte affilié trouvé");
-      navigate('/');
-      return;
-    }
+      if (error || !affiliateData) {
+        toast.error("Aucun compte affilié trouvé");
+        navigate('/');
+        return;
+      }
 
-    setAffiliate(affiliateData as Affiliate);
+      setAffiliate(affiliateData as Affiliate);
 
-    // Fetch all data in parallel
-    const [withdrawalsRes, trophiesRes, earnedTrophiesRes, productViewsRes] = await Promise.all([
-      supabase
+      // Fetch withdrawals
+      const { data: withdrawalsData } = await supabase
         .from('withdrawal_requests')
         .select('*')
         .eq('affiliate_id', affiliateData.id)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('affiliate_trophies')
-        .select('*')
-        .order('required_sales', { ascending: true }),
-      supabase
-        .from('affiliate_earned_trophies')
-        .select('*, trophy:affiliate_trophies(*)')
-        .eq('affiliate_id', affiliateData.id),
-      supabase
-        .from('affiliate_product_views')
-        .select('*, product:products(title, slug)')
-        .eq('affiliate_id', affiliateData.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
-    ]);
+        .order('created_at', { ascending: false });
 
-    setWithdrawals((withdrawalsRes.data || []) as WithdrawalRequest[]);
-    setAllTrophies(trophiesRes.data || []);
-    setEarnedTrophies((earnedTrophiesRes.data || []) as EarnedTrophy[]);
-    setProductViews((productViewsRes.data || []) as ProductView[]);
-    setLoading(false);
+      setWithdrawals((withdrawalsData || []) as WithdrawalRequest[]);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyLink = () => {
@@ -172,7 +115,7 @@ export default function AffiliateDashboard() {
 
     setRequestingWithdrawal(true);
 
-    const { error } = await (supabase as any).from('withdrawal_requests').insert({
+    const { error } = await supabase.from('withdrawal_requests').insert({
       affiliate_id: affiliate.id,
       amount: amount,
       status: 'pending',
@@ -190,6 +133,11 @@ export default function AffiliateDashboard() {
     setRequestingWithdrawal(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-primary flex items-center justify-center">
@@ -201,12 +149,10 @@ export default function AffiliateDashboard() {
   if (!affiliate) return null;
 
   const affiliateLink = `${window.location.origin}?ref=${affiliate.affiliate_code}`;
-  const earnedTrophyIds = earnedTrophies.map(et => et.trophy?.id);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
+  const conversionRate = affiliate.total_visits > 0 
+    ? ((affiliate.total_sales / affiliate.total_visits) * 100).toFixed(1) 
+    : '0';
+  const daysSinceCreation = Math.floor((Date.now() - new Date(affiliate.created_at).getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <div className="min-h-screen bg-primary">
@@ -216,79 +162,77 @@ export default function AffiliateDashboard() {
           <Link to="/" className="text-2xl font-bold italic text-secondary">KAYNA</Link>
           <span className="px-3 py-1 bg-accent/20 text-accent text-xs font-medium rounded-full">Affilié</span>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="px-4 py-2 text-secondary/60 hover:text-secondary border border-secondary/20 rounded-lg hover:bg-secondary/5 transition-all text-sm"
-        >
-          Déconnexion
-        </button>
+        <div className="flex items-center gap-3">
+          <Link 
+            to="/profile"
+            className="px-4 py-2 text-secondary/60 hover:text-secondary border border-secondary/20 rounded-lg hover:bg-secondary/5 transition-all text-sm"
+          >
+            Mon profil
+          </Link>
+          <button 
+            onClick={handleLogout}
+            className="px-4 py-2 text-secondary/60 hover:text-secondary border border-secondary/20 rounded-lg hover:bg-secondary/5 transition-all text-sm"
+          >
+            Déconnexion
+          </button>
+        </div>
       </header>
 
       <main className="pt-28 pb-20 px-6 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
+        <div className="max-w-4xl mx-auto">
+          {/* Welcome Header */}
           <div className="mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold text-secondary mb-2">
-              Dashboard Affilié
+              Mon Espace Affilié
             </h1>
-            <p className="text-secondary/60">Transparence 100% sur tes performances</p>
+            <p className="text-secondary/60">
+              Actif depuis {daysSinceCreation} jour{daysSinceCreation > 1 ? 's' : ''} • Commission: {affiliate.commission_rate}%
+            </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          {/* Main Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-400" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold text-secondary">{affiliate.total_visits}</p>
-              <p className="text-secondary/50 text-sm">Visites</p>
+              <p className="text-4xl font-bold text-secondary">{affiliate.total_visits}</p>
+              <p className="text-secondary/50 text-sm mt-1">Visites totales</p>
             </div>
+            
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <Eye className="w-5 h-5 text-cyan-400" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4">
+                <ShoppingBag className="w-6 h-6 text-purple-400" />
               </div>
-              <p className="text-3xl font-bold text-secondary">{productViews.length}</p>
-              <p className="text-secondary/50 text-sm">Produits vus</p>
+              <p className="text-4xl font-bold text-secondary">{affiliate.total_sales}</p>
+              <p className="text-secondary/50 text-sm mt-1">Achats générés</p>
             </div>
+            
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-purple-400" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-green-400" />
               </div>
-              <p className="text-3xl font-bold text-secondary">{affiliate.total_sales}</p>
-              <p className="text-secondary/50 text-sm">Ventes</p>
+              <p className="text-4xl font-bold text-accent">{affiliate.total_earnings.toLocaleString()}</p>
+              <p className="text-secondary/50 text-sm mt-1">FCFA gagnés au total</p>
             </div>
+            
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
-                </div>
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-cyan-400" />
               </div>
-              <p className="text-3xl font-bold text-accent">{affiliate.total_earnings.toLocaleString()}</p>
-              <p className="text-secondary/50 text-sm">FCFA gagnés</p>
-            </div>
-            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-accent" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-accent">{earnedTrophies.length}</p>
-              <p className="text-secondary/50 text-sm">Trophées</p>
+              <p className="text-4xl font-bold text-secondary">{conversionRate}%</p>
+              <p className="text-secondary/50 text-sm mt-1">Taux de conversion</p>
             </div>
           </div>
 
           {/* Affiliate Link */}
-          <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6 mb-8">
-            <h2 className="font-bold text-secondary mb-4">Ton lien d'affiliation</h2>
+          <div className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-3xl p-6 mb-8">
+            <h2 className="font-bold text-secondary mb-4 flex items-center gap-2">
+              <ExternalLink className="w-5 h-5 text-accent" />
+              Ton lien d'affiliation
+            </h2>
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 flex items-center gap-3 bg-secondary/10 rounded-xl px-4 py-3">
-                <ExternalLink className="w-5 h-5 text-secondary/40 flex-shrink-0" />
+              <div className="flex-1 flex items-center gap-3 bg-primary/50 rounded-xl px-4 py-3 border border-secondary/10">
                 <span className="text-secondary truncate text-sm">{affiliateLink}</span>
               </div>
               <button 
@@ -296,220 +240,133 @@ export default function AffiliateDashboard() {
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all"
               >
                 <Copy className="w-4 h-4" />
-                Copier
+                Copier le lien
               </button>
             </div>
-            <div className="mt-4 flex items-center gap-4">
+            <div className="mt-4 flex items-center gap-4 flex-wrap">
               <span className="text-secondary/60 text-sm">Code promo:</span>
-              <code className="px-3 py-1.5 bg-accent/20 text-accent font-mono rounded-lg text-sm">
+              <code className="px-3 py-1.5 bg-accent/20 text-accent font-mono rounded-lg text-sm font-bold">
                 {affiliate.affiliate_code}
               </code>
               <button onClick={copyCode} className="text-accent hover:underline text-sm">
-                Copier
+                Copier le code
               </button>
             </div>
             <p className="text-secondary/40 text-xs mt-4">
-              Commission: {affiliate.commission_rate}% sur chaque vente
+              Partage ce lien et gagne {affiliate.commission_rate}% sur chaque vente !
             </p>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                activeTab === 'stats' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
-              }`}
-            >
-              Statistiques
-            </button>
-            <button
-              onClick={() => setActiveTab('trophies')}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'trophies' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
-              }`}
-            >
-              <Trophy className="w-4 h-4" />
-              Trophées
-            </button>
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'products' ? 'bg-accent text-primary' : 'bg-secondary/10 text-secondary/60 hover:bg-secondary/20'
-              }`}
-            >
-              <Eye className="w-4 h-4" />
-              Produits vus
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === 'stats' && (
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Withdrawal Section */}
-              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-bold text-secondary">Retrait</h2>
-                  <button
-                    onClick={() => setShowWithdrawalModal(true)}
-                    disabled={affiliate.pending_earnings <= 0}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <DollarSign className="w-4 h-4" />
-                    Demander un retrait
-                  </button>
-                </div>
-                <div className="text-center py-8">
-                  <p className="text-4xl font-bold text-accent mb-2">
-                    {affiliate.pending_earnings.toLocaleString()} FCFA
-                  </p>
-                  <p className="text-secondary/50">Solde disponible</p>
-                </div>
-              </div>
-
-              {/* Withdrawal History */}
-              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
-                <h2 className="font-bold text-secondary mb-4">Historique des retraits</h2>
-                {withdrawals.length === 0 ? (
-                  <p className="text-secondary/50 text-center py-8">Aucun retrait</p>
-                ) : (
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {withdrawals.map((w) => (
-                      <div key={w.id} className="flex items-center justify-between p-3 bg-secondary/5 rounded-xl">
-                        <div>
-                          <p className="font-medium text-secondary">{w.amount.toLocaleString()} FCFA</p>
-                          <p className="text-secondary/40 text-xs">
-                            {new Date(w.created_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                        <span className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-                          w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                          w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
-                        }`}>
-                          {w.status === 'approved' ? <CheckCircle className="w-3 h-3" /> :
-                           w.status === 'pending' ? <Clock className="w-3 h-3" /> :
-                           <XCircle className="w-3 h-3" />}
-                          {w.status === 'approved' ? 'Payé' : w.status === 'pending' ? 'En attente' : 'Refusé'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'trophies' && (
-            <div className="space-y-6">
-              {/* Progress */}
-              <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
-                <h2 className="font-bold text-secondary mb-4 flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-accent" />
-                  Ta progression
+          {/* Withdrawal Section */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Balance & Request */}
+            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold text-secondary flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-accent" />
+                  Solde disponible
                 </h2>
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-4xl font-bold text-accent">{affiliate.total_sales}</span>
-                  <span className="text-secondary/60">ventes réalisées</span>
-                </div>
-                <div className="h-2 bg-secondary/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-accent to-yellow-400 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min((affiliate.total_sales / 50) * 100, 100)}%` }}
-                  />
-                </div>
-                <p className="text-secondary/40 text-xs mt-2">Prochain niveau: Ambassadeur Diamant (50 ventes)</p>
+              </div>
+              
+              <div className="text-center py-6">
+                <p className="text-5xl font-bold text-accent mb-2">
+                  {affiliate.pending_earnings.toLocaleString()}
+                </p>
+                <p className="text-secondary/50 text-lg">FCFA</p>
               </div>
 
-              {/* All Trophies */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allTrophies.map((trophy) => {
-                  const isEarned = earnedTrophyIds.includes(trophy.id);
-                  const IconComponent = trophyIcons[trophy.icon] || Trophy;
-                  
-                  return (
-                    <div 
-                      key={trophy.id}
-                      className={`relative border rounded-2xl p-6 transition-all ${
-                        isEarned 
-                          ? 'bg-accent/10 border-accent/30' 
-                          : 'bg-secondary/5 border-secondary/10 opacity-60'
-                      }`}
-                    >
-                      {isEarned && (
-                        <div className="absolute top-3 right-3">
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                        </div>
-                      )}
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
-                        isEarned ? 'bg-accent/20' : 'bg-secondary/10'
-                      }`}>
-                        <IconComponent className={`w-7 h-7 ${isEarned ? 'text-accent' : 'text-secondary/40'}`} />
-                      </div>
-                      <h3 className="font-bold text-secondary mb-1">{trophy.name}</h3>
-                      <p className="text-secondary/60 text-sm mb-3">{trophy.description}</p>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={`px-2 py-1 rounded-full ${
-                          isEarned ? 'bg-green-500/20 text-green-400' : 'bg-secondary/10 text-secondary/50'
-                        }`}>
-                          {trophy.required_sales} ventes
-                        </span>
-                      </div>
-                      {trophy.reward_description && (
-                        <div className="mt-4 flex items-start gap-2 text-sm">
-                          <Gift className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                          <span className="text-accent">{trophy.reward_description}</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <button
+                onClick={() => setShowWithdrawalModal(true)}
+                disabled={affiliate.pending_earnings <= 0}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <DollarSign className="w-5 h-5" />
+                Demander un retrait
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-          )}
 
-          {activeTab === 'products' && (
+            {/* Withdrawal History */}
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
               <h2 className="font-bold text-secondary mb-4 flex items-center gap-2">
-                <Eye className="w-5 h-5 text-accent" />
-                Produits consultés par tes prospects
+                <Clock className="w-5 h-5 text-accent" />
+                Historique des retraits
               </h2>
-              {productViews.length === 0 ? (
-                <p className="text-secondary/50 text-center py-12">
-                  Aucun produit consulté pour l'instant.<br />
-                  Partage ton lien pour commencer à tracker !
-                </p>
+              
+              {withdrawals.length === 0 ? (
+                <div className="text-center py-12">
+                  <DollarSign className="w-12 h-12 text-secondary/20 mx-auto mb-3" />
+                  <p className="text-secondary/50">Aucun retrait effectué</p>
+                </div>
               ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {productViews.map((view) => (
-                    <div key={view.id} className="flex items-center justify-between p-4 bg-secondary/5 rounded-xl">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                          <ShoppingBag className="w-5 h-5 text-accent" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-secondary">
-                            {view.product?.title || 'Produit supprimé'}
+                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {withdrawals.map((w) => (
+                    <div key={w.id} className="flex items-center justify-between p-4 bg-secondary/5 rounded-xl">
+                      <div>
+                        <p className="font-bold text-secondary">{w.amount.toLocaleString()} FCFA</p>
+                        <p className="text-secondary/40 text-xs">
+                          {new Date(w.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </p>
+                        {w.status === 'rejected' && w.rejection_reason && (
+                          <p className="text-red-400 text-xs mt-1 italic">
+                            {w.rejection_reason}
                           </p>
-                          <p className="text-secondary/40 text-xs">
-                            Visiteur: {view.visitor_id?.slice(0, 12)}...
-                          </p>
-                        </div>
+                        )}
                       </div>
-                      <span className="text-secondary/40 text-xs">
-                        {new Date(view.created_at).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                        w.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                        w.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {w.status === 'approved' ? <CheckCircle className="w-3.5 h-3.5" /> :
+                         w.status === 'pending' ? <Clock className="w-3.5 h-3.5" /> :
+                         <XCircle className="w-3.5 h-3.5" />}
+                        {w.status === 'approved' ? 'Payé' : w.status === 'pending' ? 'En attente' : 'Refusé'}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          )}
+          </div>
+
+          {/* Info Card */}
+          <div className="mt-8 bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+            <h3 className="font-bold text-secondary mb-3">Comment ça marche ?</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-accent font-bold text-sm">1</span>
+                </div>
+                <div>
+                  <p className="font-medium text-secondary text-sm">Partage ton lien</p>
+                  <p className="text-secondary/50 text-xs">Sur tes réseaux sociaux, à tes amis...</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-accent font-bold text-sm">2</span>
+                </div>
+                <div>
+                  <p className="font-medium text-secondary text-sm">Tes contacts achètent</p>
+                  <p className="text-secondary/50 text-xs">Ils bénéficient de ton code promo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-accent font-bold text-sm">3</span>
+                </div>
+                <div>
+                  <p className="font-medium text-secondary text-sm">Tu gagnes {affiliate.commission_rate}%</p>
+                  <p className="text-secondary/50 text-xs">Sur chaque vente générée</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
@@ -517,28 +374,42 @@ export default function AffiliateDashboard() {
       {showWithdrawalModal && (
         <div className="fixed inset-0 z-50 bg-primary/95 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-secondary mb-4">Demande de retrait</h3>
-            <p className="text-secondary/60 text-sm mb-4">
+            <h3 className="text-xl font-bold text-secondary mb-2">Demander un retrait</h3>
+            <p className="text-secondary/60 text-sm mb-6">
               Solde disponible: <span className="text-accent font-bold">{affiliate.pending_earnings.toLocaleString()} FCFA</span>
             </p>
-            <input
-              type="number"
-              value={withdrawalAmount}
-              onChange={(e) => setWithdrawalAmount(e.target.value)}
-              placeholder="Montant en FCFA"
-              className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent mb-4"
-              max={affiliate.pending_earnings}
-            />
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-secondary mb-2">Montant (FCFA)</label>
+              <input
+                type="number"
+                value={withdrawalAmount}
+                onChange={(e) => setWithdrawalAmount(e.target.value)}
+                placeholder="Ex: 5000"
+                max={affiliate.pending_earnings}
+                className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent text-lg font-bold"
+              />
+              <button 
+                onClick={() => setWithdrawalAmount(affiliate.pending_earnings.toString())}
+                className="text-accent text-sm mt-2 hover:underline"
+              >
+                Retirer tout le solde
+              </button>
+            </div>
+
             <div className="flex gap-3">
               <button
-                onClick={() => setShowWithdrawalModal(false)}
+                onClick={() => {
+                  setShowWithdrawalModal(false);
+                  setWithdrawalAmount('');
+                }}
                 className="flex-1 py-3 border border-secondary/20 text-secondary rounded-xl font-medium hover:bg-secondary/10 transition-all"
               >
                 Annuler
               </button>
               <button
                 onClick={requestWithdrawal}
-                disabled={requestingWithdrawal}
+                disabled={requestingWithdrawal || !withdrawalAmount}
                 className="flex-1 py-3 bg-accent text-primary rounded-xl font-bold hover:shadow-gold transition-all disabled:opacity-50"
               >
                 {requestingWithdrawal ? 'Envoi...' : 'Confirmer'}
