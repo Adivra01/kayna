@@ -28,6 +28,8 @@ interface Product {
   details: string[];
   images: string[];
   is_active: boolean;
+  stock_quantity: number;
+  out_of_stock: boolean;
   created_at: string;
 }
 
@@ -58,6 +60,8 @@ export default function AdminProducts() {
     colors: ["noir", "blanc", "beige"],
     details: [""],
     is_active: true,
+    stock_quantity: 100,
+    out_of_stock: false,
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -78,7 +82,26 @@ export default function AdminProducts() {
       return;
     }
     
-    setProducts(data || []);
+    // Map data to include default values for new fields (cast to any for new columns)
+    const mappedProducts = (data || []).map((p: any) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: p.description,
+      price: p.price,
+      category: p.category,
+      tag: p.tag,
+      sizes: p.sizes || [],
+      colors: p.colors || [],
+      details: p.details || [],
+      images: p.images || [],
+      is_active: p.is_active ?? true,
+      stock_quantity: p.stock_quantity ?? 0,
+      out_of_stock: p.out_of_stock ?? false,
+      created_at: p.created_at,
+    })) as Product[];
+    
+    setProducts(mappedProducts);
     setLoading(false);
   };
 
@@ -105,6 +128,8 @@ export default function AdminProducts() {
         colors: product.colors || ["noir", "blanc", "beige"],
         details: product.details?.length ? product.details : [""],
         is_active: product.is_active,
+        stock_quantity: product.stock_quantity || 0,
+        out_of_stock: product.out_of_stock || false,
       });
       setExistingImages(product.images || []);
     } else {
@@ -120,6 +145,8 @@ export default function AdminProducts() {
         colors: ["noir", "blanc", "beige"],
         details: [""],
         is_active: true,
+        stock_quantity: 100,
+        out_of_stock: false,
       });
       setExistingImages([]);
     }
@@ -219,6 +246,8 @@ export default function AdminProducts() {
         details: formData.details.filter(d => d.trim()),
         images: uploadedUrls,
         is_active: formData.is_active,
+        stock_quantity: formData.stock_quantity,
+        out_of_stock: formData.out_of_stock,
       };
 
       if (editingProduct) {
@@ -410,9 +439,14 @@ export default function AdminProducts() {
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-secondary mb-1 truncate">{product.title}</h3>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-accent font-bold">{product.price.toLocaleString()} FCFA</span>
                     <span className="text-secondary/40 text-sm capitalize">{product.category}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={`px-2 py-1 rounded-full ${product.out_of_stock ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                      {product.out_of_stock ? 'Rupture' : `Stock: ${product.stock_quantity}`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -540,6 +574,45 @@ export default function AdminProducts() {
                         <span className="text-secondary capitalize">{color.name}</span>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Stock Management */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">Quantité en stock</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.stock_quantity}
+                      onChange={(e) => {
+                        const qty = parseInt(e.target.value) || 0;
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          stock_quantity: qty,
+                          out_of_stock: qty === 0 ? true : prev.out_of_stock
+                        }));
+                      }}
+                      className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-end">
+                    <div className="flex items-center justify-between py-3 px-4 bg-secondary/5 rounded-xl h-[50px]">
+                      <span className="text-secondary text-sm">Rupture de stock</span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, out_of_stock: !prev.out_of_stock }))}
+                        className={`w-12 h-7 rounded-full transition-all ${
+                          formData.out_of_stock ? "bg-red-500" : "bg-secondary/20"
+                        }`}
+                      >
+                        <span 
+                          className={`block w-5 h-5 bg-white rounded-full transform transition-transform ${
+                            formData.out_of_stock ? "translate-x-6" : "translate-x-1"
+                          }`} 
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
 

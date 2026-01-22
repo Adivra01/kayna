@@ -399,9 +399,11 @@ export type Database = {
           id: string
           images: string[] | null
           is_active: boolean | null
+          out_of_stock: boolean | null
           price: number
           sizes: string[] | null
           slug: string
+          stock_quantity: number | null
           tag: string | null
           title: string
           updated_at: string
@@ -415,9 +417,11 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          out_of_stock?: boolean | null
           price: number
           sizes?: string[] | null
           slug: string
+          stock_quantity?: number | null
           tag?: string | null
           title: string
           updated_at?: string
@@ -431,9 +435,11 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          out_of_stock?: boolean | null
           price?: number
           sizes?: string[] | null
           slug?: string
+          stock_quantity?: number | null
           tag?: string | null
           title?: string
           updated_at?: string
