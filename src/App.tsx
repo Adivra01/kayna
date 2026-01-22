@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import Profile from "./pages/Profile";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -60,6 +61,7 @@ function AppContent() {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
           
           {/* Admin Routes */}
