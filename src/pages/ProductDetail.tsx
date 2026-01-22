@@ -536,13 +536,76 @@ const ProductDetail = () => {
               )}
               </div>
 
-              {/* Description - Under gallery on left */}
-              {product.description && (
-                <div className="mt-6 p-6 bg-secondary/5 rounded-2xl border border-secondary/10">
-                  <h3 className="font-bold text-secondary mb-3 text-lg">Description</h3>
-                  <p className="text-secondary/70 leading-relaxed whitespace-pre-line">
-                    {product.description}
-                  </p>
+              {/* Premium Description Section with Accordion */}
+              {(product.description || product.details?.length > 0) && (
+                <div className="mt-8 space-y-4">
+                  {/* Description Accordion */}
+                  {product.description && (
+                    <details className="group bg-secondary/5 rounded-2xl border border-secondary/10 overflow-hidden">
+                      <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-secondary/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                            <Star className="w-5 h-5 text-accent" />
+                          </div>
+                          <span className="font-bold text-secondary text-lg">Description</span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-secondary/50 transition-transform group-open:rotate-90" />
+                      </summary>
+                      <div className="px-5 pb-5 pt-2 border-t border-secondary/10">
+                        <p className="text-secondary/70 leading-relaxed whitespace-pre-line">
+                          {product.description}
+                        </p>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Details Accordion */}
+                  {product.details && product.details.length > 0 && (
+                    <details className="group bg-secondary/5 rounded-2xl border border-secondary/10 overflow-hidden">
+                      <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-secondary/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                            <Shield className="w-5 h-5 text-accent" />
+                          </div>
+                          <span className="font-bold text-secondary text-lg">Caractéristiques</span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-secondary/50 transition-transform group-open:rotate-90" />
+                      </summary>
+                      <div className="px-5 pb-5 pt-2 border-t border-secondary/10">
+                        <ul className="space-y-3">
+                          {product.details.map((detail, idx) => (
+                            <li key={idx} className="flex items-start gap-3 text-secondary/70">
+                              <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                              <span>{detail}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Shipping Info Accordion */}
+                  <details className="group bg-secondary/5 rounded-2xl border border-secondary/10 overflow-hidden">
+                    <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-secondary/10 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                          <Truck className="w-5 h-5 text-accent" />
+                        </div>
+                        <span className="font-bold text-secondary text-lg">Livraison & Retours</span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-secondary/50 transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="px-5 pb-5 pt-2 border-t border-secondary/10 space-y-3">
+                      <div className="flex items-start gap-3 text-secondary/70">
+                        <Truck className="w-5 h-5 text-accent flex-shrink-0" />
+                        <span>Livraison gratuite à partir de 100 000 FCFA</span>
+                      </div>
+                      <div className="flex items-start gap-3 text-secondary/70">
+                        <RotateCcw className="w-5 h-5 text-accent flex-shrink-0" />
+                        <span>Retours gratuits sous 30 jours</span>
+                      </div>
+                    </div>
+                  </details>
                 </div>
               )}
             </div>
