@@ -1,14 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles } from "lucide-react";
+import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import heroImage from "@/assets/hero-image.jpg";
 import sweater1 from "@/assets/sweater-1.jpg";
 import tshirt1 from "@/assets/tshirt-1.jpg";
 import { useCart } from "@/hooks/useCart";
 import CartDrawer from "@/components/CartDrawer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,6 +36,64 @@ const Hero = () => {
   const { getTotalItems, toggleCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [user, setUser] = useState<any>(null);
+  const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  // Check auth state
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Get affiliate code
+        const { data: affiliate } = await supabase
+          .from("affiliates")
+          .select("affiliate_code")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        
+        if (affiliate?.affiliate_code) {
+          setAffiliateCode(affiliate.affiliate_code);
+        }
+      }
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data: affiliate } = await supabase
+          .from("affiliates")
+          .select("affiliate_code")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        setAffiliateCode(affiliate?.affiliate_code ?? null);
+      } else {
+        setAffiliateCode(null);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setAffiliateCode(null);
+    toast.success("Déconnexion réussie");
+    navigate("/");
+  };
+
+  const copyAffiliateLink = () => {
+    if (affiliateCode) {
+      const link = `${window.location.origin}?ref=${affiliateCode}`;
+      navigator.clipboard.writeText(link);
+      toast.success("Lien d'affiliation copié !");
+    }
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -316,10 +383,34 @@ const Hero = () => {
         <nav className="relative hidden lg:flex items-center gap-8 text-sm">
           <button onClick={() => scrollToSection("bestsellers")} className="text-secondary/70 hover:text-accent transition-colors duration-300">Bestsellers</button>
           <button onClick={() => scrollToSection("categories")} className="text-secondary/70 hover:text-accent transition-colors duration-300">Catégories</button>
-          <Link to="/affiliate" className="text-secondary/70 hover:text-accent transition-colors duration-300">Affiliation</Link>
           <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">Shop</Link>
           <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">Histoire</Link>
-          <Link to="/auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">Connexion</Link>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 text-secondary/70 hover:text-accent transition-colors duration-300">
+                <User className="w-4 h-4" />
+                <span>Mon compte</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-primary border-secondary/20">
+                {affiliateCode && (
+                  <>
+                    <DropdownMenuItem onClick={copyAffiliateLink} className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                      <Link2 className="w-4 h-4 mr-2" />
+                      Copier mon lien ({affiliateCode})
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-secondary/10" />
+                  </>
+                )}
+                <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 cursor-pointer">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">Connexion</Link>
+          )}
         </nav>
         
         <div className="relative flex gap-3">
@@ -363,9 +454,6 @@ const Hero = () => {
             <button onClick={() => scrollToSection("categories")} className="text-2xl font-light text-secondary/70 hover:text-accent transition-colors">
               Catégories
             </button>
-            <Link to="/affiliate" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-light text-secondary/70 hover:text-accent transition-colors">
-              Affiliation
-            </Link>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Shop
@@ -373,9 +461,31 @@ const Hero = () => {
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
               Histoire
             </Link>
-            <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
-              Connexion
-            </Link>
+            
+            {user ? (
+              <>
+                {affiliateCode && (
+                  <button 
+                    onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
+                    className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
+                  >
+                    <Link2 className="w-5 h-5" />
+                    Mon lien d'affiliation
+                  </button>
+                )}
+                <button 
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                  className="text-2xl font-light text-red-400 hover:text-red-300 transition-colors flex items-center gap-2"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
+                Connexion
+              </Link>
+            )}
           </nav>
         </div>
       )}

@@ -12,8 +12,6 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import LockedSite from "./pages/LockedSite";
 import Favorites from "./pages/Favorites";
-import AffiliateSignup from "./pages/AffiliateSignup";
-import AffiliateLogin from "./pages/AffiliateLogin";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
@@ -62,8 +60,6 @@ function AppContent() {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/favorites" element={<Favorites />} />
-          <Route path="/affiliate" element={<AffiliateSignup />} />
-          <Route path="/affiliate/login" element={<AffiliateLogin />} />
           <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
           
           {/* Admin Routes */}

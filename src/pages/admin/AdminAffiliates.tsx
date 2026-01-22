@@ -82,19 +82,7 @@ export default function AdminAffiliates() {
     }
   };
 
-  const updateAffiliateStatus = async (affiliateId: string, newStatus: string) => {
-    const { error } = await (supabase as any)
-      .from('affiliates')
-      .update({ status: newStatus })
-      .eq('id', affiliateId);
-
-    if (error) {
-      toast.error('Erreur lors de la mise à jour');
-    } else {
-      toast.success(newStatus === 'approved' ? 'Affilié approuvé !' : 'Affilié refusé');
-      fetchAffiliates();
-    }
-  };
+  // Status update function removed - all affiliates are now auto-approved
 
   const handleWithdrawalAction = async (withdrawalId: string, action: 'approved' | 'rejected') => {
     if (action === 'rejected' && !rejectionReason.trim()) {
@@ -205,19 +193,16 @@ export default function AdminAffiliates() {
                 />
               </div>
               <div className="flex gap-2">
-                {['all', 'pending', 'approved', 'rejected'].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                      statusFilter === status
-                        ? 'bg-accent text-primary'
-                        : 'bg-secondary/5 text-secondary/70 hover:bg-secondary/10'
-                    }`}
-                  >
-                    {status === 'all' ? 'Tous' : status === 'pending' ? 'En attente' : status === 'approved' ? 'Approuvés' : 'Refusés'}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    statusFilter === 'all'
+                      ? 'bg-accent text-primary'
+                      : 'bg-secondary/5 text-secondary/70 hover:bg-secondary/10'
+                  }`}
+                >
+                  Tous
+                </button>
               </div>
             </div>
 
@@ -284,24 +269,6 @@ export default function AdminAffiliates() {
                         </div>
                       )}
 
-                      {affiliate.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => updateAffiliateStatus(affiliate.id, 'approved')}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-xl font-medium hover:bg-green-500/30 transition-all"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Approuver
-                          </button>
-                          <button
-                            onClick={() => updateAffiliateStatus(affiliate.id, 'rejected')}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-xl font-medium hover:bg-red-500/30 transition-all"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Refuser
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}

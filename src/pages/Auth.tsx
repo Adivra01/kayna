@@ -63,20 +63,6 @@ const ClientAuth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        // Check if user is an affiliate
-        const { data: affiliate } = await supabase
-          .from("affiliates")
-          .select("id, status")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        
-        if (affiliate) {
-          await supabase.auth.signOut();
-          toast.error("Ce compte est un compte affilié. Utilisez la connexion affilié.");
-          navigate("/affiliate/login");
-          return;
-        }
-
         // Check if admin
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -136,20 +122,6 @@ const ClientAuth = () => {
 
     try {
       if (isLogin) {
-        // Check if this email belongs to an affiliate
-        const { data: affiliateCheck } = await supabase
-          .from("affiliates")
-          .select("id")
-          .eq("email", email)
-          .maybeSingle();
-
-        if (affiliateCheck) {
-          toast.error("Ce compte est un compte affilié. Utilisez la connexion affilié.");
-          navigate("/affiliate/login");
-          setLoading(false);
-          return;
-        }
-
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Connexion réussie !");
@@ -174,8 +146,9 @@ const ClientAuth = () => {
         });
         if (signUpError) throw signUpError;
 
-        // Create profile for the new client
+        // Create profile and affiliate for the new user
         if (authData.user) {
+          // Create profile
           const { error: profileError } = await supabase.from("profiles").insert({
             user_id: authData.user.id,
             full_name: fullName,
@@ -186,9 +159,22 @@ const ClientAuth = () => {
           if (profileError && !profileError.message.includes("duplicate")) {
             console.error("Profile creation error:", profileError);
           }
+
+          // Create affiliate automatically (DB trigger will auto-approve and generate code)
+          const { error: affiliateError } = await supabase.from("affiliates").insert({
+            user_id: authData.user.id,
+            full_name: fullName,
+            email: email,
+            phone: fullPhone,
+            commission_rate: 15,
+          });
+
+          if (affiliateError && !affiliateError.message.includes("duplicate")) {
+            console.error("Affiliate creation error:", affiliateError);
+          }
         }
 
-        toast.success("Compte créé ! Tu peux maintenant te connecter.");
+        toast.success("Compte créé avec ton lien d'affiliation ! Connecte-toi.");
         setIsLogin(true);
         resetForm();
       }
