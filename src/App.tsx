@@ -15,6 +15,10 @@ import NotFound from "./pages/NotFound";
 import LockedSite from "./pages/LockedSite";
 import Favorites from "./pages/Favorites";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfSale from "./pages/TermsOfSale";
+import LegalNotice from "./pages/LegalNotice";
+import FAQ from "./pages/FAQ";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 import CustomCursor from "./components/CustomCursor";
@@ -65,6 +69,10 @@ function AppContent() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfSale />} />
+          <Route path="/legal" element={<LegalNotice />} />
+          <Route path="/faq" element={<FAQ />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminAnalytics />} />
