@@ -10,7 +10,8 @@ import {
   X,
   ShoppingBag,
   Users,
-  UserCircle
+  UserCircle,
+  Tag
 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ const navItems = [
   { title: "Commandes", url: "/admin/orders", icon: ShoppingBag },
   { title: "Clients", url: "/admin/clients", icon: UserCircle },
   { title: "Affiliés", url: "/admin/affiliates", icon: Users },
+  { title: "Coupons", url: "/admin/coupons", icon: Tag },
   { title: "Drop Time", url: "/admin/drop", icon: Timer },
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
 ];
