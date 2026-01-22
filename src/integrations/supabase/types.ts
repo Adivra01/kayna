@@ -140,6 +140,60 @@ export type Database = {
           },
         ]
       }
+      affiliate_sales: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          order_total: number | null
+          product_id: string | null
+          product_name: string
+          product_price: number
+          visitor_id: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_total?: number | null
+          product_id?: string | null
+          product_name: string
+          product_price: number
+          visitor_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_total?: number | null
+          product_id?: string | null
+          product_name?: string
+          product_price?: number
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_sales_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliate_trophies: {
         Row: {
           created_at: string
