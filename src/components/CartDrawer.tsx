@@ -1,4 +1,5 @@
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Timer, Trash2, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useCartCountdown } from "@/hooks/useCartCountdown";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -6,6 +7,7 @@ import { useEffect, useState } from "react";
 import gsap from "gsap";
 
 const CartDrawer = () => {
+  const navigate = useNavigate();
   const { items, isOpen, setCartOpen, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
   const { formattedTime, isExpiring } = useCartCountdown();
   const { t, formatPrice, isRTL } = useLocalization();
@@ -60,6 +62,13 @@ const CartDrawer = () => {
       );
     }
     updateQuantity(id, newQuantity);
+  };
+
+  const handleCheckout = () => {
+    handleClose();
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 300);
   };
 
   if (!isOpen) return null;
@@ -187,7 +196,10 @@ const CartDrawer = () => {
               <span className="text-secondary/60">{t.cart.total}</span>
               <span className="text-2xl font-bold text-secondary">{formatPrice(getTotalPrice())}</span>
             </div>
-            <button className="w-full py-4 bg-accent text-primary rounded-full font-bold flex items-center justify-center gap-2 shadow-gold hover:shadow-gold-glow hover:scale-[1.02] transition-all active:scale-[0.98]">
+            <button 
+              onClick={handleCheckout}
+              className="w-full py-4 bg-accent text-primary rounded-full font-bold flex items-center justify-center gap-2 shadow-gold hover:shadow-gold-glow hover:scale-[1.02] transition-all active:scale-[0.98]"
+            >
               <span>{t.cart.checkout}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
