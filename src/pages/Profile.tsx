@@ -43,28 +43,48 @@ const Profile = () => {
 
   useEffect(() => {
     const checkAuthAndLoadProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        navigate("/auth");
-        return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
+
+        setEmail(session.user.email || "");
+
+        // Load profile data
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error loading profile:", error);
+        }
+
+        if (profile) {
+          setFullName(profile.full_name || "");
+          setPhone(profile.phone || "");
+        } else {
+          // Try to get name from affiliates table as fallback
+          const { data: affiliate } = await supabase
+            .from("affiliates")
+            .select("full_name, phone")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          
+          if (affiliate) {
+            setFullName(affiliate.full_name || "");
+            setPhone(affiliate.phone || "");
+          }
+        }
+      } catch (error) {
+        console.error("Error in profile loading:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setEmail(session.user.email || "");
-
-      // Load profile data
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (profile) {
-        setFullName(profile.full_name || "");
-        setPhone(profile.phone || "");
-      }
-
-      setLoading(false);
     };
 
     checkAuthAndLoadProfile();
