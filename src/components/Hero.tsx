@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2, Heart, Settings } from "lucide-react";
+import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2, Heart, Settings, Shield } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import heroImage from "@/assets/hero-image.jpg";
 import sweater1 from "@/assets/sweater-1.jpg";
@@ -39,6 +39,7 @@ const Hero = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -49,15 +50,26 @@ const Hero = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Get affiliate code
-        const { data: affiliate } = await supabase
-          .from("affiliates")
-          .select("affiliate_code")
+        // Check if admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
           .eq("user_id", session.user.id)
           .maybeSingle();
         
-        if (affiliate?.affiliate_code) {
-          setAffiliateCode(affiliate.affiliate_code);
+        setIsAdmin(roleData?.role === "admin");
+        
+        // Get affiliate code (only for non-admins)
+        if (roleData?.role !== "admin") {
+          const { data: affiliate } = await supabase
+            .from("affiliates")
+            .select("affiliate_code")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          
+          if (affiliate?.affiliate_code) {
+            setAffiliateCode(affiliate.affiliate_code);
+          }
         }
       }
     };
@@ -67,14 +79,28 @@ const Hero = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        const { data: affiliate } = await supabase
-          .from("affiliates")
-          .select("affiliate_code")
+        // Check if admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
           .eq("user_id", session.user.id)
           .maybeSingle();
-        setAffiliateCode(affiliate?.affiliate_code ?? null);
+        
+        setIsAdmin(roleData?.role === "admin");
+        
+        if (roleData?.role !== "admin") {
+          const { data: affiliate } = await supabase
+            .from("affiliates")
+            .select("affiliate_code")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          setAffiliateCode(affiliate?.affiliate_code ?? null);
+        } else {
+          setAffiliateCode(null);
+        }
       } else {
         setAffiliateCode(null);
+        setIsAdmin(false);
       }
     });
     
@@ -396,28 +422,41 @@ const Hero = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 text-secondary/70 hover:text-accent transition-colors duration-300">
-                <User className="w-4 h-4" />
-                <span>Mon compte</span>
+                {isAdmin ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                <span>{isAdmin ? "Admin" : "Mon compte"}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-primary border-secondary/20">
-                <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
-                  <Link to="/profile">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Mon profil
-                  </Link>
-                </DropdownMenuItem>
-                {affiliateCode && (
+                {isAdmin ? (
                   <>
                     <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
-                      <Link to="/affiliate/dashboard">
-                        <User className="w-4 h-4 mr-2" />
-                        Mon espace affilié
+                      <Link to="/admin">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Dashboard Admin
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={copyAffiliateLink} className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
-                      <Link2 className="w-4 h-4 mr-2" />
-                      Copier mon lien ({affiliateCode})
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                      <Link to="/profile">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Mon profil
+                      </Link>
                     </DropdownMenuItem>
+                    {affiliateCode && (
+                      <>
+                        <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                          <Link to="/affiliate/dashboard">
+                            <User className="w-4 h-4 mr-2" />
+                            Mon espace affilié
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={copyAffiliateLink} className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                          <Link2 className="w-4 h-4 mr-2" />
+                          Copier mon lien ({affiliateCode})
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </>
                 )}
                 <DropdownMenuSeparator className="bg-secondary/10" />
@@ -496,39 +535,52 @@ const Hero = () => {
             
             {user ? (
               <>
-                <Link 
-                  to="/profile" 
-                  onClick={() => setMobileMenuOpen(false)} 
-                  className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                >
-                  <Settings className="w-5 h-5" />
-                  Mon profil
-                </Link>
-                <Link 
-                  to="/favorites" 
-                  onClick={() => setMobileMenuOpen(false)} 
-                  className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                >
-                  <Heart className="w-5 h-5" />
-                  Mes favoris ({getFavoritesCount()})
-                </Link>
-                {affiliateCode && (
+                {isAdmin ? (
+                  <Link 
+                    to="/admin" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="text-2xl font-semibold text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
+                  >
+                    <Shield className="w-5 h-5" />
+                    Dashboard Admin
+                  </Link>
+                ) : (
                   <>
                     <Link 
-                      to="/affiliate/dashboard" 
+                      to="/profile" 
                       onClick={() => setMobileMenuOpen(false)} 
-                      className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
+                      className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
                     >
-                      <User className="w-5 h-5" />
-                      Mon espace affilié
+                      <Settings className="w-5 h-5" />
+                      Mon profil
                     </Link>
-                    <button 
-                      onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
-                      className="text-xl font-light text-secondary/70 hover:text-accent transition-colors flex items-center gap-2"
+                    <Link 
+                      to="/favorites" 
+                      onClick={() => setMobileMenuOpen(false)} 
+                      className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
                     >
-                      <Link2 className="w-5 h-5" />
-                      Copier mon lien
-                    </button>
+                      <Heart className="w-5 h-5" />
+                      Mes favoris ({getFavoritesCount()})
+                    </Link>
+                    {affiliateCode && (
+                      <>
+                        <Link 
+                          to="/affiliate/dashboard" 
+                          onClick={() => setMobileMenuOpen(false)} 
+                          className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
+                        >
+                          <User className="w-5 h-5" />
+                          Mon espace affilié
+                        </Link>
+                        <button 
+                          onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
+                          className="text-xl font-light text-secondary/70 hover:text-accent transition-colors flex items-center gap-2"
+                        >
+                          <Link2 className="w-5 h-5" />
+                          Copier mon lien
+                        </button>
+                      </>
+                    )}
                   </>
                 )}
                 <button 
