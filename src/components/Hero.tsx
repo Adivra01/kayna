@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2 } from "lucide-react";
+import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2, Heart, Settings } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import heroImage from "@/assets/hero-image.jpg";
 import sweater1 from "@/assets/sweater-1.jpg";
 import tshirt1 from "@/assets/tshirt-1.jpg";
 import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
 import CartDrawer from "@/components/CartDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -34,6 +35,7 @@ const Hero = () => {
   const ctaRef = useRef<HTMLDivElement>(null);
   const badgesRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCart();
+  const { getFavoritesCount } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [user, setUser] = useState<any>(null);
@@ -399,7 +401,13 @@ const Hero = () => {
                 <span>Mon compte</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-primary border-secondary/20">
-              {affiliateCode && (
+                <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
+                  <Link to="/profile">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Mon profil
+                  </Link>
+                </DropdownMenuItem>
+                {affiliateCode && (
                   <>
                     <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                       <Link to="/affiliate/dashboard">
@@ -411,9 +419,9 @@ const Hero = () => {
                       <Link2 className="w-4 h-4 mr-2" />
                       Copier mon lien ({affiliateCode})
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-secondary/10" />
                   </>
                 )}
+                <DropdownMenuSeparator className="bg-secondary/10" />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 cursor-pointer">
                   <LogOut className="w-4 h-4 mr-2" />
                   Déconnexion
@@ -434,6 +442,22 @@ const Hero = () => {
             className="hidden sm:flex w-11 h-11 rounded-full border border-secondary/10 items-center justify-center text-secondary/60 hover:bg-accent hover:text-primary hover:border-accent transition-all duration-300 hover:scale-110">
             <SiTiktok className="w-4 h-4" />
           </a>
+          
+          {/* Favorites Button */}
+          {user && (
+            <Link 
+              to="/favorites"
+              className="relative w-11 h-11 rounded-full border border-secondary/10 flex items-center justify-center text-secondary/60 hover:bg-accent hover:text-primary hover:border-accent transition-all duration-300 hover:scale-110"
+            >
+              <Heart className="w-4 h-4" />
+              {getFavoritesCount() > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-scale-in">
+                  {getFavoritesCount()}
+                </span>
+              )}
+            </Link>
+          )}
+          
           <button 
             onClick={toggleCart}
             className="relative w-11 h-11 rounded-full border border-secondary/10 flex items-center justify-center text-secondary/60 hover:bg-accent hover:text-primary hover:border-accent transition-all duration-300 hover:scale-110"
@@ -476,6 +500,22 @@ const Hero = () => {
             
             {user ? (
               <>
+                <Link 
+                  to="/profile" 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
+                >
+                  <Settings className="w-5 h-5" />
+                  Mon profil
+                </Link>
+                <Link 
+                  to="/favorites" 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
+                >
+                  <Heart className="w-5 h-5" />
+                  Mes favoris ({getFavoritesCount()})
+                </Link>
                 {affiliateCode && (
                   <>
                     <Link 
