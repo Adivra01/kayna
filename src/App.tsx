@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useSiteStatus } from "@/hooks/useSiteStatus";
+import { LocalizationProvider } from "@/hooks/useLocalization";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
@@ -87,14 +88,16 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <CustomCursor />
-        <AppContent />
-      </BrowserRouter>
-    </TooltipProvider>
+    <LocalizationProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <CustomCursor />
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </LocalizationProvider>
   </QueryClientProvider>
 );
 
