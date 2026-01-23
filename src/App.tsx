@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useSiteStatus } from "@/hooks/useSiteStatus";
 import { LocalizationProvider } from "@/hooks/useLocalization";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -12,7 +11,6 @@ import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import LockedSite from "./pages/LockedSite";
 import Favorites from "./pages/Favorites";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -40,23 +38,8 @@ import AdminCoupons from "./pages/admin/AdminCoupons";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { status, isLoading } = useSiteStatus();
-  
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-  
-  // Show locked site if status is locked (except for admin routes)
-  const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname === "/auth";
-  
-  if (status === "locked" && !isAdminRoute) {
-    return <LockedSite />;
-  }
+  // Site status is now only used by Shop page, not the whole site
+  // The site remains accessible, only /shop is locked when status is "locked"
   
   return (
     <>

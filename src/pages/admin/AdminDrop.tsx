@@ -36,6 +36,8 @@ interface Subscriber {
   subscribed_at: string;
 }
 
+type DurationUnit = "hours" | "days";
+
 export default function AdminDrop() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [adminSettings, setAdminSettings] = useState<AdminSettings | null>(null);
@@ -44,10 +46,16 @@ export default function AdminDrop() {
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [dropDuration, setDropDuration] = useState(24);
+  const [dropDurationValue, setDropDurationValue] = useState(24);
+  const [dropDurationUnit, setDropDurationUnit] = useState<DurationUnit>("hours");
   const [lockPassword, setLockPassword] = useState("");
   const [lockMessage, setLockMessage] = useState("");
-  const [countdown, setCountdown] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  // Compute total hours from value + unit
+  const getTotalHours = () => {
+    return dropDurationUnit === "days" ? dropDurationValue * 24 : dropDurationValue;
+  };
 
   useEffect(() => {
     fetchSettings();
@@ -74,10 +82,11 @@ export default function AdminDrop() {
         return;
       }
 
-      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setCountdown({ hours, minutes, seconds });
+      setCountdown({ days, hours, minutes, seconds });
     };
 
     updateCountdown();
@@ -99,8 +108,16 @@ export default function AdminDrop() {
 
     if (data) {
       setSettings(data as SiteSettings);
-      setDropDuration(data.drop_duration_hours || 24);
-      setLockMessage(data.lock_message || "Le site est actuellement fermé. Inscrivez-vous pour être notifié de la prochaine ouverture.");
+      const hours = data.drop_duration_hours || 24;
+      // Auto-detect if it's days (divisible by 24 and >= 24)
+      if (hours >= 24 && hours % 24 === 0) {
+        setDropDurationValue(hours / 24);
+        setDropDurationUnit("days");
+      } else {
+        setDropDurationValue(hours);
+        setDropDurationUnit("hours");
+      }
+      setLockMessage(data.lock_message || "La boutique est actuellement fermée. Inscrivez-vous pour être notifié de la prochaine ouverture.");
     }
     setLoading(false);
   };
@@ -136,22 +153,27 @@ export default function AdminDrop() {
     if (!settings) return;
     setSaving(true);
 
+    const totalHours = getTotalHours();
     const endTime = new Date();
-    endTime.setHours(endTime.getHours() + dropDuration);
+    endTime.setHours(endTime.getHours() + totalHours);
 
     const { error } = await supabase
       .from("site_settings")
       .update({
         site_status: "open",
         drop_end_time: endTime.toISOString(),
-        drop_duration_hours: dropDuration,
+        drop_duration_hours: totalHours,
       })
       .eq("id", settings.id);
+
+    const displayDuration = dropDurationUnit === "days" 
+      ? `${dropDurationValue} jour${dropDurationValue > 1 ? 's' : ''}`
+      : `${dropDurationValue}h`;
 
     if (error) {
       showToast.error("Erreur lors du lancement du drop");
     } else {
-      showToast.success(`Drop lancé !`, { description: `Le site se verrouillera dans ${dropDuration}h` });
+      showToast.success(`Drop lancé !`, { description: `La boutique se verrouillera dans ${displayDuration}` });
       fetchSettings();
     }
     setSaving(false);
@@ -202,7 +224,7 @@ export default function AdminDrop() {
     if (settingsError) {
       showToast.error("Erreur lors du verrouillage");
     } else {
-      showToast.success("Site verrouillé");
+      showToast.success("Boutique verrouillée");
       fetchSettings();
     }
     setSaving(false);
@@ -222,7 +244,7 @@ export default function AdminDrop() {
     if (error) {
       showToast.error("Erreur lors du déverrouillage");
     } else {
-      showToast.success("Site déverrouillé");
+      showToast.success("Boutique déverrouillée");
       fetchSettings();
     }
     setSaving(false);
@@ -236,7 +258,7 @@ export default function AdminDrop() {
     const { error: settingsError } = await supabase
       .from("site_settings")
       .update({
-        drop_duration_hours: dropDuration,
+        drop_duration_hours: getTotalHours(),
         lock_message: lockMessage,
       })
       .eq("id", settings.id);
@@ -296,7 +318,7 @@ export default function AdminDrop() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-secondary">Drop Time</h1>
-          <p className="text-secondary/60">Gérez les drops et le verrouillage du site</p>
+          <p className="text-secondary/60">Gérez les drops et le verrouillage de la boutique</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
@@ -308,7 +330,7 @@ export default function AdminDrop() {
               ) : (
                 <Unlock className="w-6 h-6 text-green-400" />
               )}
-              <h2 className="text-lg font-bold text-secondary">Statut du site</h2>
+              <h2 className="text-lg font-bold text-secondary">Statut de la boutique</h2>
             </div>
 
             <div className={`p-4 rounded-xl mb-6 ${
@@ -319,11 +341,11 @@ export default function AdminDrop() {
               <p className={`text-lg font-bold ${
                 settings?.site_status === "locked" ? "text-red-400" : "text-green-400"
               }`}>
-                {settings?.site_status === "locked" ? "🔒 Site verrouillé" : "🟢 Site ouvert"}
+                {settings?.site_status === "locked" ? "🔒 Boutique verrouillée" : "🟢 Boutique ouverte"}
               </p>
               {countdown && (
                 <p className="text-secondary/70 mt-2">
-                  Temps restant : {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+                  Temps restant : {countdown.days > 0 ? `${countdown.days}j ` : ''}{countdown.hours}h {countdown.minutes}m {countdown.seconds}s
                 </p>
               )}
             </div>
@@ -332,8 +354,17 @@ export default function AdminDrop() {
             {countdown && (
               <div className="bg-accent/10 border border-accent/20 rounded-xl p-6 mb-6 text-center">
                 <Timer className="w-8 h-8 text-accent mx-auto mb-3" />
-                <p className="text-secondary/60 text-sm mb-2">DROP EN COURS</p>
+                <p className="text-secondary/60 text-sm mb-2">BOUTIQUE OUVERTE</p>
                 <div className="flex items-center justify-center gap-2">
+                  {countdown.days > 0 && (
+                    <>
+                      <div className="bg-primary px-4 py-3 rounded-lg">
+                        <span className="text-3xl font-bold text-accent">{countdown.days.toString().padStart(2, "0")}</span>
+                        <p className="text-xs text-secondary/50">JOURS</p>
+                      </div>
+                      <span className="text-2xl text-accent">:</span>
+                    </>
+                  )}
                   <div className="bg-primary px-4 py-3 rounded-lg">
                     <span className="text-3xl font-bold text-accent">{countdown.hours.toString().padStart(2, "0")}</span>
                     <p className="text-xs text-secondary/50">HEURES</p>
@@ -361,7 +392,7 @@ export default function AdminDrop() {
                   className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-all disabled:opacity-50"
                 >
                   <Unlock className="w-5 h-5" />
-                  <span>Déverrouiller le site</span>
+                  <span>Déverrouiller la boutique</span>
                 </button>
               ) : countdown ? (
                 <button
@@ -379,7 +410,7 @@ export default function AdminDrop() {
                   className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-accent text-primary rounded-xl font-bold shadow-gold hover:shadow-gold-glow transition-all disabled:opacity-50"
                 >
                   <Play className="w-5 h-5" />
-                  <span>Lancer un drop ({dropDuration}h)</span>
+                  <span>Lancer un drop ({dropDurationValue} {dropDurationUnit === "days" ? "jour(s)" : "h"})</span>
                 </button>
               )}
 
@@ -406,16 +437,26 @@ export default function AdminDrop() {
             <div className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-secondary mb-2">
-                  Durée du drop (heures)
+                  Durée du drop
                 </label>
-                <input
-                  type="number"
-                  value={dropDuration}
-                  onChange={(e) => setDropDuration(parseInt(e.target.value) || 24)}
-                  min={1}
-                  max={168}
-                  className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    value={dropDurationValue}
+                    onChange={(e) => setDropDurationValue(parseInt(e.target.value) || 1)}
+                    min={1}
+                    max={dropDurationUnit === "days" ? 365 : 720}
+                    className="flex-1 px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
+                  />
+                  <select
+                    value={dropDurationUnit}
+                    onChange={(e) => setDropDurationUnit(e.target.value as DurationUnit)}
+                    className="px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
+                  >
+                    <option value="hours">Heures</option>
+                    <option value="days">Jours</option>
+                  </select>
+                </div>
               </div>
 
               <div>
