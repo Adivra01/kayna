@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Instagram, ShoppingBag, Heart, Filter, AlertCircle } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
@@ -13,6 +13,7 @@ import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { showToast } from "@/lib/toast";
+import ShopLocked from "./ShopLocked";
 
 // Import rotating videos
 import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
@@ -45,13 +46,6 @@ interface Product {
   out_of_stock: boolean;
 }
 
-const categories = [
-  { id: "all", label: "Tous" },
-  { id: "tshirts", label: "T-Shirts" },
-  { id: "hoodies", label: "Hoodies" },
-  { id: "sweaters", label: "Pulls" },
-];
-
 const Shop = () => {
   usePageTracking();
   const { t, formatPrice, isRTL } = useLocalization();
@@ -59,6 +53,7 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isShopLocked, setIsShopLocked] = useState<boolean | null>(null);
   const { addItem, getTotalItems, toggleCart } = useCart();
   const { isFavorite, toggleFavorite, getFavoritesCount } = useFavorites();
   const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -70,6 +65,39 @@ const Shop = () => {
     { id: "hoodies", label: t.shop.hoodies },
     { id: "sweaters", label: t.shop.sweaters },
   ];
+
+  // Check if shop is locked
+  useEffect(() => {
+    const checkShopStatus = async () => {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("site_status")
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setIsShopLocked(data.site_status === "locked");
+      } else {
+        setIsShopLocked(false);
+      }
+    };
+
+    checkShopStatus();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel("shop_status_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_settings" },
+        () => checkShopStatus()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Fetch products from database
   useEffect(() => {
@@ -108,6 +136,19 @@ const Shop = () => {
 
     fetchProducts();
   }, []);
+
+  // Show locked page if shop is locked
+  if (isShopLocked === null) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isShopLocked) {
+    return <ShopLocked />;
+  }
 
   const filteredProducts = activeCategory === "all" 
     ? products 
