@@ -210,7 +210,7 @@ export default function Favorites() {
                         {product.title}
                       </h3>
                       <span className="text-accent font-bold text-lg">
-                        {formatPrice(product.price)}
+                        {formatPrice(product)}
                       </span>
                     </div>
                   </div>

@@ -652,7 +652,7 @@ const ProductDetail = () => {
                     {product.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(product.price)}</span>
+                    <span className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(product)}</span>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-accent text-accent" />
@@ -750,7 +750,7 @@ const ProductDetail = () => {
                     ) : (
                       <>
                         <ShoppingBag className="w-5 h-5" />
-                        {t.product.addToCart} — {formatPrice(product.price * quantity)}
+                        {t.product.addToCart} — {formatPrice(product)}
                       </>
                     )}
                   </button>
@@ -816,7 +816,7 @@ const ProductDetail = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="font-bold text-secondary group-hover:text-accent transition-colors">{related.title}</h3>
-                      <span className="text-accent font-bold">{formatPrice(related.price)}</span>
+                      <span className="text-accent font-bold">{formatPrice(related)}</span>
                     </div>
                     
                     <FavoriteButton

@@ -10,7 +10,7 @@ const CartDrawer = () => {
   const navigate = useNavigate();
   const { items, isOpen, setCartOpen, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
   const { formattedTime, isExpiring } = useCartCountdown();
-  const { t, formatPrice, isRTL } = useLocalization();
+  const { t, formatAmount, isRTL } = useLocalization();
   const [freeShippingThreshold] = useState(100000);
   const totalPrice = getTotalPrice();
   const freeShippingProgress = Math.min((totalPrice / freeShippingThreshold) * 100, 100);
@@ -117,7 +117,7 @@ const CartDrawer = () => {
                 <>
                   <div className="flex items-center justify-between text-xs mb-2">
                     <span className="text-secondary/60">{t.cart.freeShippingProgress.replace('{amount}', '')}</span>
-                    <span className="text-accent font-medium">{formatPrice(remainingForFreeShipping)}</span>
+                    <span className="text-accent font-medium">{formatAmount(remainingForFreeShipping)}</span>
                   </div>
                   <div className="h-1.5 bg-secondary/10 rounded-full overflow-hidden">
                     <div 
@@ -181,7 +181,7 @@ const CartDrawer = () => {
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <span className="font-bold text-accent">{formatPrice(item.price * item.quantity)}</span>
+                    <span className="font-bold text-accent">{formatAmount(item.price * item.quantity)}</span>
                   </div>
                 </div>
               </div>
@@ -194,7 +194,7 @@ const CartDrawer = () => {
           <div className="p-6 border-t border-secondary/10 space-y-4 bg-secondary/5">
             <div className="flex justify-between items-center">
               <span className="text-secondary/60">{t.cart.total}</span>
-              <span className="text-2xl font-bold text-secondary">{formatPrice(getTotalPrice())}</span>
+              <span className="text-2xl font-bold text-secondary">{formatAmount(getTotalPrice())}</span>
             </div>
             <button 
               onClick={handleCheckout}

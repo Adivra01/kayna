@@ -1,24 +1,32 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { translations, Language, Translations } from '@/lib/i18n/translations';
-import { CurrencyCode, displayPrice, convertPrice as convertPriceFn } from '@/lib/i18n/currencies';
-import { getCountryConfig } from '@/lib/i18n/countryConfig';
+import { 
+  PricingRegion, 
+  getRegionFromCountry, 
+  getRegionPricing, 
+  detectProductCategory,
+  formatRegionPrice,
+  getLanguageFromCountry
+} from '@/lib/i18n/geoPricing';
 
 const STORAGE_KEY_LANG = 'kayna_language';
-const STORAGE_KEY_CURRENCY = 'kayna_currency';
 const STORAGE_KEY_COUNTRY = 'kayna_country';
+const STORAGE_KEY_REGION = 'kayna_region';
 const STORAGE_KEY_GEO_DETECTED = 'kayna_geo_detected';
 
 interface LocalizationContextType {
   language: Language;
-  currency: CurrencyCode;
+  region: PricingRegion;
   country: string;
   countryName: string;
   t: Translations;
   setLanguage: (lang: Language) => void;
-  setCurrency: (curr: CurrencyCode) => void;
-  setCountry: (countryCode: string) => void;
-  formatPrice: (priceInXOF: number) => string;
-  convertPrice: (priceInXOF: number) => number;
+  // Price formatting based on region (fixed prices, not conversion)
+  formatPrice: (product: { category?: string; title?: string }) => string;
+  // Format a raw amount (for totals, cart sums, etc.)
+  formatAmount: (amount: number) => string;
+  getPrice: (product: { category?: string; title?: string }) => number;
+  getCurrency: () => 'USD' | 'EUR';
   isRTL: boolean;
   isLoading: boolean;
 }
@@ -32,9 +40,22 @@ interface GeoResponse {
   region?: string;
 }
 
+// Country name mapping
+const countryNames: Record<string, string> = {
+  ML: 'Mali', SN: 'Sénégal', CI: "Côte d'Ivoire", BF: 'Burkina Faso',
+  NE: 'Niger', TG: 'Togo', BJ: 'Bénin', CM: 'Cameroun', CD: 'RD Congo',
+  GA: 'Gabon', NG: 'Nigeria', GH: 'Ghana', KE: 'Kenya', ZA: 'Afrique du Sud',
+  MA: 'Maroc', DZ: 'Algérie', TN: 'Tunisie', EG: 'Égypte', LY: 'Libye',
+  FR: 'France', BE: 'Belgique', CH: 'Suisse', DE: 'Allemagne', IT: 'Italie',
+  ES: 'Espagne', PT: 'Portugal', GB: 'United Kingdom', NL: 'Pays-Bas',
+  US: 'United States', CA: 'Canada',
+  SA: 'Arabie Saoudite', AE: 'Émirats Arabes Unis', QA: 'Qatar', KW: 'Koweït',
+  JO: 'Jordanie', LB: 'Liban',
+};
+
 export function LocalizationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('fr');
-  const [currency, setCurrencyState] = useState<CurrencyCode>('XOF');
+  const [region, setRegion] = useState<PricingRegion>('subsaharan_africa');
   const [country, setCountryState] = useState<string>('ML');
   const [countryName, setCountryName] = useState<string>('Mali');
   const [isLoading, setIsLoading] = useState(true);
@@ -46,15 +67,14 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     
     // Check for saved preferences first
     const savedLang = localStorage.getItem(STORAGE_KEY_LANG) as Language;
-    const savedCurrency = localStorage.getItem(STORAGE_KEY_CURRENCY) as CurrencyCode;
     const savedCountry = localStorage.getItem(STORAGE_KEY_COUNTRY);
+    const savedRegion = localStorage.getItem(STORAGE_KEY_REGION) as PricingRegion;
 
-    if (savedLang && savedCurrency && savedCountry && alreadyDetected) {
+    if (savedLang && savedCountry && savedRegion && alreadyDetected) {
       setLanguageState(savedLang);
-      setCurrencyState(savedCurrency);
       setCountryState(savedCountry);
-      const config = getCountryConfig(savedCountry);
-      setCountryName(config.name);
+      setRegion(savedRegion);
+      setCountryName(countryNames[savedCountry] || 'International');
       setIsLoading(false);
       return;
     }
@@ -69,30 +89,32 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
       
       const data: GeoResponse = await response.json();
       const countryCode = data.country_code || 'ML';
-      const config = getCountryConfig(countryCode);
+      
+      // Get region and language based on country
+      const detectedRegion = getRegionFromCountry(countryCode);
+      const detectedLanguage = getLanguageFromCountry(countryCode);
 
       setCountryState(countryCode);
-      setCountryName(config.name);
-      setLanguageState(config.language);
-      setCurrencyState(config.currency);
+      setCountryName(countryNames[countryCode] || data.country_name || 'International');
+      setLanguageState(detectedLanguage);
+      setRegion(detectedRegion);
 
       // Save to localStorage for persistence
-      localStorage.setItem(STORAGE_KEY_LANG, config.language);
-      localStorage.setItem(STORAGE_KEY_CURRENCY, config.currency);
+      localStorage.setItem(STORAGE_KEY_LANG, detectedLanguage);
       localStorage.setItem(STORAGE_KEY_COUNTRY, countryCode);
+      localStorage.setItem(STORAGE_KEY_REGION, detectedRegion);
       sessionStorage.setItem(STORAGE_KEY_GEO_DETECTED, 'true');
 
-      console.log(`[Localization] Detected: ${countryCode} → ${config.language}/${config.currency}`);
+      console.log(`[Localization] Detected: ${countryCode} → ${detectedLanguage} / ${detectedRegion}`);
     } catch (error) {
       console.warn('[Localization] Could not detect location, using defaults:', error);
       // Use defaults or saved values
       if (savedLang) setLanguageState(savedLang);
-      if (savedCurrency) setCurrencyState(savedCurrency);
       if (savedCountry) {
         setCountryState(savedCountry);
-        const config = getCountryConfig(savedCountry);
-        setCountryName(config.name);
+        setCountryName(countryNames[savedCountry] || 'International');
       }
+      if (savedRegion) setRegion(savedRegion);
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +124,7 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     detectLocation();
   }, [detectLocation]);
 
-  // Update language
+  // Update language (user can change language, but NOT price/region)
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem(STORAGE_KEY_LANG, lang);
@@ -111,32 +133,32 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }, []);
 
-  // Update currency
-  const setCurrency = useCallback((curr: CurrencyCode) => {
-    setCurrencyState(curr);
-    localStorage.setItem(STORAGE_KEY_CURRENCY, curr);
-  }, []);
+  // Get the region-based price for a product (fixed price, NOT conversion)
+  const getPrice = useCallback((product: { category?: string; title?: string }): number => {
+    const productCategory = detectProductCategory(product);
+    const regionInfo = getRegionPricing(region);
+    return regionInfo.prices[productCategory];
+  }, [region]);
 
-  // Update country (also updates language and currency)
-  const setCountry = useCallback((countryCode: string) => {
-    setCountryState(countryCode);
-    localStorage.setItem(STORAGE_KEY_COUNTRY, countryCode);
-    
-    const config = getCountryConfig(countryCode);
-    setCountryName(config.name);
-    setLanguage(config.language);
-    setCurrency(config.currency);
-  }, [setLanguage, setCurrency]);
+  // Get the current currency for the region
+  const getCurrency = useCallback((): 'USD' | 'EUR' => {
+    const regionInfo = getRegionPricing(region);
+    return regionInfo.currency;
+  }, [region]);
 
-  // Format price in current currency
-  const formatPriceLocal = useCallback((priceInXOF: number): string => {
-    return displayPrice(priceInXOF, currency);
-  }, [currency]);
+  // Format price for display (using fixed regional pricing)
+  const formatPriceLocal = useCallback((product: { category?: string; title?: string }): string => {
+    const productCategory = detectProductCategory(product);
+    const regionInfo = getRegionPricing(region);
+    const price = regionInfo.prices[productCategory];
+    return formatRegionPrice(price, regionInfo.currency);
+  }, [region]);
 
-  // Convert price to current currency
-  const convertPriceLocal = useCallback((priceInXOF: number): number => {
-    return convertPriceFn(priceInXOF, currency);
-  }, [currency]);
+  // Format a raw amount (for totals, cart sums, shipping costs, etc.)
+  const formatAmountLocal = useCallback((amount: number): string => {
+    const regionInfo = getRegionPricing(region);
+    return formatRegionPrice(amount, regionInfo.currency);
+  }, [region]);
 
   // Check if current language is RTL
   const isRTL = language === 'ar';
@@ -151,15 +173,15 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
 
   const value: LocalizationContextType = {
     language,
-    currency,
+    region,
     country,
     countryName,
     t,
     setLanguage,
-    setCurrency,
-    setCountry,
     formatPrice: formatPriceLocal,
-    convertPrice: convertPriceLocal,
+    formatAmount: formatAmountLocal,
+    getPrice,
+    getCurrency,
     isRTL,
     isLoading,
   };

@@ -33,7 +33,7 @@ interface Coupon {
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCart();
-  const { t, formatPrice, isRTL } = useLocalization();
+  const { t, formatAmount, isRTL } = useLocalization();
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -127,7 +127,7 @@ const Checkout = () => {
       
       // Check min order amount
       if (data.min_order_amount && subtotal < data.min_order_amount) {
-        setCouponError(`Commande minimum: ${formatPrice(data.min_order_amount)}`);
+        setCouponError(`Commande minimum: ${formatAmount(data.min_order_amount)}`);
         setCouponLoading(false);
         return;
       }
@@ -445,7 +445,7 @@ const Checkout = () => {
                             <p className="text-sm text-green-400">
                               -{appliedCoupon.discount_type === "percentage" 
                                 ? `${appliedCoupon.discount_value}%` 
-                                : formatPrice(appliedCoupon.discount_value)}
+                                : formatAmount(appliedCoupon.discount_value)}
                             </p>
                           </div>
                         </div>
@@ -585,7 +585,7 @@ const Checkout = () => {
                       {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       ) : null}
-                      Payer {formatPrice(total)}
+                      Payer {formatAmount(total)}
                     </Button>
                   )}
                 </div>
@@ -611,7 +611,7 @@ const Checkout = () => {
                         {item.size && <p className="text-xs text-muted-foreground">Taille: {item.size}</p>}
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-muted-foreground">x{item.quantity}</span>
-                          <span className="text-sm font-medium text-accent">{formatPrice(item.price * item.quantity)}</span>
+                          <span className="text-sm font-medium text-accent">{formatAmount(item.price * item.quantity)}</span>
                         </div>
                       </div>
                     </div>
@@ -621,21 +621,21 @@ const Checkout = () => {
                 <div className="border-t border-border pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Sous-total</span>
-                    <span className="text-foreground">{formatPrice(subtotal)}</span>
+                    <span className="text-foreground">{formatAmount(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Livraison</span>
-                    <span className="text-foreground">{formatPrice(shippingCost)}</span>
+                    <span className="text-foreground">{formatAmount(shippingCost)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-green-500">Réduction</span>
-                      <span className="text-green-500">-{formatPrice(discount)}</span>
+                      <span className="text-green-500">-{formatAmount(discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-2 border-t border-border">
                     <span className="font-bold text-foreground">Total</span>
-                    <span className="font-bold text-xl text-accent">{formatPrice(total)}</span>
+                    <span className="font-bold text-xl text-accent">{formatAmount(total)}</span>
                   </div>
                 </div>
               </div>

@@ -19,6 +19,7 @@ import LegalNotice from "./pages/LegalNotice";
 import FAQ from "./pages/FAQ";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import WhyThisPrice from "./pages/WhyThisPrice";
 import CartDrawer from "./components/CartDrawer";
 import DropCountdownBanner from "./components/DropCountdownBanner";
 import CustomCursor from "./components/CustomCursor";
@@ -60,6 +61,7 @@ function AppContent() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/why-this-price" element={<WhyThisPrice />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminAnalytics />} />
