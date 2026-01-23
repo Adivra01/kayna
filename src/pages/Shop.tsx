@@ -377,7 +377,7 @@ const Shop = () => {
                       {/* Content */}
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 lg:p-5 transform transition-transform duration-500 group-hover:translate-y-[-8px]">
                         <h3 className="text-secondary text-sm sm:text-base lg:text-lg font-bold mb-1 drop-shadow-lg line-clamp-2">{product.title}</h3>
-                        <span className="text-accent font-bold text-sm sm:text-base lg:text-lg drop-shadow-md">{formatPrice(product.price)}</span>
+                        <span className="text-accent font-bold text-sm sm:text-base lg:text-lg drop-shadow-md">{formatPrice(product)}</span>
                       </div>
 
                       {product.tag && !isOutOfStock && (
