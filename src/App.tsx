@@ -21,7 +21,8 @@ import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import WhyThisPrice from "./pages/WhyThisPrice";
 import CartDrawer from "./components/CartDrawer";
-import DropCountdownBanner from "./components/DropCountdownBanner";
+import ShopCountdownBanner from "./components/ShopCountdownBanner";
+import ShopOpenCelebration from "./components/ShopOpenCelebration";
 import CustomCursor from "./components/CustomCursor";
 import PageTransition from "./components/PageTransition";
 import AudioControl from "./components/AudioControl";
@@ -44,7 +45,8 @@ function AppContent() {
   
   return (
     <>
-      <DropCountdownBanner />
+      <ShopCountdownBanner />
+      <ShopOpenCelebration />
       <PageTransition>
         <Routes>
           <Route path="/" element={<Index />} />
