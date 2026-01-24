@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Timer, Lock, ShoppingBag, Bell, CheckCircle2 } from "lucide-react";
+import { Timer, ShoppingBag, Bell, CheckCircle2, ArrowLeft, User } from "lucide-react";
 import { showToast } from "@/lib/toast";
 import gsap from "gsap";
 import Footer from "@/components/Footer";
 
 interface SiteSettings {
   lock_message: string | null;
-  drop_end_time: string | null;
+  drop_opening_time: string | null;
 }
 
 export default function ShopLocked() {
@@ -18,6 +19,7 @@ export default function ShopLocked() {
   // Form state
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -27,7 +29,6 @@ export default function ShopLocked() {
   useEffect(() => {
     fetchSettings();
     
-    // Subscribe to real-time updates
     const channel = supabase
       .channel("shop_settings_changes")
       .on(
@@ -55,26 +56,34 @@ export default function ShopLocked() {
   const fetchSettings = async () => {
     const { data, error } = await supabase
       .from("site_settings")
-      .select("lock_message, drop_end_time")
+      .select("lock_message, drop_opening_time, site_status")
       .limit(1)
       .maybeSingle();
 
     if (!error && data) {
-      setSettings(data);
+      // If shop is now open, redirect
+      if (data.site_status === "open") {
+        window.location.href = "/shop";
+        return;
+      }
+      setSettings({
+        lock_message: data.lock_message,
+        drop_opening_time: data.drop_opening_time,
+      });
     }
     setLoading(false);
   };
 
-  // Countdown timer
+  // Countdown timer for opening
   useEffect(() => {
-    if (!settings?.drop_end_time) {
+    if (!settings?.drop_opening_time) {
       setCountdown(null);
       return;
     }
 
     const updateCountdown = () => {
       const now = new Date().getTime();
-      const end = new Date(settings.drop_end_time!).getTime();
+      const end = new Date(settings.drop_opening_time!).getTime();
       const diff = end - now;
 
       if (diff <= 0) {
@@ -94,7 +103,7 @@ export default function ShopLocked() {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [settings?.drop_end_time]);
+  }, [settings?.drop_opening_time]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +114,7 @@ export default function ShopLocked() {
     const { error } = await supabase.from("subscribers").insert({
       email,
       phone: phone || null,
+      full_name: fullName || null,
     });
 
     if (error) {
@@ -119,7 +129,7 @@ export default function ShopLocked() {
       
       if (formRef.current) {
         gsap.to(formRef.current, {
-          scale: 1.05,
+          scale: 1.02,
           duration: 0.2,
           yoyo: true,
           repeat: 1,
@@ -141,115 +151,156 @@ export default function ShopLocked() {
 
   return (
     <div className="min-h-screen bg-primary flex flex-col">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-secondary tracking-wider">
+            KAYNA
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 text-secondary/70 hover:text-accent transition-colors text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Retour</span>
+            </Link>
+            <Link 
+              to="/auth" 
+              className="flex items-center gap-2 px-4 py-2 bg-accent/10 hover:bg-accent/20 text-accent rounded-full transition-colors text-sm font-medium"
+            >
+              <User className="w-4 h-4" />
+              <span>Connexion</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-16">
+      <div className="flex-1 flex items-center justify-center px-4 py-24 mt-16">
         <div ref={containerRef} className="max-w-lg w-full text-center">
           {/* Icon */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl animate-pulse" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-accent to-accent/60 rounded-full flex items-center justify-center">
-              <ShoppingBag className="w-12 h-12 text-primary" />
-              <Lock className="absolute -bottom-1 -right-1 w-8 h-8 text-primary bg-accent rounded-full p-1.5" />
+          <div className="relative w-28 h-28 mx-auto mb-8">
+            <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl animate-pulse" />
+            <div className="relative w-28 h-28 bg-gradient-to-br from-accent to-accent/60 rounded-full flex items-center justify-center shadow-gold">
+              <ShoppingBag className="w-14 h-14 text-primary" />
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-4xl font-bold text-secondary mb-4">
-            Boutique Fermée
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary mb-4">
+            Ouverture <span className="text-accent">Imminente</span>
           </h1>
 
           {/* Message */}
-          <p className="text-secondary/70 text-lg mb-8 leading-relaxed">
-            {settings?.lock_message || "La boutique est actuellement fermée. Inscrivez-vous pour être notifié de la prochaine ouverture."}
+          <p className="text-secondary/70 text-lg mb-8 leading-relaxed max-w-md mx-auto">
+            {settings?.lock_message || "La collection exclusive arrive bientôt. Inscrivez-vous pour être parmi les premiers à découvrir nos pièces."}
           </p>
 
           {/* Countdown */}
           {countdown && (
-            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6 mb-8">
-              <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="bg-secondary/5 border border-secondary/10 rounded-3xl p-6 sm:p-8 mb-8">
+              <div className="flex items-center justify-center gap-2 mb-6">
                 <Timer className="w-5 h-5 text-accent" />
                 <span className="text-accent font-semibold uppercase text-sm tracking-wider">
-                  Ouverture dans
+                  La boutique ouvre dans
                 </span>
               </div>
               <div className="flex items-center justify-center gap-2 sm:gap-4">
                 {countdown.days > 0 && (
                   <>
-                    <div className="bg-primary border border-accent/30 px-3 sm:px-4 py-3 rounded-xl">
-                      <span className="text-2xl sm:text-4xl font-bold text-accent">
+                    <div className="bg-primary border border-accent/30 px-4 sm:px-6 py-4 rounded-2xl min-w-[70px] sm:min-w-[85px]">
+                      <span className="text-3xl sm:text-5xl font-bold text-accent block">
                         {countdown.days.toString().padStart(2, "0")}
                       </span>
-                      <p className="text-[10px] sm:text-xs text-secondary/50 mt-1">JOURS</p>
+                      <p className="text-[10px] sm:text-xs text-secondary/50 mt-1 uppercase tracking-wider">Jours</p>
                     </div>
-                    <span className="text-2xl text-accent">:</span>
+                    <span className="text-2xl sm:text-3xl text-accent/40">:</span>
                   </>
                 )}
-                <div className="bg-primary border border-accent/30 px-3 sm:px-4 py-3 rounded-xl">
-                  <span className="text-2xl sm:text-4xl font-bold text-accent">
+                <div className="bg-primary border border-accent/30 px-4 sm:px-6 py-4 rounded-2xl min-w-[70px] sm:min-w-[85px]">
+                  <span className="text-3xl sm:text-5xl font-bold text-accent block">
                     {countdown.hours.toString().padStart(2, "0")}
                   </span>
-                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1">HEURES</p>
+                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1 uppercase tracking-wider">Heures</p>
                 </div>
-                <span className="text-2xl text-accent">:</span>
-                <div className="bg-primary border border-accent/30 px-3 sm:px-4 py-3 rounded-xl">
-                  <span className="text-2xl sm:text-4xl font-bold text-accent">
+                <span className="text-2xl sm:text-3xl text-accent/40">:</span>
+                <div className="bg-primary border border-accent/30 px-4 sm:px-6 py-4 rounded-2xl min-w-[70px] sm:min-w-[85px]">
+                  <span className="text-3xl sm:text-5xl font-bold text-accent block">
                     {countdown.minutes.toString().padStart(2, "0")}
                   </span>
-                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1">MIN</p>
+                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1 uppercase tracking-wider">Min</p>
                 </div>
-                <span className="text-2xl text-accent">:</span>
-                <div className="bg-primary border border-accent/30 px-3 sm:px-4 py-3 rounded-xl">
-                  <span className="text-2xl sm:text-4xl font-bold text-accent">
+                <span className="text-2xl sm:text-3xl text-accent/40">:</span>
+                <div className="bg-primary border border-accent/30 px-4 sm:px-6 py-4 rounded-2xl min-w-[70px] sm:min-w-[85px]">
+                  <span className="text-3xl sm:text-5xl font-bold text-accent block">
                     {countdown.seconds.toString().padStart(2, "0")}
                   </span>
-                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1">SEC</p>
+                  <p className="text-[10px] sm:text-xs text-secondary/50 mt-1 uppercase tracking-wider">Sec</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Subscription Form */}
-          <div ref={formRef} className="bg-secondary/5 border border-secondary/10 rounded-2xl p-6">
+          <div ref={formRef} className="bg-secondary/5 border border-secondary/10 rounded-3xl p-6 sm:p-8">
             {submitted ? (
               <div className="text-center py-4">
-                <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                <p className="text-secondary font-medium">Merci pour votre inscription !</p>
-                <p className="text-secondary/60 text-sm mt-1">
-                  Vous serez notifié dès l'ouverture de la boutique.
+                <CheckCircle2 className="w-14 h-14 text-green-400 mx-auto mb-4" />
+                <p className="text-secondary font-semibold text-lg">Merci pour votre inscription !</p>
+                <p className="text-secondary/60 text-sm mt-2">
+                  Vous recevrez une notification dès l'ouverture de la boutique.
                 </p>
+                <Link 
+                  to="/auth"
+                  className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-accent text-primary rounded-full font-bold hover:shadow-gold transition-all"
+                >
+                  <User className="w-4 h-4" />
+                  Créer un compte
+                </Link>
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-center gap-2 mb-4">
+                <div className="flex items-center justify-center gap-2 mb-6">
                   <Bell className="w-5 h-5 text-accent" />
                   <span className="text-secondary font-semibold">
-                    Soyez notifié de l'ouverture
+                    Rejoignez la liste d'attente
                   </span>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Votre nom complet"
+                    className="w-full px-5 py-4 bg-primary border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
+                  />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Votre email *"
                     required
-                    className="w-full px-4 py-3 bg-primary border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent"
+                    className="w-full px-5 py-4 bg-primary border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
                   />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Votre téléphone (optionnel)"
-                    className="w-full px-4 py-3 bg-primary border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent"
+                    className="w-full px-5 py-4 bg-primary border border-secondary/20 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent transition-colors"
                   />
                   <button
                     type="submit"
                     disabled={submitting || !email}
                     className="w-full px-6 py-4 bg-accent text-primary font-bold rounded-xl hover:shadow-gold transition-all disabled:opacity-50"
                   >
-                    {submitting ? "Inscription..." : "M'inscrire"}
+                    {submitting ? "Inscription..." : "M'inscrire à la liste d'attente"}
                   </button>
                 </form>
+                <p className="text-secondary/40 text-xs mt-4">
+                  En vous inscrivant, vous acceptez de recevoir des communications de KAYNA.
+                </p>
               </>
             )}
           </div>

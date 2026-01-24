@@ -870,33 +870,45 @@ export type Database = {
         Row: {
           cart_timeout_minutes: number | null
           created_at: string
+          drop_closing_duration_hours: number | null
+          drop_closing_enabled: boolean | null
           drop_duration_hours: number | null
           drop_end_time: string | null
+          drop_opening_time: string | null
           free_shipping_threshold: number | null
           id: string
           lock_message: string | null
+          shop_just_opened: boolean | null
           site_status: Database["public"]["Enums"]["site_status"]
           updated_at: string
         }
         Insert: {
           cart_timeout_minutes?: number | null
           created_at?: string
+          drop_closing_duration_hours?: number | null
+          drop_closing_enabled?: boolean | null
           drop_duration_hours?: number | null
           drop_end_time?: string | null
+          drop_opening_time?: string | null
           free_shipping_threshold?: number | null
           id?: string
           lock_message?: string | null
+          shop_just_opened?: boolean | null
           site_status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
         }
         Update: {
           cart_timeout_minutes?: number | null
           created_at?: string
+          drop_closing_duration_hours?: number | null
+          drop_closing_enabled?: boolean | null
           drop_duration_hours?: number | null
           drop_end_time?: string | null
+          drop_opening_time?: string | null
           free_shipping_threshold?: number | null
           id?: string
           lock_message?: string | null
+          shop_just_opened?: boolean | null
           site_status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
         }
