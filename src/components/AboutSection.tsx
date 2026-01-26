@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Sparkles } from "lucide-react";
-import sweater1 from "@/assets/sweater-1.jpg";
-import tshirt2 from "@/assets/tshirt-2.jpg";
-import hoodie1 from "@/assets/hoodie-1.jpg";
+import aboutMain from "@/assets/about-main.jpg";
+import aboutLifestyle from "@/assets/about-lifestyle.jpg";
+import aboutStar from "@/assets/about-star.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -266,8 +266,9 @@ const AboutSection = () => {
               style={{ transformStyle: "preserve-3d" }}
             >
               <img 
-                src={sweater1} 
-                alt="KAYNA Sweater" 
+                src={aboutMain} 
+                alt="KAYNA Community" 
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
@@ -333,8 +334,9 @@ const AboutSection = () => {
               style={{ transform: "translateZ(60px)" }}
             >
               <img 
-                src={tshirt2} 
-                alt="KAYNA T-Shirt" 
+                src={aboutLifestyle} 
+                alt="KAYNA Lifestyle" 
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent" />
@@ -354,8 +356,9 @@ const AboutSection = () => {
               style={{ transform: "translateZ(100px)" }}
             >
               <img 
-                src={hoodie1} 
-                alt="KAYNA Hoodie" 
+                src={aboutStar} 
+                alt="KAYNA Star" 
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/70 to-transparent" />
