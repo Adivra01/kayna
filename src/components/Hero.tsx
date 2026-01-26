@@ -4,9 +4,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Instagram, ArrowRight, ShoppingBag, Menu, X, Play, Sparkles, User, LogOut, Link2, Heart, Settings, Shield } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
-import heroImage from "@/assets/hero-image.jpg";
-import sweater1 from "@/assets/sweater-1.jpg";
-import tshirt1 from "@/assets/tshirt-1.jpg";
+import heroImage from "@/assets/hero-group.jpg";
+import heroManStreet from "@/assets/hero-man-street.jpg";
+import heroWomanCasual from "@/assets/hero-woman-casual.jpg";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import CartDrawer from "@/components/CartDrawer";
@@ -713,8 +713,9 @@ const Hero = () => {
                 data-cursor="product"
               >
                 <img 
-                  src={sweater1} 
-                  alt="KAYNA Sweater"
+                  src={heroManStreet} 
+                  alt="KAYNA Style Urbain"
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/70 to-transparent" />
@@ -734,8 +735,9 @@ const Hero = () => {
                 data-cursor="product"
               >
                 <img 
-                  src={tshirt1} 
-                  alt="KAYNA T-Shirt"
+                  src={heroWomanCasual} 
+                  alt="KAYNA Casual"
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent" />
