@@ -5,9 +5,9 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 // Category images
-import categoryTshirt from "@/assets/category-tshirt.jpg";
-import categoryHoodie from "@/assets/category-hoodie.jpg";
-import categorySweater from "@/assets/category-sweater.jpg";
+import categoryTshirt from "@/assets/category-tshirt-new.jpg";
+import categoryHoodie from "@/assets/category-hoodie-new.jpg";
+import categorySweater from "@/assets/category-sweater-new.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -267,6 +267,7 @@ const CategorySection = () => {
                 ref={imageRef}
                 src={activeCategory.image} 
                 alt={activeCategory.name}
+                loading="lazy"
                 className="w-full h-full object-cover" 
               />
               

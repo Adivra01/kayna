@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Shield, Leaf, Recycle, Award, ArrowRight } from "lucide-react";
-import qualityDetail from "@/assets/quality-detail.jpg";
-import productShowcase from "@/assets/product-showcase.jpg";
+import qualityDuo from "@/assets/quality-duo.jpg";
+import qualitySingle from "@/assets/quality-single.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -228,8 +228,9 @@ const QualitySection = () => {
           >
             <div className="relative rounded-[2.5rem] overflow-hidden aspect-square shadow-dark-lg group cursor-pointer border border-border/50">
               <img
-                src={qualityDetail}
-                alt="Quality Detail"
+                src={qualityDuo}
+                alt="KAYNA Quality Duo"
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/20 to-transparent group-hover:opacity-80 transition-opacity" />
@@ -281,8 +282,9 @@ const QualitySection = () => {
           >
             <div className="relative rounded-[2.5rem] overflow-hidden aspect-[3/4] shadow-dark-lg group cursor-pointer border border-border/50">
               <img
-                src={productShowcase}
-                alt="Product Showcase"
+                src={qualitySingle}
+                alt="KAYNA Quality Single"
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/20 to-transparent group-hover:opacity-80 transition-opacity" />
