@@ -137,25 +137,13 @@ const Shop = () => {
     fetchProducts();
   }, []);
 
-  // Show locked page if shop is locked
-  if (isShopLocked === null) {
-    return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (isShopLocked) {
-    return <ShopLocked />;
-  }
-
   const filteredProducts = activeCategory === "all" 
     ? products 
     : products.filter(p => p.category === activeCategory);
 
+  // Animation effect - must be before conditional returns
   useEffect(() => {
-    if (loading) return;
+    if (loading || isShopLocked) return;
     
     const ctx = gsap.context(() => {
       cardsRef.current.forEach((card, index) => {
@@ -173,7 +161,20 @@ const Shop = () => {
       });
     });
     return () => ctx.revert();
-  }, [activeCategory, loading]);
+  }, [activeCategory, loading, isShopLocked]);
+
+  // Show locked page if shop is locked - AFTER all hooks
+  if (isShopLocked === null) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isShopLocked) {
+    return <ShopLocked />;
+  }
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();

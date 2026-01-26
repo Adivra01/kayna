@@ -311,7 +311,7 @@ export default function AdminProducts() {
         category,
         tag: null,
         sizes: sizes.length > 0 ? sizes : FIXED_SIZES,
-        colors: colors.length > 0 ? colors : ["noir", "blanc", "beige"],
+        colors: colors.length > 0 ? colors : [], // Ne pas forcer de couleurs par défaut
         details: [],
         images,
         is_active: true,
@@ -320,10 +320,10 @@ export default function AdminProducts() {
       };
 
       if (existingProduct) {
-        // Update existing - keep local images and price if they were customized
+        // Update existing - keep local data if customized, DON'T override colors
         const updateData: Record<string, unknown> = {
           sizes: productData.sizes,
-          colors: productData.colors,
+          // colors: Ne pas écraser les couleurs existantes lors de la sync
           printful_variants: productData.printful_variants as unknown,
         };
         
