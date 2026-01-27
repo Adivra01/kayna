@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import StorySection from "@/components/StorySection";
 import MarqueeText from "@/components/MarqueeText";
 import ProductGrid from "@/components/ProductGrid";
 import CategorySection from "@/components/CategorySection";
@@ -15,6 +16,7 @@ const Index = () => {
   return (
     <div className="overflow-x-hidden">
       <Hero />
+      <StorySection />
       <AboutSection />
       <MarqueeText />
       <ProductGrid />
@@ -23,7 +25,6 @@ const Index = () => {
       <TestimonialSection />
       <CollectionSection />
       <BrandPromiseSection />
-      <MarqueeText />
       <Footer />
     </div>
   );

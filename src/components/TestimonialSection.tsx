@@ -1,49 +1,29 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Star, Quote } from "lucide-react";
+import { Users, Zap, Target } from "lucide-react";
 import testimonialHero from "@/assets/testimonial-hero.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const testimonials = [
-  {
-    name: "Youssef M.",
-    text: "KAYNA m'accompagne dans chaque combat. C'est plus qu'un vêtement, c'est un rappel de qui je veux devenir.",
-    rating: 5,
-  },
-  {
-    name: "Amina K.",
-    text: "La qualité est exceptionnelle. Chaque fois que je porte KAYNA, je me sens invincible.",
-    rating: 5,
-  },
-  {
-    name: "Malik D.",
-    text: "Enfin une marque qui comprend notre état d'esprit. Le design minimaliste mais puissant.",
-    rating: 5,
-  },
+const stats = [
+  { icon: Users, value: "500+", label: "Guerriers" },
+  { icon: Zap, value: "100%", label: "Engagement" },
+  { icon: Target, value: "1", label: "Vision" },
 ];
 
 const TestimonialSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(imageRef.current, {
-        scale: 1.2,
-        opacity: 0,
-        duration: 1.2,
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-          toggleActions: "play none none reverse",
-        },
-      });
-
-      gsap.to(imageRef.current, {
-        yPercent: -20,
+      // Image parallax
+      gsap.to(imageRef.current?.querySelector("img"), {
+        yPercent: 20,
+        ease: "none",
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top bottom",
@@ -52,19 +32,41 @@ const TestimonialSection = () => {
         },
       });
 
-      cardsRef.current.forEach((card, index) => {
-        if (!card) return;
-        gsap.from(card, {
-          x: 60,
-          opacity: 0,
-          duration: 0.8,
-          delay: index * 0.15,
+      // Content reveal
+      gsap.fromTo(contentRef.current,
+        { y: 80, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1.2,
+          ease: "power3.out",
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top center+=100",
+            start: "top 60%",
             toggleActions: "play none none reverse",
           },
-        });
+        }
+      );
+
+      // Stats counter animation
+      statsRef.current.forEach((stat, index) => {
+        if (!stat) return;
+        gsap.fromTo(stat,
+          { y: 40, opacity: 0, scale: 0.9 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            delay: index * 0.1,
+            ease: "back.out(1.5)",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 50%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
       });
     }, sectionRef);
 
@@ -78,62 +80,41 @@ const TestimonialSection = () => {
         <img
           src={testimonialHero}
           alt="KAYNA Community"
-          className="w-full h-full object-cover"
+          loading="lazy"
+          className="w-full h-full object-cover scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-primary/50" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 lg:px-12 py-24 lg:py-32 min-h-screen flex items-center">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
-          {/* Left - Title */}
-          <div>
-            <Quote className="w-16 h-16 text-accent mb-8 opacity-50" />
-            <h2 className="text-[3rem] lg:text-[4.5rem] font-bold leading-[0.95] text-secondary mb-6">
-              La <span className="italic text-accent">communauté</span>
-              <span className="block">parle</span>
-            </h2>
-            <p className="text-xl text-secondary/60 max-w-md">
-              Rejoins ceux qui ont choisi de porter leur confiance.
-            </p>
-            
-            <div className="flex items-center gap-4 mt-10">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-12 h-12 rounded-full bg-accent/20 border-2 border-primary flex items-center justify-center text-secondary font-bold text-sm">
-                    {String.fromCharCode(64 + i)}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="text-secondary font-bold">+500</div>
-                <div className="text-secondary/50 text-sm">clients satisfaits</div>
-              </div>
-            </div>
-          </div>
+      <div className="relative z-10 container mx-auto px-6 lg:px-12 min-h-screen flex items-center py-20">
+        <div ref={contentRef} className="max-w-2xl">
+          <span className="text-accent text-sm uppercase tracking-[0.3em] mb-6 block">Le Cercle</span>
+          
+          <h2 className="text-[2.5rem] sm:text-[4rem] lg:text-[5rem] font-bold text-secondary leading-[0.9] mb-8">
+            Une communauté.
+            <span className="block text-accent italic mt-2">Pas seul.</span>
+          </h2>
 
-          {/* Right - Testimonials */}
-          <div className="space-y-6">
-            {testimonials.map((testimonial, index) => (
+          <p className="text-xl text-secondary/60 mb-12 max-w-lg leading-relaxed">
+            Rejoins ceux qui ont choisi de ne plus subir. 
+            Ici, on partage des outils, on transmet une vision, on avance ensemble.
+          </p>
+
+          {/* Stats */}
+          <div className="flex flex-wrap gap-8">
+            {stats.map((stat, index) => (
               <div
-                key={testimonial.name}
-                ref={(el) => (cardsRef.current[index] = el)}
-                className="backdrop-blur-xl bg-secondary/5 border border-secondary/10 rounded-3xl p-6 lg:p-8 hover:bg-secondary/10 transition-all cursor-pointer group"
+                key={stat.label}
+                ref={(el) => (statsRef.current[index] = el)}
+                className="text-center"
               >
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                  ))}
+                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-3 mx-auto">
+                  <stat.icon className="w-7 h-7 text-accent" />
                 </div>
-                <p className="text-secondary/80 text-lg leading-relaxed mb-4 group-hover:text-secondary transition-colors">
-                  "{testimonial.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">
-                    {testimonial.name[0]}
-                  </div>
-                  <span className="text-secondary font-medium">{testimonial.name}</span>
-                </div>
+                <div className="text-3xl sm:text-4xl font-black text-secondary">{stat.value}</div>
+                <div className="text-sm text-secondary/50 uppercase tracking-wider">{stat.label}</div>
               </div>
             ))}
           </div>
