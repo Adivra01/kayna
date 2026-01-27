@@ -25,7 +25,6 @@ const Hero = () => {
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
-  const subtitleRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCart();
   const { getFavoritesCount } = useFavorites();
@@ -35,7 +34,6 @@ const Hero = () => {
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Check auth state
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -120,55 +118,43 @@ const Hero = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Cinematic reveal timeline
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      // Start with everything hidden
-      gsap.set([wordRef.current, subtitleRef.current, scrollIndicatorRef.current], { 
+      gsap.set([wordRef.current, scrollIndicatorRef.current], { 
         opacity: 0, 
-        y: 100 
+        y: 60 
       });
-      gsap.set(overlayRef.current, { opacity: 1 });
 
-      // Phase 1: Image reveal with dramatic zoom
+      // Dramatic image reveal
       tl.fromTo(imageContainerRef.current,
-        { scale: 1.4, filter: "blur(20px) brightness(0.3)" },
-        { scale: 1, filter: "blur(0px) brightness(1)", duration: 2.5, ease: "power3.out" }
+        { scale: 1.3, filter: "blur(15px) brightness(0.2)" },
+        { scale: 1, filter: "blur(0px) brightness(1)", duration: 2.2, ease: "power3.out" }
       );
 
-      // Phase 2: Overlay fades to reveal emotional gradient
       tl.to(overlayRef.current, {
-        opacity: 0.6,
-        duration: 1.5,
-      }, "-=1.5");
+        opacity: 0.7,
+        duration: 1.2,
+      }, "-=1.2");
 
-      // Phase 3: The word emerges - raw and powerful
+      // Word reveal
       tl.to(wordRef.current, {
         opacity: 1,
         y: 0,
-        duration: 1.2,
+        duration: 1.4,
         ease: "power4.out",
-      }, "-=0.8");
-
-      // Phase 4: Subtle subtitle
-      tl.to(subtitleRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 1,
       }, "-=0.6");
 
-      // Phase 5: Scroll indicator
       tl.to(scrollIndicatorRef.current, {
         opacity: 1,
         y: 0,
         duration: 0.8,
-      }, "-=0.4");
+      }, "-=0.3");
 
-      // Continuous parallax on scroll
+      // Parallax on scroll
       gsap.to(imageContainerRef.current, {
-        yPercent: 30,
+        yPercent: 25,
         scale: 1.1,
-        filter: "brightness(0.5)",
+        filter: "brightness(0.4)",
         ease: "none",
         scrollTrigger: {
           trigger: heroRef.current,
@@ -178,23 +164,22 @@ const Hero = () => {
         },
       });
 
-      // Word moves up on scroll
       gsap.to(wordRef.current, {
-        yPercent: -50,
+        yPercent: -40,
         opacity: 0,
         ease: "none",
         scrollTrigger: {
           trigger: heroRef.current,
           start: "top top",
-          end: "50% top",
+          end: "40% top",
           scrub: 1,
         },
       });
 
-      // Breathing animation for word
-      gsap.to(wordRef.current, {
-        textShadow: "0 0 80px hsl(40 45% 60% / 0.5), 0 0 120px hsl(40 45% 60% / 0.3)",
-        duration: 3,
+      // Breathing glow
+      gsap.to(".hero-word", {
+        textShadow: "0 0 100px hsl(40 45% 60% / 0.6), 0 0 150px hsl(40 45% 60% / 0.3)",
+        duration: 2.5,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
@@ -213,7 +198,7 @@ const Hero = () => {
     >
       <CartDrawer />
       
-      {/* Header - Minimal */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 lg:py-5 flex items-center justify-between">
         <div className="absolute inset-0 backdrop-blur-xl bg-primary/40" />
         
@@ -326,89 +311,44 @@ const Hero = () => {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-primary/98 backdrop-blur-2xl" onClick={() => setMobileMenuOpen(false)} />
           <nav className="absolute top-24 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
-            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
-              Shop
-            </Link>
-            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
-              Histoire
-            </Link>
-            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
-              Affiliation
-            </Link>
+            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Shop</Link>
+            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Histoire</Link>
+            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Affiliation</Link>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             
             {user ? (
               <>
                 {isAdmin ? (
-                  <Link 
-                    to="/admin" 
-                    onClick={() => setMobileMenuOpen(false)} 
-                    className="text-2xl font-semibold text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
-                  >
+                  <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-semibold text-accent hover:text-accent/80 transition-colors flex items-center gap-2">
                     <Shield className="w-5 h-5" />
                     Dashboard Admin
                   </Link>
                 ) : (
                   <>
-                    <Link 
-                      to="/profile" 
-                      onClick={() => setMobileMenuOpen(false)} 
-                      className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                    >
+                    <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2">
                       <Settings className="w-5 h-5" />
                       Mon profil
                     </Link>
-                    <Link 
-                      to="/favorites" 
-                      onClick={() => setMobileMenuOpen(false)} 
-                      className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2"
-                    >
+                    <Link to="/favorites" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2">
                       <Heart className="w-5 h-5" />
                       Mes favoris ({getFavoritesCount()})
                     </Link>
-                    {affiliateCode && (
-                      <>
-                        <Link 
-                          to="/affiliate/dashboard" 
-                          onClick={() => setMobileMenuOpen(false)} 
-                          className="text-2xl font-light text-accent hover:text-accent/80 transition-colors flex items-center gap-2"
-                        >
-                          <User className="w-5 h-5" />
-                          Mon espace affilié
-                        </Link>
-                        <button 
-                          onClick={() => { copyAffiliateLink(); setMobileMenuOpen(false); }} 
-                          className="text-xl font-light text-secondary/70 hover:text-accent transition-colors flex items-center gap-2"
-                        >
-                          <Link2 className="w-5 h-5" />
-                          Copier mon lien
-                        </button>
-                      </>
-                    )}
                   </>
                 )}
-                <button 
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="text-2xl font-light text-red-400 hover:text-red-300 transition-colors flex items-center gap-2"
-                >
+                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="text-2xl font-light text-red-400 hover:text-red-300 transition-colors flex items-center gap-2">
                   <LogOut className="w-5 h-5" />
                   Déconnexion
                 </button>
               </>
             ) : (
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">
-                Connexion
-              </Link>
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Connexion</Link>
             )}
           </nav>
         </div>
       )}
 
-      {/* FULL SCREEN IMAGE - The Emotion */}
-      <div 
-        ref={imageContainerRef}
-        className="absolute inset-0 w-full h-full"
-      >
+      {/* Full Screen Image */}
+      <div ref={imageContainerRef} className="absolute inset-0 w-full h-full">
         <img 
           src={heroImage} 
           alt="KAYNA - Porter sa confiance"
@@ -416,48 +356,30 @@ const Hero = () => {
         />
       </div>
 
-      {/* Emotional Overlay - The Battle */}
+      {/* Emotional Overlay */}
       <div 
         ref={overlayRef}
-        className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-primary/20"
       />
 
-      {/* THE WORD - Raw, Powerful, Emotional */}
+      {/* THE WORD */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-        <div 
-          ref={wordRef}
-          className="text-center"
-        >
-          {/* Main Word */}
-          <h1 className="text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[12rem] xl:text-[14rem] font-black tracking-tighter text-secondary leading-none">
-            CONFIANCE
+        <div ref={wordRef} className="text-center px-4">
+          <h1 className="hero-word text-[5rem] sm:text-[7rem] md:text-[10rem] lg:text-[14rem] xl:text-[16rem] font-black tracking-[-0.04em] text-secondary leading-[0.85]">
+            KAYNA
           </h1>
-          
-          {/* The meaning - subtle */}
-          <div 
-            ref={subtitleRef}
-            className="mt-4 sm:mt-6 flex flex-col items-center gap-4"
-          >
-            <p className="text-lg sm:text-xl md:text-2xl text-secondary/60 font-light tracking-wide">
-              Certitude • Dépassement • Persévérance
-            </p>
-            
-            {/* Single CTA - Minimal */}
-            <Link 
-              to="/shop" 
-              className="mt-6 sm:mt-8 px-10 py-4 border border-accent/50 text-accent rounded-full text-sm uppercase tracking-[0.2em] hover:bg-accent hover:text-primary transition-all duration-500"
-            >
-              Découvrir
-            </Link>
-          </div>
+          <p className="mt-6 sm:mt-8 text-lg sm:text-xl md:text-2xl text-secondary/50 font-light tracking-[0.15em] uppercase">
+            La certitude inébranlable
+          </p>
         </div>
       </div>
 
-      {/* Scroll Indicator - Minimal */}
+      {/* Scroll Indicator */}
       <div 
         ref={scrollIndicatorRef}
-        className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20"
+        className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
       >
+        <span className="text-xs text-secondary/30 uppercase tracking-[0.2em]">Découvrir</span>
         <ArrowDown className="w-5 h-5 text-secondary/40 animate-bounce" />
       </div>
     </section>
