@@ -164,28 +164,14 @@ const Hero = () => {
         duration: 0.8,
       }, "-=0.3");
 
-      // Parallax on scroll
-      gsap.to(imageContainerRef.current, {
-        yPercent: 25,
-        scale: 1.1,
-        filter: "brightness(0.3)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: 1,
-        },
-      });
-
+      // Simple fade out on scroll - no parallax movement
       gsap.to(wordRef.current, {
-        yPercent: -40,
         opacity: 0,
         ease: "none",
         scrollTrigger: {
           trigger: heroRef.current,
           start: "top top",
-          end: "40% top",
+          end: "30% top",
           scrub: 1,
         },
       });
