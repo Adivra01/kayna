@@ -26,6 +26,7 @@ import ShopOpenCelebration from "./components/ShopOpenCelebration";
 import CustomCursor from "./components/CustomCursor";
 import PageTransition from "./components/PageTransition";
 import AudioControl from "./components/AudioControl";
+import NarrationControl from "./components/NarrationControl";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -81,6 +82,7 @@ function AppContent() {
       </PageTransition>
       <CartDrawer />
       <AudioControl />
+      <NarrationControl />
     </>
   );
 }
