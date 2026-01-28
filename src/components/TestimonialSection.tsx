@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Users, Zap, Target } from "lucide-react";
-import testimonialHero from "@/assets/testimonial-hero.jpg";
+import testimonialHero from "@/assets/chapter-community.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 

@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 
-// Using existing assets
+// Brand chapter images
 import chapterPhilosophy from "@/assets/chapter-philosophy.jpg";
 import chapterBattle from "@/assets/chapter-battle.jpg";
 import chapterChoice from "@/assets/chapter-choice.jpg";
