@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import aboutMain from "@/assets/about-main.jpg";
-import aboutLifestyle from "@/assets/about-lifestyle.jpg";
-import aboutStar from "@/assets/about-star.jpg";
+import aboutMain from "@/assets/chapter-community.jpg";
+import aboutLifestyle from "@/assets/chapter-choice.jpg";
+import aboutStar from "@/assets/chapter-heritage.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 

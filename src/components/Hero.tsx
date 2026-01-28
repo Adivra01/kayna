@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, ArrowDown, ShoppingBag, Menu, X, User, LogOut, Link2, Heart, Settings, Shield } from "lucide-react";
+import { Instagram, ArrowDown, ShoppingBag, Menu, X, User, LogOut, Link2, Heart, Settings, Shield, Play, ChevronRight } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
-import heroImage from "@/assets/hero-group.jpg";
+import heroImage from "@/assets/chapter-philosophy.jpg";
+import heroGroup from "@/assets/hero-group.jpg";
+import heroBattle from "@/assets/chapter-battle.jpg";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import CartDrawer from "@/components/CartDrawer";
@@ -25,6 +27,7 @@ const Hero = () => {
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCart();
   const { getFavoritesCount } = useFavorites();
@@ -32,7 +35,10 @@ const Hero = () => {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
+  const [currentImage, setCurrentImage] = useState(0);
   const navigate = useNavigate();
+
+  const images = [heroImage, heroGroup, heroBattle];
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -120,7 +126,7 @@ const Hero = () => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      gsap.set([wordRef.current, scrollIndicatorRef.current], { 
+      gsap.set([wordRef.current, ctaRef.current, scrollIndicatorRef.current], { 
         opacity: 0, 
         y: 60 
       });
@@ -128,11 +134,11 @@ const Hero = () => {
       // Dramatic image reveal
       tl.fromTo(imageContainerRef.current,
         { scale: 1.3, filter: "blur(15px) brightness(0.2)" },
-        { scale: 1, filter: "blur(0px) brightness(1)", duration: 2.2, ease: "power3.out" }
+        { scale: 1, filter: "blur(0px) brightness(0.8)", duration: 2.2, ease: "power3.out" }
       );
 
       tl.to(overlayRef.current, {
-        opacity: 0.7,
+        opacity: 1,
         duration: 1.2,
       }, "-=1.2");
 
@@ -144,6 +150,14 @@ const Hero = () => {
         ease: "power4.out",
       }, "-=0.6");
 
+      // CTA reveal
+      tl.to(ctaRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: "power3.out",
+      }, "-=0.8");
+
       tl.to(scrollIndicatorRef.current, {
         opacity: 1,
         y: 0,
@@ -154,7 +168,7 @@ const Hero = () => {
       gsap.to(imageContainerRef.current, {
         yPercent: 25,
         scale: 1.1,
-        filter: "brightness(0.4)",
+        filter: "brightness(0.3)",
         ease: "none",
         scrollTrigger: {
           trigger: heroRef.current,
@@ -187,7 +201,15 @@ const Hero = () => {
 
     }, heroRef);
 
-    return () => ctx.revert();
+    // Image rotation
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 5000);
+
+    return () => {
+      ctx.revert();
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -347,41 +369,114 @@ const Hero = () => {
         </div>
       )}
 
-      {/* Full Screen Image */}
+      {/* Full Screen Image with rotation */}
       <div ref={imageContainerRef} className="absolute inset-0 w-full h-full">
-        <img 
-          src={heroImage} 
-          alt="KAYNA - Porter sa confiance"
-          className="w-full h-full object-cover object-center"
-        />
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt="KAYNA - La certitude inébranlable"
+            loading={index === 0 ? "eager" : "lazy"}
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+              index === currentImage ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
       </div>
 
-      {/* Emotional Overlay */}
+      {/* Cinematic Overlays */}
       <div 
         ref={overlayRef}
-        className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-primary/20"
-      />
+        className="absolute inset-0 opacity-0"
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-primary/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-transparent to-primary/70" />
+      </div>
+
+      {/* Vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--primary))_100%)] opacity-50" />
 
       {/* THE WORD */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
         <div ref={wordRef} className="text-center px-4">
-          <h1 className="hero-word text-[5rem] sm:text-[7rem] md:text-[10rem] lg:text-[14rem] xl:text-[16rem] font-black tracking-[-0.04em] text-secondary leading-[0.85]">
+          <h1 className="hero-word text-[4rem] sm:text-[6rem] md:text-[9rem] lg:text-[13rem] xl:text-[15rem] font-black tracking-[-0.04em] text-secondary leading-[0.85]">
             KAYNA
           </h1>
-          <p className="mt-6 sm:mt-8 text-lg sm:text-xl md:text-2xl text-secondary/50 font-light tracking-[0.15em] uppercase">
+          <p className="mt-4 sm:mt-6 text-accent text-base sm:text-lg md:text-xl font-light tracking-[0.2em] uppercase">
             La certitude inébranlable
           </p>
+          <div className="flex items-center justify-center gap-3 sm:gap-5 mt-4 text-secondary/40 text-xs sm:text-sm tracking-[0.15em] uppercase">
+            <span>Certitude</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            <span>Dépassement</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            <span>Persévérance</span>
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div ref={ctaRef} className="mt-10 sm:mt-14 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 opacity-0">
+          <Link
+            to="/shop"
+            className="group relative px-10 py-4 bg-accent text-primary font-bold text-sm uppercase tracking-wider rounded-full overflow-hidden transition-transform hover:scale-105 shadow-gold"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Découvrir
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+            <div className="absolute inset-0 bg-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
+          <Link
+            to="/about"
+            className="group flex items-center gap-3 text-secondary/60 hover:text-secondary transition-colors text-sm uppercase tracking-wider"
+          >
+            <div className="w-12 h-12 rounded-full border border-secondary/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent/10 transition-all">
+              <Play className="w-4 h-4 ml-0.5" />
+            </div>
+            Notre Histoire
+          </Link>
         </div>
       </div>
 
       {/* Scroll Indicator */}
       <div 
         ref={scrollIndicatorRef}
-        className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
+        className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20 opacity-0"
       >
-        <span className="text-xs text-secondary/30 uppercase tracking-[0.2em]">Découvrir</span>
-        <ArrowDown className="w-5 h-5 text-secondary/40 animate-bounce" />
+        <span className="text-[10px] text-secondary/30 uppercase tracking-[0.3em]">Scroll</span>
+        <div className="w-px h-10 bg-gradient-to-b from-secondary/30 to-transparent relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-3 bg-accent animate-[scrollDown_1.5s_ease-in-out_infinite]" />
+        </div>
       </div>
+
+      {/* Image Indicators */}
+      <div className="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 flex gap-2 z-20">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentImage(index)}
+            className={`h-1.5 rounded-full transition-all ${
+              index === currentImage ? "bg-accent w-6" : "bg-secondary/20 w-1.5 hover:bg-secondary/40"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Side Text */}
+      <div className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-20">
+        <div className="w-px h-14 bg-gradient-to-b from-transparent via-secondary/20 to-transparent" />
+        <span className="text-secondary/30 text-[10px] uppercase tracking-[0.3em] [writing-mode:vertical-rl] rotate-180">
+          Depuis 2024
+        </span>
+        <div className="w-px h-14 bg-gradient-to-b from-transparent via-secondary/20 to-transparent" />
+      </div>
+
+      <style>{`
+        @keyframes scrollDown {
+          0%, 100% { transform: translateY(-100%); opacity: 0; }
+          50% { transform: translateY(200%); opacity: 1; }
+        }
+      `}</style>
     </section>
   );
 };
