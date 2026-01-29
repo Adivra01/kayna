@@ -4,13 +4,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 
-// Brand chapter images
-import chapterPhilosophy from "@/assets/chapter-philosophy.jpg";
-import chapterBattle from "@/assets/chapter-battle.jpg";
-import chapterChoice from "@/assets/chapter-choice.jpg";
-import chapterTransmission from "@/assets/chapter-transmission.jpg";
-import chapterCommunity from "@/assets/chapter-community.jpg";
-import chapterHeritage from "@/assets/chapter-heritage.jpg";
+// Brand chapter images - using actual brand photos
+import chapterPhilosophy from "@/assets/kayna-hero.jpg";
+import chapterBattle from "@/assets/kayna-battle.jpg";
+import chapterChoice from "@/assets/about-confidence.jpg";
+import chapterTransmission from "@/assets/value-development.jpg";
+import chapterCommunity from "@/assets/hero-group.jpg";
+import chapterHeritage from "@/assets/kayna-heritage.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
