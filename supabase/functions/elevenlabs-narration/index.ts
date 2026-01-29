@@ -58,11 +58,15 @@ serve(async (req) => {
       throw new Error("ELEVENLABS_API_KEY not configured");
     }
 
-    // Use Laura - French female voice, warm and powerful
-    // Alternative voices to try: Sarah (EXAVITQu4vr4xnSDxMaL), Alice (Xb7hH8MSUJpSbSDYk0k2)
-    const voiceId = "FGY2WhTYpPnrIDTdsKH5"; // Laura - warm, inspiring female voice
+    // Use Charlotte - Native French female voice, no accent, warm and inspiring
+    // Charlotte is a native French speaker with a natural, human-like voice
+    const voiceId = "XB0fDUnXU5powFXDhCwa"; // Charlotte - French native, warm, no accent
+    
+    // Alternative French voices to test:
+    // - "ThT5KcBeYPX3keUQqHPh" - Nicole (French Canadian, very natural)
+    // - "jsCqWAovK2LkecY7zXl4" - Freya (European, warm)
 
-    console.log("Generating KAYNA narration with motivational voice...");
+    console.log("Generating KAYNA narration with native French voice (no accent)...");
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
@@ -76,11 +80,11 @@ serve(async (req) => {
           text: KAYNA_STORY,
           model_id: "eleven_multilingual_v2",
           voice_settings: {
-            stability: 0.35, // Lower stability = more expressive, emotional
-            similarity_boost: 0.85, // High similarity for consistent voice
-            style: 0.75, // Higher style = more dramatic, motivational
+            stability: 0.50, // More stable = more consistent, natural pronunciation
+            similarity_boost: 0.80, // Good voice match
+            style: 0.40, // Moderate style = more natural, less theatrical
             use_speaker_boost: true,
-            speed: 0.80, // Slower for dramatic pauses and impact
+            speed: 0.85, // Slightly slower for clear French articulation
           },
         }),
       }

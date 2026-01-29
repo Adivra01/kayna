@@ -27,6 +27,7 @@ import CustomCursor from "./components/CustomCursor";
 import PageTransition from "./components/PageTransition";
 import AudioControl from "./components/AudioControl";
 import NarrationControl from "./components/NarrationControl";
+import BackgroundMusicControl from "./components/BackgroundMusicControl";
 
 // Admin pages
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
@@ -83,6 +84,7 @@ function AppContent() {
       <CartDrawer />
       <AudioControl />
       <NarrationControl />
+      <BackgroundMusicControl />
     </>
   );
 }
