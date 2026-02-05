@@ -38,6 +38,7 @@ import AdminDrop from "./pages/admin/AdminDrop";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminCoupons from "./pages/admin/AdminCoupons";
+import AdminContent from "./pages/admin/AdminContent";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +49,6 @@ function AppContent() {
   return (
     <>
       <ShopCountdownBanner />
-      <ShopOpenCelebration />
       <PageTransition>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -76,6 +76,7 @@ function AppContent() {
           <Route path="/admin/coupons" element={<AdminCoupons />} />
           <Route path="/admin/drop" element={<AdminDrop />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/content" element={<AdminContent />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

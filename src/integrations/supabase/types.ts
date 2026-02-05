@@ -866,6 +866,42 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content: {
+        Row: {
+          content_key: string
+          content_metadata: Json | null
+          content_type: string
+          content_value: string
+          created_at: string
+          id: string
+          page_name: string
+          section_name: string
+          updated_at: string
+        }
+        Insert: {
+          content_key: string
+          content_metadata?: Json | null
+          content_type?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page_name: string
+          section_name: string
+          updated_at?: string
+        }
+        Update: {
+          content_key?: string
+          content_metadata?: Json | null
+          content_type?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          page_name?: string
+          section_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           cart_timeout_minutes: number | null

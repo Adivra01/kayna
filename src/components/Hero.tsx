@@ -4,9 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Instagram, ArrowDown, ShoppingBag, Menu, X, User, LogOut, Link2, Heart, Settings, Shield, Play, ChevronRight } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
-import heroImage from "@/assets/kayna-hero.jpg";
-import heroGroup from "@/assets/hero-group.jpg";
-import heroBattle from "@/assets/kayna-battle.jpg";
+import heroVideo from "@/assets/videos/hoodie-rotate.mp4";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import CartDrawer from "@/components/CartDrawer";
@@ -35,10 +33,7 @@ const Hero = () => {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
-  const [currentImage, setCurrentImage] = useState(0);
   const navigate = useNavigate();
-
-  const images = [heroImage, heroGroup, heroBattle];
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -132,9 +127,10 @@ const Hero = () => {
       });
 
       // Dramatic image reveal
-      tl.fromTo(imageContainerRef.current,
-        { scale: 1.3, filter: "blur(15px) brightness(0.2)" },
-        { scale: 1, filter: "blur(0px) brightness(0.8)", duration: 2.2, ease: "power3.out" }
+      tl.fromTo(
+        imageContainerRef.current,
+        { scale: 1.1, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.5, ease: "power3.out" }
       );
 
       tl.to(overlayRef.current, {
@@ -176,25 +172,10 @@ const Hero = () => {
         },
       });
 
-      // Breathing glow
-      gsap.to(".hero-word", {
-        textShadow: "0 0 100px hsl(40 45% 60% / 0.6), 0 0 150px hsl(40 45% 60% / 0.3)",
-        duration: 2.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-
     }, heroRef);
-
-    // Image rotation
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 5000);
 
     return () => {
       ctx.revert();
-      clearInterval(interval);
     };
   }, []);
 
@@ -355,19 +336,19 @@ const Hero = () => {
         </div>
       )}
 
-      {/* Full Screen Image with rotation */}
+      {/* Full Screen Video */}
       <div ref={imageContainerRef} className="absolute inset-0 w-full h-full">
-        {images.map((img, index) => (
-          <img
-            key={index}
-            src={img}
-            alt="KAYNA - La certitude inébranlable"
-            loading={index === 0 ? "eager" : "lazy"}
-            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
-              index === currentImage ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        ))}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+        {/* Darker overlay for video */}
+        <div className="absolute inset-0 bg-primary/50" />
       </div>
 
       {/* Cinematic Overlays */}
@@ -433,19 +414,6 @@ const Hero = () => {
         <div className="w-px h-10 bg-gradient-to-b from-secondary/30 to-transparent relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-3 bg-accent animate-[scrollDown_1.5s_ease-in-out_infinite]" />
         </div>
-      </div>
-
-      {/* Image Indicators */}
-      <div className="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 flex gap-2 z-20">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImage(index)}
-            className={`h-1.5 rounded-full transition-all ${
-              index === currentImage ? "bg-accent w-6" : "bg-secondary/20 w-1.5 hover:bg-secondary/40"
-            }`}
-          />
-        ))}
       </div>
 
       {/* Side Text */}

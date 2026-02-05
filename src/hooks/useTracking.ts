@@ -124,6 +124,21 @@ export const useTracking = () => {
       const { deviceType, browser, os } = parseUserAgent();
       const trafficSource = getTrafficSource();
       
+      // Try to get geolocation data
+      let country: string | null = null;
+      let city: string | null = null;
+      
+      try {
+        const geoResponse = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+        if (geoResponse.ok) {
+          const geoData = await geoResponse.json();
+          country = geoData.country_name || null;
+          city = geoData.city || null;
+        }
+      } catch {
+        // Silently fail - geolocation is optional
+      }
+      
       await (supabase as any)
         .from('analytics_events')
         .insert({
@@ -139,6 +154,8 @@ export const useTracking = () => {
           traffic_source: trafficSource,
           user_agent: navigator.userAgent,
           referrer: document.referrer || null,
+          country,
+          city,
         });
 
       // If this is an affiliate visit, also record in affiliate_visits
@@ -157,8 +174,8 @@ export const useTracking = () => {
             .insert({
               affiliate_id: affiliate.id,
               visitor_id: visitorId,
-              country: null, // Would need IP geolocation service
-              city: null,
+              country,
+              city,
               device_type: deviceType,
               browser,
               os,

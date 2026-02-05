@@ -25,6 +25,7 @@ const navItems = [
   { title: "Affiliés", url: "/admin/affiliates", icon: Users },
   { title: "Coupons", url: "/admin/coupons", icon: Tag },
   { title: "Drop Time", url: "/admin/drop", icon: Timer },
+  { title: "Contenu", url: "/admin/content", icon: Package },
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
 ];
 
