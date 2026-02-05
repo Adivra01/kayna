@@ -8,13 +8,16 @@ export const useNarration = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
 
+  const [hasAttempted, setHasAttempted] = useState(false);
+
   // Load narration on mount
   useEffect(() => {
     const loadNarration = async () => {
-      if (isLoaded || isLoading) return;
+      if (isLoaded || isLoading || hasAttempted) return;
       
       setIsLoading(true);
       setError(null);
+      setHasAttempted(true);
 
       try {
         const response = await fetch(
@@ -62,7 +65,7 @@ export const useNarration = () => {
         setIsLoaded(true);
         console.log("KAYNA narration loaded successfully");
       } catch (err) {
-        console.error("Error loading narration:", err);
+        // Silently fail - ElevenLabs API may be unavailable
         setError(err instanceof Error ? err.message : "Erreur inconnue");
       } finally {
         setIsLoading(false);
@@ -70,9 +73,17 @@ export const useNarration = () => {
     };
 
     // Delay loading to not block initial render
-    const timer = setTimeout(loadNarration, 3000);
+    // Disabled: ElevenLabs API requires valid paid key
+    // const timer = setTimeout(loadNarration, 3000);
+    // return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      // Only attempt once, don't spam console with errors
+      if (!hasAttempted) {
+        loadNarration();
+      }
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [isLoaded, isLoading]);
+  }, [isLoaded, isLoading, hasAttempted]);
 
   const play = useCallback(async () => {
     if (!audioRef.current || !isLoaded) return;
