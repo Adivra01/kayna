@@ -1,9 +1,9 @@
-import { X, Minus, Plus, ShoppingBag, ArrowRight, Timer, Trash2, Sparkles } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, ArrowRight, Timer, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useCartCountdown } from "@/hooks/useCartCountdown";
 import { useLocalization } from "@/hooks/useLocalization";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import gsap from "gsap";
 
 const CartDrawer = () => {
@@ -11,10 +11,7 @@ const CartDrawer = () => {
   const { items, isOpen, setCartOpen, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
   const { formattedTime, isExpiring } = useCartCountdown();
   const { t, formatAmount, isRTL } = useLocalization();
-  const [freeShippingThreshold] = useState(100000);
   const totalPrice = getTotalPrice();
-  const freeShippingProgress = Math.min((totalPrice / freeShippingThreshold) * 100, 100);
-  const remainingForFreeShipping = freeShippingThreshold - totalPrice;
 
   useEffect(() => {
     if (isOpen) {
@@ -110,28 +107,12 @@ const CartDrawer = () => {
             </div>
           )}
 
-          {/* Free shipping progress */}
+          {/* Shipping included notice */}
           {items.length > 0 && (
             <div className="mt-4">
-              {remainingForFreeShipping > 0 ? (
-                <>
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-secondary/60">{t.cart.freeShippingProgress.replace('{amount}', '')}</span>
-                    <span className="text-accent font-medium">{formatAmount(remainingForFreeShipping)}</span>
-                  </div>
-                  <div className="h-1.5 bg-secondary/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-accent to-accent-light rounded-full transition-all duration-500"
-                      style={{ width: `${freeShippingProgress}%` }}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-2 py-2 px-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-                  <Sparkles className="w-4 h-4 text-green-400" />
-                  <span className="text-green-400 text-sm font-medium">🎉 {t.cart.freeShippingReached}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2 py-2 px-4 bg-accent/10 border border-accent/30 rounded-xl">
+                <span className="text-accent text-sm font-medium">📦 {t.cart.shippingIncluded}</span>
+              </div>
             </div>
           )}
         </div>
