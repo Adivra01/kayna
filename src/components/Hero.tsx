@@ -199,7 +199,9 @@ const Hero = () => {
         <nav className="relative hidden lg:flex items-center gap-8 text-sm">
           <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.nav.shop}</Link>
           <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.nav.about}</Link>
-          <Link to="/affiliate/dashboard" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.affiliate.dashboard}</Link>
+          {user && (
+            <Link to="/affiliate/dashboard" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.affiliate.dashboard}</Link>
+          )}
           
           {user ? (
             <DropdownMenu>
@@ -303,7 +305,9 @@ const Hero = () => {
           <nav className="absolute top-24 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
             <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.nav.shop}</Link>
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.nav.about}</Link>
-            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.affiliate.dashboard}</Link>
+            {user && (
+              <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.affiliate.dashboard}</Link>
+            )}
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             
             {user ? (
