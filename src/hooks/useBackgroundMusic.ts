@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 
-// Ambient music URL - Replace with your own hosted MP3 file
-// To use your Google Drive file, make it publicly accessible or upload it directly
-const AMBIENT_MUSIC_URL = "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/UPMRtBayPwgGp1Fhxq0qjji2EHiTbpGT7l3MDBFN.mp3";
+// Local ambient music — always available, no CORS issues
+const AMBIENT_MUSIC_URL = "/audio/ambient.mp3";
 
 // Singleton audio element — shared across all hook instances
 let globalAudio: HTMLAudioElement | null = null;
 let globalIsPlaying = false;
 let globalVolume = 0.15;
-let hasAutoPlayed = false;
+let globalError = false;
 let fadeInterval: ReturnType<typeof setInterval> | null = null;
 
 const getAudio = () => {
@@ -17,7 +16,20 @@ const getAudio = () => {
     globalAudio.loop = true;
     globalAudio.volume = 0;
     globalAudio.preload = "auto";
-    globalAudio.crossOrigin = "anonymous";
+
+    // Track loading errors
+    globalAudio.addEventListener("error", () => {
+      console.error("Background music: failed to load", AMBIENT_MUSIC_URL);
+      globalError = true;
+      globalIsPlaying = false;
+      notify();
+    });
+
+    // Reset error state when audio can play
+    globalAudio.addEventListener("canplaythrough", () => {
+      globalError = false;
+      notify();
+    });
   }
   return globalAudio;
 };
@@ -67,14 +79,22 @@ const notify = () => listeners.forEach((fn) => fn());
 
 const startPlayback = async () => {
   const audio = getAudio();
+  if (globalError) {
+    // Try reloading the source
+    audio.load();
+    globalError = false;
+    notify();
+  }
   try {
     await audio.play();
     fadeIn(globalVolume);
     globalIsPlaying = true;
-    hasAutoPlayed = true;
+    globalError = false;
     notify();
   } catch (err) {
-    console.warn("Background music autoplay blocked:", err);
+    console.warn("Background music play failed:", err);
+    globalError = true;
+    notify();
   }
 };
 
@@ -84,22 +104,9 @@ const stopPlayback = async () => {
   notify();
 };
 
-// Auto-play on first user interaction (required by all browsers)
+// Initialize audio element eagerly so it preloads
 if (typeof window !== "undefined") {
-  const triggerAutoplay = () => {
-    if (!hasAutoPlayed) {
-      startPlayback();
-    }
-    window.removeEventListener("click", triggerAutoplay, true);
-    window.removeEventListener("touchstart", triggerAutoplay, true);
-    window.removeEventListener("keydown", triggerAutoplay, true);
-    window.removeEventListener("scroll", triggerAutoplay, true);
-  };
-
-  window.addEventListener("click", triggerAutoplay, { capture: true });
-  window.addEventListener("touchstart", triggerAutoplay, { capture: true });
-  window.addEventListener("keydown", triggerAutoplay, { capture: true });
-  window.addEventListener("scroll", triggerAutoplay, { capture: true });
+  getAudio();
 }
 
 export const useBackgroundMusic = () => {
@@ -138,6 +145,7 @@ export const useBackgroundMusic = () => {
 
   return {
     isPlaying: globalIsPlaying,
+    hasError: globalError,
     volume: globalVolume,
     play,
     pause,
