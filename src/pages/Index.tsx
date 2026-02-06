@@ -34,30 +34,32 @@ const Index = () => {
       />
       <Hero />
       <MarqueeText />
-      <Suspense fallback={<SectionLoader />}>
-        <AboutSection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <ProductGrid />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <QualitySection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <CategorySection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <StorySection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <TestimonialSection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <CollectionSection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <BrandPromiseSection />
-      </Suspense>
+      <main>
+        <Suspense fallback={<SectionLoader />}>
+          <AboutSection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <ProductGrid />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <QualitySection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <CategorySection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <StorySection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <TestimonialSection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <CollectionSection />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <BrandPromiseSection />
+        </Suspense>
+      </main>
       <Footer />
     </div>
   );

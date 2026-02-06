@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getGeoData, getGeoDataSync } from '@/lib/geoCache';
 
 interface TrackingData {
   event_type: string;
@@ -20,7 +21,7 @@ const getVisitorId = (): string => {
 
 // Get or create session ID (resets after 30 min of inactivity)
 const getSessionId = (): string => {
-  const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  const SESSION_TIMEOUT = 30 * 60 * 1000;
   const now = Date.now();
   
   const storedSession = localStorage.getItem('kayna_session');
@@ -39,18 +40,15 @@ const getSessionId = (): string => {
 
 // Get affiliate code from URL or storage
 export const getAffiliateCode = (): string | null => {
-  // Check URL params first
   const urlParams = new URLSearchParams(window.location.search);
   const refCode = urlParams.get('ref');
   
   if (refCode) {
-    // Store affiliate code for this session
     localStorage.setItem('kayna_affiliate_code', refCode);
     localStorage.setItem('kayna_affiliate_timestamp', Date.now().toString());
     return refCode;
   }
   
-  // Check stored affiliate code (valid for 30 days)
   const storedCode = localStorage.getItem('kayna_affiliate_code');
   const storedTimestamp = localStorage.getItem('kayna_affiliate_timestamp');
   
@@ -59,7 +57,6 @@ export const getAffiliateCode = (): string | null => {
     if (parseInt(storedTimestamp) > thirtyDaysAgo) {
       return storedCode;
     }
-    // Clear expired affiliate code
     localStorage.removeItem('kayna_affiliate_code');
     localStorage.removeItem('kayna_affiliate_timestamp');
   }
@@ -71,13 +68,11 @@ export const getAffiliateCode = (): string | null => {
 const parseUserAgent = () => {
   const ua = navigator.userAgent;
   
-  // Device type
   let deviceType = 'desktop';
   if (/Mobile|Android|iPhone|iPad/.test(ua)) {
     deviceType = /iPad|Tablet/.test(ua) ? 'tablet' : 'mobile';
   }
   
-  // Browser
   let browser = 'unknown';
   if (ua.includes('Firefox')) browser = 'Firefox';
   else if (ua.includes('Chrome')) browser = 'Chrome';
@@ -85,7 +80,6 @@ const parseUserAgent = () => {
   else if (ua.includes('Edge')) browser = 'Edge';
   else if (ua.includes('Opera')) browser = 'Opera';
   
-  // OS
   let os = 'unknown';
   if (ua.includes('Windows')) os = 'Windows';
   else if (ua.includes('Mac')) os = 'macOS';
@@ -104,15 +98,17 @@ const getTrafficSource = (): string => {
   const referrer = document.referrer;
   if (!referrer) return 'direct';
   
-  const referrerHost = new URL(referrer).hostname;
-  
-  if (referrerHost.includes('google')) return 'google';
-  if (referrerHost.includes('facebook') || referrerHost.includes('fb.')) return 'facebook';
-  if (referrerHost.includes('instagram')) return 'instagram';
-  if (referrerHost.includes('tiktok')) return 'tiktok';
-  if (referrerHost.includes('twitter') || referrerHost.includes('x.com')) return 'twitter';
-  
-  return 'referral';
+  try {
+    const referrerHost = new URL(referrer).hostname;
+    if (referrerHost.includes('google')) return 'google';
+    if (referrerHost.includes('facebook') || referrerHost.includes('fb.')) return 'facebook';
+    if (referrerHost.includes('instagram')) return 'instagram';
+    if (referrerHost.includes('tiktok')) return 'tiktok';
+    if (referrerHost.includes('twitter') || referrerHost.includes('x.com')) return 'twitter';
+    return 'referral';
+  } catch {
+    return 'referral';
+  }
 };
 
 export const useTracking = () => {
@@ -124,19 +120,22 @@ export const useTracking = () => {
       const { deviceType, browser, os } = parseUserAgent();
       const trafficSource = getTrafficSource();
       
-      // Try to get geolocation data
+      // Use shared geo cache — no extra API calls!
+      // Try sync first (instant if already cached), fallback to async
       let country: string | null = null;
       let city: string | null = null;
       
-      try {
-        const geoResponse = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
-        if (geoResponse.ok) {
-          const geoData = await geoResponse.json();
-          country = geoData.country_name || null;
-          city = geoData.city || null;
+      const syncGeo = getGeoDataSync();
+      if (syncGeo) {
+        country = syncGeo.country_name || null;
+        city = syncGeo.city || null;
+      } else {
+        // Async fetch (will also cache for next time)
+        const asyncGeo = await getGeoData();
+        if (asyncGeo) {
+          country = asyncGeo.country_name || null;
+          city = asyncGeo.city || null;
         }
-      } catch {
-        // Silently fail - geolocation is optional
       }
       
       await (supabase as any)
@@ -160,7 +159,6 @@ export const useTracking = () => {
 
       // If this is an affiliate visit, also record in affiliate_visits
       if (affiliateCode && data.event_type === 'page_view') {
-        // Get affiliate id
         const { data: affiliate } = await (supabase as any)
           .from('affiliates')
           .select('id')
@@ -196,7 +194,6 @@ export const useTracking = () => {
   const trackProductView = useCallback(async (productId: string) => {
     trackEvent({ event_type: 'product_view', product_id: productId });
     
-    // Also track for affiliate if there's an affiliate code
     const affiliateCode = getAffiliateCode();
     if (affiliateCode) {
       try {

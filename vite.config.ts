@@ -15,4 +15,21 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Improve chunk splitting for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          ui: ["@radix-ui/react-dropdown-menu", "@radix-ui/react-tooltip", "@radix-ui/react-dialog"],
+          animation: ["gsap"],
+          query: ["@tanstack/react-query"],
+        },
+      },
+    },
+    // Target modern browsers for smaller bundles
+    target: "es2020",
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+  },
 }));
