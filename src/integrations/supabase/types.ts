@@ -770,6 +770,44 @@ export type Database = {
           },
         ]
       }
+      product_regional_prices: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          price: number
+          product_id: string
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          price: number
+          product_id: string
+          region: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          price?: number
+          product_id?: string
+          region?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_regional_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string

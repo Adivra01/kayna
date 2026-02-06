@@ -10,6 +10,7 @@ import {
   formatRegionPrice,
   getLanguageFromCountry
 } from '@/lib/i18n/geoPricing';
+import { useRegionalPricing } from '@/hooks/useRegionalPricing';
 
 const STORAGE_KEY_LANG = 'kayna_language';
 const STORAGE_KEY_COUNTRY = 'kayna_country';
@@ -24,9 +25,9 @@ interface LocalizationContextType {
   t: Translations;
   home: HomeTranslations;
   setLanguage: (lang: Language) => void;
-  formatPrice: (product: { category?: string; title?: string }) => string;
+  formatPrice: (product: { id?: string; category?: string; title?: string }) => string;
   formatAmount: (amount: number) => string;
-  getPrice: (product: { category?: string; title?: string }) => number;
+  getPrice: (product: { id?: string; category?: string; title?: string }) => number;
   getCurrency: () => Currency;
   isRTL: boolean;
   isLoading: boolean;
@@ -187,23 +188,21 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }, []);
 
-  const getPrice = useCallback((product: { category?: string; title?: string }): number => {
-    const productCategory = detectProductCategory(product);
-    const regionInfo = getRegionPricing(region);
-    return regionInfo.prices[productCategory];
-  }, [region]);
+  // Regional pricing hook (per-product prices from DB)
+  const { getProductPrice } = useRegionalPricing(region);
+
+  const getPrice = useCallback((product: { id?: string; category?: string; title?: string }): number => {
+    return getProductPrice(product).price;
+  }, [getProductPrice]);
 
   const getCurrency = useCallback((): Currency => {
     const regionInfo = getRegionPricing(region);
     return regionInfo.currency;
   }, [region]);
 
-  const formatPriceLocal = useCallback((product: { category?: string; title?: string }): string => {
-    const productCategory = detectProductCategory(product);
-    const regionInfo = getRegionPricing(region);
-    const price = regionInfo.prices[productCategory];
-    return formatRegionPrice(price, regionInfo.currency);
-  }, [region]);
+  const formatPriceLocal = useCallback((product: { id?: string; category?: string; title?: string }): string => {
+    return getProductPrice(product).formatted;
+  }, [getProductPrice]);
 
   const formatAmountLocal = useCallback((amount: number): string => {
     const regionInfo = getRegionPricing(region);
