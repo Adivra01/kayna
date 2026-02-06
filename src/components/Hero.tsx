@@ -99,15 +99,17 @@ const Hero = () => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
       setUser(null);
       setAffiliateCode(null);
+      setIsAdmin(false);
+      setMobileMenuOpen(false);
+      await supabase.auth.signOut();
       toast.success(t.nav.logout);
-      navigate("/");
-    } catch (error: any) {
+      navigate("/", { replace: true });
+    } catch (error) {
       console.error("Logout error:", error);
-      toast.error(t.common.error);
+      // Force redirect even on error
+      navigate("/", { replace: true });
     }
   };
 
