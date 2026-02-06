@@ -48,7 +48,7 @@ interface Product {
 
 const Shop = () => {
   usePageTracking();
-  const { t, formatPrice, isRTL } = useLocalization();
+  const { t, home, formatPrice, isRTL } = useLocalization();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -273,7 +273,7 @@ const Shop = () => {
               className="lg:hidden flex items-center gap-2 px-5 py-3 bg-muted rounded-full text-foreground"
             >
               <Filter className="w-4 h-4" />
-              <span>Filtrer</span>
+              <span>{home.shopFilter}</span>
             </button>
           </div>
 
@@ -307,7 +307,7 @@ const Shop = () => {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <ShoppingBag className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-muted-foreground">Aucun produit disponible pour le moment</p>
+              <p className="text-muted-foreground">{home.shopNoProducts}</p>
             </div>
           ) : (
             /* Products Grid - Responsive for all devices */
@@ -346,7 +346,7 @@ const Shop = () => {
                         <div className="absolute inset-0 bg-primary/50 flex items-center justify-center">
                           <div className="bg-red-500/90 px-4 py-2 rounded-full flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 text-white" />
-                            <span className="text-white font-bold text-sm">Rupture de stock</span>
+                            <span className="text-white font-bold text-sm">{home.shopOutOfStock}</span>
                           </div>
                         </div>
                       )}

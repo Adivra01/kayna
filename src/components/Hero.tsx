@@ -8,6 +8,7 @@ import heroVideo from "@/assets/videos/hoodie-rotate.mp4";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import CartDrawer from "@/components/CartDrawer";
+import { useLocalization } from "@/hooks/useLocalization";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -29,6 +30,7 @@ const Hero = () => {
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCart();
   const { getFavoritesCount } = useFavorites();
+  const { t, home, isRTL } = useLocalization();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -101,11 +103,11 @@ const Hero = () => {
       if (error) throw error;
       setUser(null);
       setAffiliateCode(null);
-      toast.success("Déconnexion réussie");
+      toast.success(t.nav.logout);
       navigate("/");
     } catch (error: any) {
       console.error("Logout error:", error);
-      toast.error("Erreur lors de la déconnexion");
+      toast.error(t.common.error);
     }
   };
 
@@ -113,7 +115,7 @@ const Hero = () => {
     if (affiliateCode) {
       const link = `${window.location.origin}?ref=${affiliateCode}`;
       navigator.clipboard.writeText(link);
-      toast.success("Lien d'affiliation copié !");
+      toast.success(t.affiliate.linkCopied);
     }
   };
 
@@ -126,7 +128,6 @@ const Hero = () => {
         y: 60 
       });
 
-      // Dramatic image reveal
       tl.fromTo(
         imageContainerRef.current,
         { scale: 1.1, opacity: 0 },
@@ -138,7 +139,6 @@ const Hero = () => {
         duration: 1.2,
       }, "-=1.2");
 
-      // Word reveal
       tl.to(wordRef.current, {
         opacity: 1,
         y: 0,
@@ -146,7 +146,6 @@ const Hero = () => {
         ease: "power4.out",
       }, "-=0.6");
 
-      // CTA reveal
       tl.to(ctaRef.current, {
         opacity: 1,
         y: 0,
@@ -160,7 +159,6 @@ const Hero = () => {
         duration: 0.8,
       }, "-=0.3");
 
-      // Simple fade out on scroll - no parallax movement
       gsap.to(wordRef.current, {
         opacity: 0,
         ease: "none",
@@ -184,6 +182,7 @@ const Hero = () => {
       ref={heroRef} 
       id="hero" 
       className="relative h-screen overflow-hidden bg-primary"
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       <CartDrawer />
       
@@ -196,22 +195,22 @@ const Hero = () => {
         </Link>
         
         <nav className="relative hidden lg:flex items-center gap-8 text-sm">
-          <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">Shop</Link>
-          <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">Histoire</Link>
-          <Link to="/affiliate/dashboard" className="text-secondary/70 hover:text-accent transition-colors duration-300">Affiliation</Link>
+          <Link to="/shop" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.nav.shop}</Link>
+          <Link to="/about" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.nav.about}</Link>
+          <Link to="/affiliate/dashboard" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.affiliate.dashboard}</Link>
           
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 text-secondary/70 hover:text-accent transition-colors duration-300">
                 {isAdmin ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                <span>{isAdmin ? "Admin" : "Mon compte"}</span>
+                <span>{isAdmin ? t.nav.admin : t.nav.myAccount}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-primary border-secondary/20">
                 {isAdmin ? (
                   <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                     <Link to="/admin">
                       <Shield className="w-4 h-4 mr-2" />
-                      Dashboard Admin
+                      {t.nav.admin}
                     </Link>
                   </DropdownMenuItem>
                 ) : (
@@ -219,7 +218,7 @@ const Hero = () => {
                     <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                       <Link to="/profile">
                         <Settings className="w-4 h-4 mr-2" />
-                        Mon profil
+                        {t.nav.profile}
                       </Link>
                     </DropdownMenuItem>
                     {affiliateCode && (
@@ -227,12 +226,12 @@ const Hero = () => {
                         <DropdownMenuItem asChild className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                           <Link to="/affiliate/dashboard">
                             <User className="w-4 h-4 mr-2" />
-                            Mon espace affilié
+                            {t.affiliate.dashboard}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={copyAffiliateLink} className="text-secondary hover:bg-accent hover:text-primary cursor-pointer">
                           <Link2 className="w-4 h-4 mr-2" />
-                          Copier mon lien ({affiliateCode})
+                          {t.affiliate.copyLink} ({affiliateCode})
                         </DropdownMenuItem>
                       </>
                     )}
@@ -241,12 +240,12 @@ const Hero = () => {
                 <DropdownMenuSeparator className="bg-secondary/10" />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 cursor-pointer">
                   <LogOut className="w-4 h-4 mr-2" />
-                  Déconnexion
+                  {t.nav.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link to="/auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">Connexion</Link>
+            <Link to="/auth" className="text-secondary/70 hover:text-accent transition-colors duration-300">{t.nav.login}</Link>
           )}
         </nav>
         
@@ -300,9 +299,9 @@ const Hero = () => {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-primary/98 backdrop-blur-2xl" onClick={() => setMobileMenuOpen(false)} />
           <nav className="absolute top-24 left-0 right-0 flex flex-col items-center gap-6 py-8 animate-fade-in">
-            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Shop</Link>
-            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Histoire</Link>
-            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Affiliation</Link>
+            <Link to="/shop" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.nav.shop}</Link>
+            <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.nav.about}</Link>
+            <Link to="/affiliate/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.affiliate.dashboard}</Link>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent my-4" />
             
             {user ? (
@@ -310,27 +309,27 @@ const Hero = () => {
                 {isAdmin ? (
                   <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-semibold text-accent hover:text-accent/80 transition-colors flex items-center gap-2">
                     <Shield className="w-5 h-5" />
-                    Dashboard Admin
+                    {t.nav.admin}
                   </Link>
                 ) : (
                   <>
                     <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2">
                       <Settings className="w-5 h-5" />
-                      Mon profil
+                      {t.nav.profile}
                     </Link>
                     <Link to="/favorites" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-light text-secondary hover:text-accent transition-colors flex items-center gap-2">
                       <Heart className="w-5 h-5" />
-                      Mes favoris ({getFavoritesCount()})
+                      {t.nav.favorites} ({getFavoritesCount()})
                     </Link>
                   </>
                 )}
                 <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="text-2xl font-light text-red-400 hover:text-red-300 transition-colors flex items-center gap-2">
                   <LogOut className="w-5 h-5" />
-                  Déconnexion
+                  {t.nav.logout}
                 </button>
               </>
             ) : (
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">Connexion</Link>
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)} className="text-3xl font-semibold text-secondary hover:text-accent transition-colors">{t.nav.login}</Link>
             )}
           </nav>
         </div>
@@ -347,7 +346,6 @@ const Hero = () => {
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
-        {/* Darker overlay for video */}
         <div className="absolute inset-0 bg-primary/50" />
       </div>
 
@@ -370,14 +368,14 @@ const Hero = () => {
             KAYNA
           </h1>
           <p className="mt-4 sm:mt-6 text-accent text-base sm:text-lg md:text-xl font-light tracking-[0.2em] uppercase">
-            La certitude inébranlable
+            {home.heroTagline}
           </p>
           <div className="flex items-center justify-center gap-3 sm:gap-5 mt-4 text-secondary/40 text-xs sm:text-sm tracking-[0.15em] uppercase">
-            <span>Certitude</span>
+            <span>{home.heroValues[0]}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            <span>Dépassement</span>
+            <span>{home.heroValues[1]}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            <span>Persévérance</span>
+            <span>{home.heroValues[2]}</span>
           </div>
         </div>
 
@@ -388,7 +386,7 @@ const Hero = () => {
             className="group relative px-10 py-4 bg-accent text-primary font-bold text-sm uppercase tracking-wider rounded-full overflow-hidden transition-transform hover:scale-105 shadow-gold"
           >
             <span className="relative z-10 flex items-center gap-2">
-              Découvrir
+              {home.heroDiscover}
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -400,7 +398,7 @@ const Hero = () => {
             <div className="w-12 h-12 rounded-full border border-secondary/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent/10 transition-all">
               <Play className="w-4 h-4 ml-0.5" />
             </div>
-            Notre Histoire
+            {home.heroOurStory}
           </Link>
         </div>
       </div>
@@ -410,7 +408,7 @@ const Hero = () => {
         ref={scrollIndicatorRef}
         className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20 opacity-0"
       >
-        <span className="text-[10px] text-secondary/30 uppercase tracking-[0.3em]">Scroll</span>
+        <span className="text-[10px] text-secondary/30 uppercase tracking-[0.3em]">{home.heroScroll}</span>
         <div className="w-px h-10 bg-gradient-to-b from-secondary/30 to-transparent relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-3 bg-accent animate-[scrollDown_1.5s_ease-in-out_infinite]" />
         </div>
@@ -420,7 +418,7 @@ const Hero = () => {
       <div className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-20">
         <div className="w-px h-14 bg-gradient-to-b from-transparent via-secondary/20 to-transparent" />
         <span className="text-secondary/30 text-[10px] uppercase tracking-[0.3em] [writing-mode:vertical-rl] rotate-180">
-          Depuis 2024
+          {home.heroSince}
         </span>
         <div className="w-px h-14 bg-gradient-to-b from-transparent via-secondary/20 to-transparent" />
       </div>
