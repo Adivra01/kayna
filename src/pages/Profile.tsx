@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, User, Phone, Mail, Lock, Save, Eye, EyeOff, Check, Settings } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, Lock, Save, Eye, EyeOff, Check, Settings, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -26,14 +26,13 @@ const Profile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
   
-  // Profile state
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   
-  // Password state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,53 +41,93 @@ const Profile = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    const checkAuthAndLoadProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          navigate("/auth");
-          return;
-        }
+    let isMounted = true;
 
-        setEmail(session.user.email || "");
+    const loadProfile = async (userId: string, userEmail: string) => {
+      if (!isMounted) return;
+      setEmail(userEmail);
 
-        // Load profile data
-        const { data: profile, error } = await supabase
-          .from("profiles")
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, phone")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      if (profile) {
+        setFullName(profile.full_name || "");
+        setPhone(profile.phone || "");
+      } else {
+        const { data: affiliate } = await supabase
+          .from("affiliates")
           .select("full_name, phone")
-          .eq("user_id", session.user.id)
+          .eq("user_id", userId)
           .maybeSingle();
-
-        if (error) {
-          console.error("Error loading profile:", error);
+        
+        if (isMounted && affiliate) {
+          setFullName(affiliate.full_name || "");
+          setPhone(affiliate.phone || "");
         }
-
-        if (profile) {
-          setFullName(profile.full_name || "");
-          setPhone(profile.phone || "");
-        } else {
-          // Try to get name from affiliates table as fallback
-          const { data: affiliate } = await supabase
-            .from("affiliates")
-            .select("full_name, phone")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-          
-          if (affiliate) {
-            setFullName(affiliate.full_name || "");
-            setPhone(affiliate.phone || "");
-          }
-        }
-      } catch (error) {
-        console.error("Error in profile loading:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    checkAuthAndLoadProfile();
+    // Listen for auth state changes FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isMounted) return;
+        if (event === "SIGNED_OUT") {
+          navigate("/auth", { replace: true });
+          return;
+        }
+        if (session?.user) {
+          loadProfile(session.user.id, session.user.email || "").catch(console.error);
+        }
+      }
+    );
+
+    // Then check initial session
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        if (!session?.user) {
+          navigate("/auth", { replace: true });
+          return;
+        }
+
+        await loadProfile(session.user.id, session.user.email || "");
+      } catch (error) {
+        console.error("Profile init error:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      // Force redirect even if signOut event doesn't fire
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Erreur lors de la déconnexion");
+      // Force redirect anyway
+      navigate("/", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     const validation = profileSchema.safeParse({ fullName, phone });
@@ -110,7 +149,6 @@ const Profile = () => {
 
       if (error) throw error;
 
-      // Also update affiliates table
       await supabase
         .from("affiliates")
         .update({ full_name: fullName, phone })
@@ -134,7 +172,6 @@ const Profile = () => {
     setSaving(true);
 
     try {
-      // First verify current password by trying to sign in
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.email) throw new Error("Non authentifié");
 
@@ -149,7 +186,6 @@ const Profile = () => {
         return;
       }
 
-      // Update password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -167,7 +203,6 @@ const Profile = () => {
     }
   };
 
-  // Password validation checks
   const passwordChecks = {
     length: newPassword.length >= 7 && newPassword.length <= 12,
     uppercase: /[A-Z]/.test(newPassword),
@@ -194,7 +229,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-primary">
-      {/* Header - Responsive */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-4 md:px-6 lg:px-12 py-4 md:py-5 flex items-center justify-between backdrop-blur-md bg-primary/80 border-b border-secondary/10">
         <div className="flex items-center gap-3 md:gap-4">
           <button 
@@ -207,7 +242,7 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Main Content - Responsive */}
+      {/* Main Content */}
       <main className="pt-20 md:pt-28 pb-16 md:pb-20 px-4 md:px-6 lg:px-12">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 mb-6 md:mb-8">
@@ -220,7 +255,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Tabs - Responsive */}
+          {/* Tabs */}
           <div className="flex gap-1 md:gap-2 p-1 bg-secondary/10 rounded-xl mb-6 md:mb-8">
             <button
               onClick={() => setActiveTab("profile")}
@@ -244,7 +279,6 @@ const Profile = () => {
 
           {activeTab === "profile" ? (
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-4 md:space-y-5">
-              {/* Full Name */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Nom complet</label>
                 <div className="relative">
@@ -258,7 +292,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Email (read-only) */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Email</label>
                 <div className="relative">
@@ -273,7 +306,6 @@ const Profile = () => {
                 <p className="text-[10px] md:text-xs text-secondary/40 mt-1">L'email ne peut pas être modifié</p>
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Téléphone</label>
                 <div className="relative">
@@ -304,7 +336,6 @@ const Profile = () => {
             </div>
           ) : (
             <div className="bg-secondary/5 border border-secondary/10 rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-4 md:space-y-5">
-              {/* Current Password */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Mot de passe actuel</label>
                 <div className="relative">
@@ -326,7 +357,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* New Password */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Nouveau mot de passe</label>
                 <div className="relative">
@@ -357,7 +387,6 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-xs md:text-sm font-medium text-secondary mb-2">Confirmer le mot de passe</label>
                 <div className="relative">
@@ -398,6 +427,22 @@ const Profile = () => {
               </button>
             </div>
           )}
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full mt-6 py-3 md:py-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all disabled:opacity-50 text-sm md:text-base"
+          >
+            {loggingOut ? (
+              <span>Déconnexion...</span>
+            ) : (
+              <>
+                <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+                <span>Se déconnecter</span>
+              </>
+            )}
+          </button>
         </div>
       </main>
     </div>
