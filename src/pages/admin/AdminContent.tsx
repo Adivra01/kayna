@@ -131,27 +131,49 @@ export default function AdminContent() {
 
   const formatPage = (page: string) => {
     const names: Record<string, string> = {
-      home: "Page d'accueil",
-      about: "Page À propos",
-      legal: "Pages légales",
-      faq: "FAQ",
+      home: "🏠 Page d'accueil",
+      about: "📖 Page À propos",
+      legal: "⚖️ Pages légales",
+      faq: "❓ FAQ",
+      shop: "🛍️ Boutique",
+      why_price: "💰 Pourquoi ce prix",
     };
     return names[page] || page;
   };
 
   const formatSection = (section: string) => {
     const names: Record<string, string> = {
-      hero: "Section Hero",
-      story: "Section Histoire",
-      about: "Section À propos",
+      hero: "Section Hero (Bannière)",
+      story: "Section Histoire (6 chapitres)",
+      about: "Section À propos (Valeurs)",
       collection: "Section Collection",
       brand_promise: "Promesses de marque",
+      quality: "Section Qualité",
+      categories: "Section Catégories",
+      footer: "Pied de page",
       privacy: "Politique de confidentialité",
-      terms: "CGV",
+      terms: "Conditions générales de vente",
       notice: "Mentions légales",
       header: "En-tête",
+      chapter_1: "Chapitre 1 — La Philosophie",
+      chapter_2: "Chapitre 2 — La Bataille Silencieuse",
+      chapter_3: "Chapitre 3 — Le Choix Inébranlable",
+      chapter_4: "Chapitre 4 — La Transmission",
+      chapter_5: "Chapitre 5 — La Communauté",
+      chapter_6: "Chapitre 6 — L'Héritage",
+      final_cta: "Appel à l'action final",
+      content: "Contenu principal",
+      points: "Points clés",
+      conclusion: "Conclusion",
+      info_cards: "Cartes d'information",
+      cat_commandes: "FAQ — Commandes & Paiement",
+      cat_livraison: "FAQ — Livraison",
+      cat_retours: "FAQ — Retours & Remboursements",
+      cat_produits: "FAQ — Produits & Tailles",
+      cat_confidentialite: "FAQ — Confidentialité",
+      contact: "Section Contact",
     };
-    return names[section] || section;
+    return names[section] || section.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   const grouped = groupContent();
