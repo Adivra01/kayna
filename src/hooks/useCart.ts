@@ -14,12 +14,14 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  selectedTrainingId: string | null;
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
   setCartOpen: (open: boolean) => void;
+  setSelectedTraining: (trainingId: string | null) => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
 }
@@ -29,6 +31,7 @@ export const useCart = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      selectedTrainingId: null,
       
       addItem: (item) => set((state) => {
         const existingItem = state.items.find((i) => i.id === item.id && i.size === item.size);
@@ -54,11 +57,13 @@ export const useCart = create<CartStore>()(
           : state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
       })),
       
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], selectedTrainingId: null }),
       
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
       
       setCartOpen: (open) => set({ isOpen: open }),
+
+      setSelectedTraining: (trainingId) => set({ selectedTrainingId: trainingId }),
       
       getTotalItems: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
       

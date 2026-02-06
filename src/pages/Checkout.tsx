@@ -32,7 +32,7 @@ interface Coupon {
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items, getTotalPrice, clearCart, selectedTrainingId } = useCart();
   const { t, formatAmount, isRTL } = useLocalization();
   
   const [step, setStep] = useState(1);
@@ -202,6 +202,7 @@ const Checkout = () => {
         }),
         discount_code: appliedCoupon?.code || undefined,
         payment_method: paymentMethod,
+        training_id: selectedTrainingId || undefined,
       };
 
       const { data, error } = await supabase.functions.invoke("create-printful-order", {
@@ -617,6 +618,12 @@ const Checkout = () => {
                     <span className="font-bold text-foreground">Total</span>
                     <span className="font-bold text-xl text-accent">{formatAmount(total)}</span>
                   </div>
+                  {selectedTrainingId && (
+                    <div className="flex items-center gap-2 pt-2 text-sm text-accent">
+                      <Gift className="w-4 h-4" />
+                      <span className="font-medium">Formation offerte incluse</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

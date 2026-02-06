@@ -10,7 +10,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
-import ProductTrainingBonus from "@/components/ProductTrainingBonus";
+import TrainingSelector from "@/components/TrainingSelector";
 import { showToast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -646,8 +646,8 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* Training Bonus - Always visible */}
-              <ProductTrainingBonus />
+              {/* Training Selector - Always visible */}
+              <TrainingSelector />
             </div>
 
             {/* Right - Product Info */}

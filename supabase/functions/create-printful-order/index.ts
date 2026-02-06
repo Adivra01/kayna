@@ -198,6 +198,7 @@ serve(async (req) => {
         status: "pending",
         payment_status: "pending",
         payment_method: sanitizeString(body.payment_method, 30) || null,
+        training_id: body.training_id || null,
       })
       .select()
       .single();

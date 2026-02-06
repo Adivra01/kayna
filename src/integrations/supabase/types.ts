@@ -626,6 +626,7 @@ export type Database = {
           status: string
           subtotal: number
           total: number
+          training_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -662,6 +663,7 @@ export type Database = {
           status?: string
           subtotal?: number
           total?: number
+          training_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -698,6 +700,7 @@ export type Database = {
           status?: string
           subtotal?: number
           total?: number
+          training_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -707,6 +710,13 @@ export type Database = {
             columns: ["affiliate_id"]
             isOneToOne: false
             referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
             referencedColumns: ["id"]
           },
         ]
@@ -1015,6 +1025,39 @@ export type Database = {
           id?: string
           phone?: string | null
           subscribed_at?: string
+        }
+        Relationships: []
+      }
+      trainings: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }
