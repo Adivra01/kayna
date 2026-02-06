@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import ambientMusicSrc from "@/assets/audio/ambient-music.mp3";
+
+// Ambient music URL - Replace with your own hosted MP3 file
+// To use your Google Drive file, make it publicly accessible or upload it directly
+const AMBIENT_MUSIC_URL = "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/UPMRtBayPwgGp1Fhxq0qjji2EHiTbpGT7l3MDBFN.mp3";
 
 // Singleton audio element — shared across all hook instances
 let globalAudio: HTMLAudioElement | null = null;
@@ -10,10 +13,11 @@ let fadeInterval: ReturnType<typeof setInterval> | null = null;
 
 const getAudio = () => {
   if (!globalAudio) {
-    globalAudio = new Audio(ambientMusicSrc);
+    globalAudio = new Audio(AMBIENT_MUSIC_URL);
     globalAudio.loop = true;
     globalAudio.volume = 0;
     globalAudio.preload = "auto";
+    globalAudio.crossOrigin = "anonymous";
   }
   return globalAudio;
 };
@@ -86,17 +90,16 @@ if (typeof window !== "undefined") {
     if (!hasAutoPlayed) {
       startPlayback();
     }
-    // Clean up all listeners after first trigger
     window.removeEventListener("click", triggerAutoplay, true);
     window.removeEventListener("touchstart", triggerAutoplay, true);
     window.removeEventListener("keydown", triggerAutoplay, true);
     window.removeEventListener("scroll", triggerAutoplay, true);
   };
 
-  window.addEventListener("click", triggerAutoplay, { capture: true, once: false });
-  window.addEventListener("touchstart", triggerAutoplay, { capture: true, once: false });
-  window.addEventListener("keydown", triggerAutoplay, { capture: true, once: false });
-  window.addEventListener("scroll", triggerAutoplay, { capture: true, once: false });
+  window.addEventListener("click", triggerAutoplay, { capture: true });
+  window.addEventListener("touchstart", triggerAutoplay, { capture: true });
+  window.addEventListener("keydown", triggerAutoplay, { capture: true });
+  window.addEventListener("scroll", triggerAutoplay, { capture: true });
 }
 
 export const useBackgroundMusic = () => {
