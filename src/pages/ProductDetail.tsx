@@ -665,15 +665,19 @@ const ProductDetail = () => {
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-secondary mb-4">
                     {product.title}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(product)}</span>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                      ))}
-                      <span className="text-secondary/60 text-sm ml-2">(127 {t.product.reviews})</span>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <span className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(product)}</span>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-accent text-accent" />
+                        ))}
+                        <span className="text-secondary/60 text-sm ml-2">(127 {t.product.reviews})</span>
+                      </div>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Truck className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-medium text-accent">{t.product.freeShipping || "Livraison incluse dans le prix"}</span>
+                    </div>
                 </div>
 
 
