@@ -1,13 +1,14 @@
 import { useRef } from "react";
 import { ArrowRight, Play, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLocalization } from "@/hooks/useLocalization";
 
 import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
 import hoodieVideo from "@/assets/videos/hoodie-rotate.mp4";
 import sweaterVideo from "@/assets/videos/sweater-rotate.mp4";
 import tshirt1 from "@/assets/tshirt-1.jpg";
 
-interface ProductCategory {
+interface ProductCategoryItem {
   id: string;
   name: string;
   slug: string;
@@ -15,20 +16,21 @@ interface ProductCategory {
   image?: string;
   isComingSoon?: boolean;
   productCount: number;
-  priceRange: string;
+  categoryKey: string;
 }
-
-const productCategories: ProductCategory[] = [
-  { id: "1", name: "T-Shirts", slug: "tshirts", video: tshirtVideo, productCount: 3, priceRange: "32€ - 39€" },
-  { id: "2", name: "Hoodies", slug: "hoodies", video: hoodieVideo, productCount: 3, priceRange: "75€ - 85€" },
-  { id: "3", name: "Sweaters", slug: "sweaters", video: sweaterVideo, productCount: 3, priceRange: "59€ - 65€" },
-  { id: "4", name: "Joggings", slug: "joggings", image: tshirt1, isComingSoon: true, productCount: 0, priceRange: "Bientôt" },
-  { id: "5", name: "Casquettes", slug: "casquettes", image: tshirt1, isComingSoon: true, productCount: 0, priceRange: "Bientôt" },
-  { id: "6", name: "Shorts", slug: "shorts", image: tshirt1, isComingSoon: true, productCount: 0, priceRange: "Bientôt" },
-];
 
 const ProductGrid = () => {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const { formatPrice } = useLocalization();
+
+  const productCategories: ProductCategoryItem[] = [
+    { id: "1", name: "T-Shirts", slug: "tshirts", video: tshirtVideo, productCount: 3, categoryKey: "tshirts" },
+    { id: "2", name: "Hoodies", slug: "hoodies", video: hoodieVideo, productCount: 3, categoryKey: "hoodies" },
+    { id: "3", name: "Sweaters", slug: "sweaters", video: sweaterVideo, productCount: 3, categoryKey: "sweaters" },
+    { id: "4", name: "Joggings", slug: "joggings", image: tshirt1, isComingSoon: true, productCount: 0, categoryKey: "joggings" },
+    { id: "5", name: "Casquettes", slug: "casquettes", image: tshirt1, isComingSoon: true, productCount: 0, categoryKey: "casquettes" },
+    { id: "6", name: "Shorts", slug: "shorts", image: tshirt1, isComingSoon: true, productCount: 0, categoryKey: "shorts" },
+  ];
 
   const handleHover = (index: number, entering: boolean) => {
     const video = videoRefs.current[index];
@@ -39,6 +41,13 @@ const ProductGrid = () => {
       video.pause();
       video.currentTime = 0;
     }
+  };
+
+  const getPriceRange = (categoryKey: string): string => {
+    if (categoryKey === "joggings" || categoryKey === "casquettes" || categoryKey === "shorts") {
+      return "Bientôt";
+    }
+    return formatPrice({ category: categoryKey });
   };
 
   return (
@@ -116,7 +125,7 @@ const ProductGrid = () => {
                           <h3 className="text-secondary text-2xl lg:text-3xl font-bold mb-2 group-hover:text-accent transition-colors">
                             {product.name}
                           </h3>
-                          <span className="text-accent font-bold text-xl">{product.priceRange}</span>
+                          <span className="text-accent font-bold text-xl">{getPriceRange(product.categoryKey)}</span>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-accent text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 shadow-gold">
                           <ArrowRight className="w-6 h-6" />

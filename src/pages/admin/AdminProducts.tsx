@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import RegionalPricingEditor, { saveRegionalPricesForProduct } from "@/components/admin/RegionalPricingEditor";
+import { invalidateRegionalPriceCache } from "@/hooks/useRegionalPricing";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Plus, 
@@ -155,7 +157,8 @@ export default function AdminProducts() {
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0); // Index de l'image principale (existing + new)
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0);
+  const regionalPricesRef = useRef<any>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -580,13 +583,43 @@ export default function AdminProducts() {
           .eq("id", editingProduct.id);
         
         if (error) throw error;
+        
+        // Save regional prices for existing product
+        if (regionalPricesRef.current) {
+          try {
+            const prices = (RegionalPricingEditor as any).__lastPrices;
+            if (prices) {
+              await saveRegionalPricesForProduct(editingProduct.id, prices);
+            }
+          } catch (e) {
+            console.error("Error saving regional prices:", e);
+          }
+        }
+        
+        invalidateRegionalPriceCache();
         toast.success("Produit mis à jour !");
       } else {
-        const { error } = await supabase
+        const { data: newProduct, error } = await supabase
           .from("products")
-          .insert(productData as any);
+          .insert(productData as any)
+          .select("id")
+          .single();
         
         if (error) throw error;
+        
+        // Save regional prices for newly created product
+        if (newProduct) {
+          try {
+            const prices = (RegionalPricingEditor as any).__lastPrices;
+            if (prices) {
+              await saveRegionalPricesForProduct(newProduct.id, prices);
+            }
+          } catch (e) {
+            console.error("Error saving regional prices:", e);
+          }
+        }
+        
+        invalidateRegionalPriceCache();
         toast.success("Produit créé !");
       }
 
@@ -1007,6 +1040,14 @@ export default function AdminProducts() {
                       <option value="sweaters">Pulls</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Regional Pricing */}
+                <div ref={regionalPricesRef}>
+                  <RegionalPricingEditor
+                    productId={editingProduct?.id || null}
+                    category={formData.category}
+                  />
                 </div>
 
                 {/* Description */}
