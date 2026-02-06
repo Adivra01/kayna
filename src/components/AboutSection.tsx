@@ -62,20 +62,43 @@ const AboutSection = () => {
             </p>
           </div>
 
-          <div className="order-1 lg:order-2 relative h-[500px] lg:h-[600px]">
-            <div className="absolute top-0 right-0 w-[75%] h-[70%] rounded-3xl overflow-hidden shadow-2xl">
-              <img src={aboutMain} alt="KAYNA Community" loading="lazy" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent" />
+          <div className="order-1 lg:order-2 relative">
+            {/* Mobile: stacked layout for full image visibility */}
+            <div className="flex flex-col gap-4 lg:hidden">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img src={aboutMain} alt="KAYNA Community" loading="lazy" className="w-full h-auto object-contain" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
+                <div className="absolute top-3 left-3 backdrop-blur-xl bg-primary/70 border border-accent/30 px-3 py-1.5 rounded-full">
+                  <span className="text-accent font-bold text-xs">{home.aboutBadge}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative rounded-xl overflow-hidden shadow-xl aspect-[3/4]">
+                  <img src={aboutLifestyle} alt="KAYNA Lifestyle" loading="lazy" className="w-full h-full object-cover object-top" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
+                </div>
+                <div className="relative rounded-xl overflow-hidden shadow-gold border border-accent/20 aspect-[3/4]">
+                  <img src={aboutStar} alt="KAYNA Star" loading="lazy" className="w-full h-full object-cover object-top" />
+                </div>
+              </div>
             </div>
-            <div className="absolute bottom-0 left-0 w-[55%] h-[50%] rounded-2xl overflow-hidden shadow-xl border-4 border-primary">
-              <img src={aboutLifestyle} alt="KAYNA Lifestyle" loading="lazy" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/50 to-transparent" />
-            </div>
-            <div className="absolute top-[60%] right-[5%] w-[35%] aspect-square rounded-2xl overflow-hidden shadow-gold border-2 border-accent/30">
-              <img src={aboutStar} alt="KAYNA Star" loading="lazy" className="w-full h-full object-cover" />
-            </div>
-            <div className="absolute top-4 left-4 backdrop-blur-xl bg-primary/70 border border-accent/30 px-4 py-2 rounded-full">
-              <span className="text-accent font-bold text-sm">{home.aboutBadge}</span>
+
+            {/* Desktop: absolute positioned layout */}
+            <div className="hidden lg:block relative h-[600px]">
+              <div className="absolute top-0 right-0 w-[75%] h-[70%] rounded-3xl overflow-hidden shadow-2xl">
+                <img src={aboutMain} alt="KAYNA Community" loading="lazy" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent" />
+              </div>
+              <div className="absolute bottom-0 left-0 w-[55%] h-[50%] rounded-2xl overflow-hidden shadow-xl border-4 border-primary">
+                <img src={aboutLifestyle} alt="KAYNA Lifestyle" loading="lazy" className="w-full h-full object-cover object-top" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/50 to-transparent" />
+              </div>
+              <div className="absolute top-[60%] right-[5%] w-[35%] aspect-square rounded-2xl overflow-hidden shadow-gold border-2 border-accent/30">
+                <img src={aboutStar} alt="KAYNA Star" loading="lazy" className="w-full h-full object-cover object-top" />
+              </div>
+              <div className="absolute top-4 left-4 backdrop-blur-xl bg-primary/70 border border-accent/30 px-4 py-2 rounded-full">
+                <span className="text-accent font-bold text-sm">{home.aboutBadge}</span>
+              </div>
             </div>
           </div>
         </div>
