@@ -64,7 +64,7 @@ const TermsOfSale = () => {
                 </p>
                 <p>
                   KAYNA se réserve le droit de modifier à tout moment l'assortiment de produits. Les produits sont fournis 
-                  tels que décrits sur le site et conformes à la législation française en vigueur.
+                  tels que décrits sur le site et conformes à la législation en vigueur.
                 </p>
               </div>
             </section>
@@ -217,8 +217,8 @@ const TermsOfSale = () => {
               <h2 className="text-2xl font-bold text-foreground mb-4">Article 8 - Droit Applicable et Litiges</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée 
-                  avant toute action judiciaire. À défaut d'accord amiable, les tribunaux français seront seuls compétents.
+                  Les présentes CGV sont soumises au droit malien. En cas de litige, une solution amiable sera recherchée 
+                  avant toute action judiciaire. À défaut d'accord amiable, les tribunaux compétents de Bamako (Mali) seront seuls compétents.
                 </p>
               </div>
             </section>
