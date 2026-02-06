@@ -251,9 +251,8 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     console.error("Create order error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "An error occurred processing your order. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -19,9 +19,10 @@ serve(async (req) => {
   const printfulApiKey = Deno.env.get("PRINTFUL_API_KEY");
 
   if (!printfulApiKey) {
+    console.error("Missing PRINTFUL_API_KEY configuration");
     return new Response(
-      JSON.stringify({ error: "Printful API key not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Service temporarily unavailable" }),
+      { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -193,7 +194,7 @@ serve(async (req) => {
         .eq("id", order_id);
 
       return new Response(
-        JSON.stringify({ error: "Printful submission failed", details: printfulResult }),
+        JSON.stringify({ error: "Order processing failed. Please contact support." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -224,9 +225,8 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     console.error("Submit to Printful error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "An error occurred processing your request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
