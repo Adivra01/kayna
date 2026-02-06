@@ -5,12 +5,9 @@ const PRINTFUL_API_URL = "https://api.printful.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-interface SubmitOrderRequest {
-  order_id: string;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,11 +28,55 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { order_id }: SubmitOrderRequest = await req.json();
-
-    if (!order_id) {
+    // --- AUTH: Admin-only ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ error: "order_id required" }),
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify admin role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleData) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- Process order ---
+    const { order_id } = await req.json();
+
+    if (!order_id || typeof order_id !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Valid order_id required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(order_id)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid order_id format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -54,7 +95,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if order is already submitted
     if (order.printful_order_id) {
       return new Response(
         JSON.stringify({ error: "Order already submitted to Printful", printful_order_id: order.printful_order_id }),
@@ -62,7 +102,6 @@ serve(async (req) => {
       );
     }
 
-    // Check payment status
     if (order.payment_status !== "paid") {
       return new Response(
         JSON.stringify({ error: "Order must be paid before submitting to Printful" }),
@@ -98,14 +137,16 @@ serve(async (req) => {
         country_code: order.shipping_country,
         zip: order.shipping_zip,
       },
-      items: items.map(item => ({
-        sync_variant_id: item.printful_sync_product_id ? parseInt(item.printful_sync_product_id) : undefined,
-        variant_id: item.printful_variant_id ? parseInt(item.printful_variant_id) : undefined,
-        quantity: item.quantity,
-        external_id: item.id,
-        retail_price: item.unit_price.toString(),
-        name: item.product_title,
-      })).filter(item => item.sync_variant_id || item.variant_id),
+      items: items
+        .map((item) => ({
+          sync_variant_id: item.printful_sync_product_id ? parseInt(item.printful_sync_product_id) : undefined,
+          variant_id: item.printful_variant_id ? parseInt(item.printful_variant_id) : undefined,
+          quantity: item.quantity,
+          external_id: item.id,
+          retail_price: item.unit_price.toString(),
+          name: item.product_title,
+        }))
+        .filter((item) => item.sync_variant_id || item.variant_id),
       retail_costs: {
         currency: "EUR",
         subtotal: order.subtotal.toString(),
@@ -116,25 +157,17 @@ serve(async (req) => {
       },
     };
 
-    // Check if we have valid Printful variant IDs
     if (printfulOrder.items.length === 0) {
-      // If no Printful variants, we need to handle this differently
-      // This could be products not synced with Printful yet
-      console.log("No Printful variants found for order items");
-      
       await supabase
         .from("orders")
-        .update({
-          status: "processing",
-          printful_status: "manual",
-        })
+        .update({ status: "processing", printful_status: "manual" })
         .eq("id", order_id);
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: "Order marked for manual processing - no Printful variants configured",
-          requires_manual_processing: true 
+          requires_manual_processing: true,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -144,7 +177,7 @@ serve(async (req) => {
     const printfulResponse = await fetch(`${PRINTFUL_API_URL}/orders`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${printfulApiKey}`,
+        Authorization: `Bearer ${printfulApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(printfulOrder),
@@ -154,13 +187,9 @@ serve(async (req) => {
 
     if (!printfulResponse.ok) {
       console.error("Printful API error:", printfulResult);
-      
       await supabase
         .from("orders")
-        .update({
-          printful_status: "failed",
-          status: "failed",
-        })
+        .update({ printful_status: "failed", status: "failed" })
         .eq("id", order_id);
 
       return new Response(
@@ -169,7 +198,6 @@ serve(async (req) => {
       );
     }
 
-    // Update order with Printful info
     await supabase
       .from("orders")
       .update({
@@ -179,7 +207,6 @@ serve(async (req) => {
       })
       .eq("id", order_id);
 
-    // Log success
     await supabase.from("order_status_history").insert({
       order_id,
       status: "processing",
@@ -195,7 +222,6 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error: unknown) {
     console.error("Submit to Printful error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
