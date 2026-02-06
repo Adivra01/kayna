@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
-// Local ambient music — always available, no CORS issues
-const AMBIENT_MUSIC_URL = "/audio/ambient.mp3";
+// KAYNA — La Certitude Inébranlable (BO officielle)
+const AMBIENT_MUSIC_URL = "/audio/kayna-bo.mp3";
 
 // Singleton audio element — shared across all hook instances
 let globalAudio: HTMLAudioElement | null = null;
