@@ -10,12 +10,12 @@ import chapterCommunity from "@/assets/hero-group.jpg";
 import chapterHeritage from "@/assets/story-heritage.jpg";
 
 const chapterImages = [
-  chapterPhilosophy,
-  chapterBattle,
-  chapterChoice,
-  chapterTransmission,
-  chapterCommunity,
-  chapterHeritage,
+  { src: chapterPhilosophy, position: "object-[center_20%]" },
+  { src: chapterBattle, position: "object-[center_15%]" },
+  { src: chapterChoice, position: "object-[center_20%]" },
+  { src: chapterTransmission, position: "object-[center_15%]" },
+  { src: chapterCommunity, position: "object-[center_25%]" },
+  { src: chapterHeritage, position: "object-[center_20%]" },
 ];
 
 const StorySection = () => {
@@ -43,10 +43,10 @@ const StorySection = () => {
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
-              src={chapterImages[index]}
+              src={chapterImages[index].src}
               alt={chapter.title}
               loading="lazy"
-              className="w-full h-full object-cover brightness-[0.5]"
+              className={`w-full h-full object-cover brightness-[0.5] ${chapterImages[index].position}`}
             />
             <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-primary via-primary/80 to-transparent`} />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-primary/40" />
