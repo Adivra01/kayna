@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowLeft, ArrowRight, Shield, Target, Flame, BookOpen, Users, Crown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import SEOHead, { generateBreadcrumbJsonLd } from "@/components/SEOHead";
 import chapterPhilosophy from "@/assets/chapter-philosophy.jpg";
 import chapterBattle from "@/assets/chapter-battle.jpg";
 import chapterChoice from "@/assets/chapter-choice.jpg";
@@ -85,6 +86,13 @@ const About = () => {
 
   return (
     <div ref={containerRef} className="bg-primary min-h-screen">
+      <SEOHead
+        title="À Propos de KAYNA — Notre Histoire & Philosophie | Développement Personnel"
+        description="Découvrez l'histoire de KAYNA : en Songhaï, KAYNA signifie certitude. Notre philosophie mêle confiance, dépassement et persévérance. Marque de vêtements streetwear née en Afrique de l'Ouest."
+        canonicalUrl="/about"
+        keywords="histoire KAYNA, philosophie KAYNA, marque africaine, développement personnel, confiance en soi, Songhaï, certitude, streetwear Afrique, about KAYNA brand"
+        jsonLd={generateBreadcrumbJsonLd([{ name: "Accueil", url: "/" }, { name: "À Propos", url: "/about" }])}
+      />
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-primary/90 backdrop-blur-md border-b border-secondary/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

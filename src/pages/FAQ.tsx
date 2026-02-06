@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, HelpCircle, ChevronDown, Package, Truck, CreditCard, RotateCcw, Shield, Mail } from "lucide-react";
 import Footer from "@/components/Footer";
 import { useLocalization } from "@/hooks/useLocalization";
+import SEOHead, { generateFAQJsonLd, generateBreadcrumbJsonLd } from "@/components/SEOHead";
 
 interface FAQItem {
   question: string;
@@ -150,6 +151,16 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
+      <SEOHead
+        title="FAQ KAYNA — Questions Fréquentes | Livraison, Paiement, Retours"
+        description="Retrouvez toutes les réponses à vos questions sur KAYNA : commandes, paiement sécurisé, délais de livraison, retours gratuits, tailles et entretien de vos vêtements."
+        canonicalUrl="/faq"
+        keywords="FAQ KAYNA, questions fréquentes KAYNA, livraison KAYNA, retours KAYNA, paiement sécurisé, guide tailles KAYNA"
+        jsonLd={[
+          generateBreadcrumbJsonLd([{ name: "Accueil", url: "/" }, { name: "FAQ", url: "/faq" }]),
+          generateFAQJsonLd(faqCategories.flatMap(cat => cat.items.map(item => ({ question: item.question, answer: item.answer }))))
+        ]}
+      />
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-background/80 border-b border-border">
         <Link to="/" className="text-2xl font-bold italic text-foreground">KAYNA</Link>
