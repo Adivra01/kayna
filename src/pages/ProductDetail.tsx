@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, RotateCcw, ZoomIn, Loader2 } from "lucide-react";
+import { Instagram, ShoppingBag, ArrowLeft, Heart, Check, Minus, Plus, ChevronLeft, ChevronRight, Star, Truck, Shield, ZoomIn, Loader2 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import gsap from "gsap";
 import { useCart } from "@/hooks/useCart";
@@ -605,7 +605,7 @@ const ProductDetail = () => {
                         <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                           <Truck className="w-5 h-5 text-accent" />
                         </div>
-                        <span className="font-bold text-secondary text-lg">{t.product.shippingTitle || "Livraison & Politique"}</span>
+                        <span className="font-bold text-secondary text-lg">{t.product.shippingTitle || "Livraison"}</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-secondary/50 transition-transform group-open:rotate-90" />
                     </summary>
@@ -614,8 +614,8 @@ const ProductDetail = () => {
                       <div className="flex items-start gap-3 text-secondary/70">
                         <Truck className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-secondary">{t.product.deliveryTime || "Livraison : 3 à 15 jours"}</p>
-                          <p className="text-sm">{t.product.deliveryNote || "Le délai varie selon votre pays de destination"}</p>
+                          <p className="font-semibold text-secondary">{"Livraison : 3 à 20 jours"}</p>
+                          <p className="text-sm">{"Le délai varie selon votre pays de destination"}</p>
                         </div>
                       </div>
                       
@@ -623,16 +623,7 @@ const ProductDetail = () => {
                       <div className="flex items-start gap-3 text-secondary/70">
                         <Shield className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-secondary">{t.product.freeShipping}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Politique de non-retour */}
-                      <div className="flex items-start gap-3 p-3 bg-red-500/10 rounded-xl border border-red-500/20">
-                        <RotateCcw className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-semibold text-red-400">{t.product.noReturns || "Pas de retours ni remboursements"}</p>
-                          <p className="text-sm text-secondary/60">{t.product.noReturnsNote || "Toutes les ventes sont définitives. Vérifiez bien votre taille avant de commander."}</p>
+                          <p className="font-semibold text-secondary">{t.product.freeShipping || "Livraison incluse dans le prix"}</p>
                         </div>
                       </div>
                       
@@ -792,8 +783,8 @@ const ProductDetail = () => {
                     <span className="text-xs text-secondary/70">{t.product.quality}</span>
                   </div>
                   <div className="feature-card text-center p-4 rounded-xl bg-secondary/5 border border-secondary/10">
-                    <RotateCcw className="w-6 h-6 mx-auto mb-2 text-accent" />
-                    <span className="text-xs text-secondary/70">{t.product.returns}</span>
+                    <Truck className="w-6 h-6 mx-auto mb-2 text-accent" />
+                    <span className="text-xs text-secondary/70">3-20 jours</span>
                   </div>
                 </div>
 
