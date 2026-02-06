@@ -34,6 +34,10 @@ interface Coupon {
 interface Product {
   id: string;
   title: string;
+  category: string;
+  price: number;
+  images: string[];
+  is_active: boolean;
 }
 
 export default function AdminCoupons() {
@@ -44,6 +48,7 @@ export default function AdminCoupons() {
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "expired">("all");
+  const [productSearch, setProductSearch] = useState("");
   
   // Form state
   const [code, setCode] = useState("");
@@ -81,11 +86,19 @@ export default function AdminCoupons() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from("products")
-      .select("id, title")
+      .select("id, title, category, price, images, is_active")
       .eq("is_active", true)
+      .order("category")
       .order("title");
 
-    setProducts(data || []);
+    setProducts((data || []).map(p => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      price: Number(p.price),
+      images: p.images || [],
+      is_active: p.is_active ?? true,
+    })));
   };
 
   const resetForm = () => {
@@ -414,7 +427,19 @@ export default function AdminCoupons() {
                         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-secondary/50">
                           <span className="flex items-center gap-1.5">
                             <Package className="w-3.5 h-3.5" />
-                            {coupon.scope === "all" ? "Tout le site" : `${coupon.product_ids?.length || 0} produit(s)`}
+                            {coupon.scope === "all" ? "Tout le site" : (
+                              <span className="flex items-center gap-1 flex-wrap">
+                                {coupon.product_ids?.map(pid => {
+                                  const p = products.find(pr => pr.id === pid);
+                                  return p ? (
+                                    <span key={pid} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-accent/10 rounded text-accent text-[10px] font-medium">
+                                      {p.images?.[0] && <img src={p.images[0]} alt="" className="w-3.5 h-3.5 rounded object-cover" />}
+                                      {p.title}
+                                    </span>
+                                  ) : null;
+                                }) || "0 produit(s)"}
+                              </span>
+                            )}
                           </span>
                           
                           {coupon.max_uses && (
@@ -576,25 +601,144 @@ export default function AdminCoupons() {
               </Select>
 
               {scope === "specific" && (
-                <div className="max-h-48 overflow-y-auto border border-secondary/20 rounded-lg p-3 space-y-2">
-                  {products.map((product) => (
-                    <div key={product.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={product.id}
-                        checked={selectedProducts.includes(product.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedProducts([...selectedProducts, product.id]);
-                          } else {
-                            setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
-                          }
-                        }}
-                      />
-                      <label htmlFor={product.id} className="text-sm text-secondary cursor-pointer">
-                        {product.title}
-                      </label>
+                <div className="space-y-3">
+                  {/* Selected count */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-secondary/50">
+                      {selectedProducts.length} produit(s) sélectionné(s)
+                    </span>
+                    {selectedProducts.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProducts([])}
+                        className="text-xs text-red-400 hover:text-red-300"
+                      >
+                        Tout désélectionner
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Search products */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-secondary/40" />
+                    <Input
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder="Rechercher un produit..."
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+
+                  {/* Product grid */}
+                  <div className="max-h-64 overflow-y-auto border border-secondary/20 rounded-xl p-2 space-y-1">
+                    {(() => {
+                      const filtered = products.filter(p =>
+                        p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
+                        p.category.toLowerCase().includes(productSearch.toLowerCase())
+                      );
+                      const grouped = filtered.reduce((acc, p) => {
+                        const cat = p.category || "Autre";
+                        if (!acc[cat]) acc[cat] = [];
+                        acc[cat].push(p);
+                        return acc;
+                      }, {} as Record<string, Product[]>);
+
+                      return Object.entries(grouped).map(([category, prods]) => (
+                        <div key={category}>
+                          <div className="flex items-center justify-between px-2 py-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-accent">{category}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const catIds = prods.map(p => p.id);
+                                const allSelected = catIds.every(id => selectedProducts.includes(id));
+                                if (allSelected) {
+                                  setSelectedProducts(selectedProducts.filter(id => !catIds.includes(id)));
+                                } else {
+                                  setSelectedProducts([...new Set([...selectedProducts, ...catIds])]);
+                                }
+                              }}
+                              className="text-[10px] text-secondary/40 hover:text-accent"
+                            >
+                              {prods.every(p => selectedProducts.includes(p.id)) ? "Désélectionner" : "Tout sélectionner"}
+                            </button>
+                          </div>
+                          {prods.map((product) => {
+                            const isSelected = selectedProducts.includes(product.id);
+                            return (
+                              <button
+                                type="button"
+                                key={product.id}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedProducts(selectedProducts.filter(id => id !== product.id));
+                                  } else {
+                                    setSelectedProducts([...selectedProducts, product.id]);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left ${
+                                  isSelected
+                                    ? "bg-accent/15 border border-accent/30"
+                                    : "hover:bg-secondary/10 border border-transparent"
+                                }`}
+                              >
+                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary/10 flex-shrink-0">
+                                  {product.images?.[0] ? (
+                                    <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <Package className="w-5 h-5 m-2.5 text-secondary/30" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm font-medium truncate ${isSelected ? "text-accent" : "text-secondary"}`}>
+                                    {product.title}
+                                  </p>
+                                  <p className="text-[10px] text-secondary/40">{product.price.toLocaleString()} FCFA</p>
+                                </div>
+                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  isSelected ? "bg-accent border-accent" : "border-secondary/20"
+                                }`}>
+                                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-primary" />}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ));
+                    })()}
+                    {products.filter(p =>
+                      p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
+                      p.category.toLowerCase().includes(productSearch.toLowerCase())
+                    ).length === 0 && (
+                      <p className="text-center text-secondary/40 text-sm py-4">Aucun produit trouvé</p>
+                    )}
+                  </div>
+
+                  {/* Selected products summary */}
+                  {selectedProducts.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedProducts.map(pid => {
+                        const p = products.find(pr => pr.id === pid);
+                        if (!p) return null;
+                        return (
+                          <span
+                            key={pid}
+                            className="inline-flex items-center gap-1.5 px-2 py-1 bg-accent/10 border border-accent/20 rounded-lg text-xs text-accent"
+                          >
+                            {p.images?.[0] && <img src={p.images[0]} alt="" className="w-4 h-4 rounded object-cover" />}
+                            {p.title}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProducts(selectedProducts.filter(id => id !== pid))}
+                              className="text-accent/60 hover:text-red-400 ml-0.5"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
