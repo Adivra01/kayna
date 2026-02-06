@@ -1,63 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useState } from "react";
 import aboutMain from "@/assets/hero-group.jpg";
 import aboutLifestyle from "@/assets/kayna-confidence.jpg";
 import aboutStar from "@/assets/about-star.jpg";
 import { useLocalization } from "@/hooks/useLocalization";
 
-gsap.registerPlugin(ScrollTrigger);
-
 const AboutSection = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
-  const valuesRef = useRef<(HTMLDivElement | null)[]>([]);
-  const imagesRef = useRef<HTMLDivElement>(null);
   const { home, isRTL } = useLocalization();
   const [activeValue, setActiveValue] = useState(0);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(titleRef.current,
-        { y: 100, opacity: 0 },
-        {
-          y: 0, opacity: 1, duration: 1.2, ease: "power3.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top 70%", toggleActions: "play none none reverse" },
-        }
-      );
-
-      valuesRef.current.forEach((value, index) => {
-        if (!value) return;
-        gsap.fromTo(value,
-          { x: isRTL ? 60 : -60, opacity: 0 },
-          {
-            x: 0, opacity: 1, duration: 0.8, delay: index * 0.15, ease: "power3.out",
-            scrollTrigger: { trigger: sectionRef.current, start: "top 60%", toggleActions: "play none none reverse" },
-          }
-        );
-      });
-
-      const images = imagesRef.current?.querySelectorAll("img");
-      images?.forEach((img, i) => {
-        gsap.to(img, {
-          yPercent: i % 2 === 0 ? -15 : 15,
-          ease: "none",
-          scrollTrigger: { trigger: sectionRef.current, start: "top bottom", end: "bottom top", scrub: 1 },
-        });
-      });
-
-      const interval = setInterval(() => {
-        setActiveValue((prev) => (prev + 1) % home.aboutValues.length);
-      }, 3000);
-
-      return () => clearInterval(interval);
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, [isRTL, home.aboutValues.length]);
-
   return (
-    <section ref={sectionRef} className="relative py-24 lg:py-32 bg-primary overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+    <section className="relative py-24 lg:py-32 bg-primary overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-accent/5 rounded-full blur-[300px]" />
       </div>
@@ -65,7 +17,7 @@ const AboutSection = () => {
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div className="order-2 lg:order-1">
-            <div ref={titleRef}>
+            <div>
               <span className="text-accent text-sm uppercase tracking-[0.3em] mb-6 block">{home.aboutLabel}</span>
               <h2 className="text-[2.5rem] sm:text-[3.5rem] lg:text-[4.5rem] font-bold text-secondary leading-[0.9] mb-8">
                 {home.aboutTitle1}
@@ -77,8 +29,7 @@ const AboutSection = () => {
               {home.aboutValues.map((value, index) => (
                 <div
                   key={value.word}
-                  ref={(el) => (valuesRef.current[index] = el)}
-                  className={`p-5 rounded-2xl border transition-all duration-500 cursor-pointer ${
+                  className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                     activeValue === index
                       ? "border-accent bg-accent/10"
                       : "border-secondary/10 hover:border-secondary/30"
@@ -111,7 +62,7 @@ const AboutSection = () => {
             </p>
           </div>
 
-          <div ref={imagesRef} className="order-1 lg:order-2 relative h-[500px] lg:h-[600px]">
+          <div className="order-1 lg:order-2 relative h-[500px] lg:h-[600px]">
             <div className="absolute top-0 right-0 w-[75%] h-[70%] rounded-3xl overflow-hidden shadow-2xl">
               <img src={aboutMain} alt="KAYNA Community" loading="lazy" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent" />
