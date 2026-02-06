@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Scale, Building, Globe, Server, Shield } from "lucide-react";
+import { ArrowLeft, Scale, Building, Globe, Shield } from "lucide-react";
 import Footer from "@/components/Footer";
 import { useLocalization } from "@/hooks/useLocalization";
 
@@ -67,28 +67,6 @@ const LegalNotice = () => {
               </div>
             </section>
 
-            {/* Hébergement */}
-            <section className="bg-card rounded-3xl p-8 border border-border">
-              <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-                <Server className="w-6 h-6 text-accent" />
-                Hébergement
-              </h2>
-              <div className="grid gap-4 text-muted-foreground">
-                <div className="flex justify-between py-3 border-b border-border">
-                  <span className="font-medium text-foreground">Hébergeur</span>
-                  <span>Lovable / Supabase</span>
-                </div>
-                <div className="flex justify-between py-3 border-b border-border">
-                  <span className="font-medium text-foreground">Type d'hébergement</span>
-                  <span>Cloud sécurisé</span>
-                </div>
-                <div className="flex justify-between py-3">
-                  <span className="font-medium text-foreground">Localisation des serveurs</span>
-                  <span>Europe / États-Unis</span>
-                </div>
-              </div>
-            </section>
-
             {/* Propriété intellectuelle */}
             <section className="bg-card rounded-3xl p-8 border border-border">
               <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
@@ -97,8 +75,8 @@ const LegalNotice = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et 
-                  la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les 
+                  L'ensemble de ce site relève de la législation malienne et internationale sur le droit d'auteur et 
+                  la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les
                   documents téléchargeables et les représentations iconographiques et photographiques.
                 </p>
                 <p>
@@ -120,8 +98,8 @@ const LegalNotice = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et 
-                  Libertés, vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de 
+                  Conformément à la réglementation applicable en matière de protection des données personnelles, 
+                  vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de 
                   vos données personnelles.
                 </p>
                 <p>
@@ -179,8 +157,8 @@ const LegalNotice = () => {
               <h2 className="text-2xl font-bold text-foreground mb-4">Droit Applicable</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Les présentes mentions légales sont régies par le droit français. En cas de litige et à défaut d'un 
-                  accord amiable, les tribunaux français seront seuls compétents.
+                  Les présentes mentions légales sont régies par le droit malien. En cas de litige et à défaut d'un 
+                  accord amiable, les tribunaux compétents de Bamako (Mali) seront seuls compétents.
                 </p>
               </div>
             </section>
