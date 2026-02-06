@@ -196,6 +196,34 @@ serve(async (req) => {
 
     await supabase.from("order_items").insert(orderItems);
 
+    // Capture client info in profiles table (for both registered and guest users)
+    // If user is logged in, update their profile; if guest, check if email exists
+    const clientEmail = orderRequest.customer.email.toLowerCase().trim();
+    
+    // Check if a profile already exists with this email
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", clientEmail)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      // Create a new profile entry for this client (guest or new)
+      await supabase.from("profiles").insert({
+        user_id: userId || crypto.randomUUID(), // Use auth user_id if available, otherwise generate one
+        full_name: orderRequest.customer.name,
+        email: clientEmail,
+        phone: orderRequest.customer.phone || null,
+      });
+    } else if (orderRequest.customer.phone) {
+      // Update phone if not set and we have it from the order
+      await supabase
+        .from("profiles")
+        .update({ phone: orderRequest.customer.phone })
+        .eq("id", existingProfile.id)
+        .is("phone", null);
+    }
+
     // Log initial status
     await supabase.from("order_status_history").insert({
       order_id: order.id,

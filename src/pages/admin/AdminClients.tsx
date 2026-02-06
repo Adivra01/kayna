@@ -9,18 +9,20 @@ import {
   Phone, 
   Calendar,
   UserCircle,
-  Download
+  Download,
+  ShoppingBag,
+  UserCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Client {
   id: string;
-  user_id: string;
   full_name: string;
   email: string;
   phone: string | null;
   created_at: string;
-  updated_at: string;
+  source: 'account' | 'guest';
+  order_count?: number;
 }
 
 export default function AdminClients() {
@@ -34,16 +36,63 @@ export default function AdminClients() {
 
   const fetchClients = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+
+    // Fetch profiles (registered users)
+    const { data: profiles } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching clients:', error);
-    } else {
-      setClients((data || []) as Client[]);
+    // Fetch unique guest emails from orders that don't have a profile
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('email, customer_name, phone, created_at')
+      .order('created_at', { ascending: false });
+
+    const profileEmails = new Set((profiles || []).map(p => p.email.toLowerCase()));
+
+    // Build client list from profiles
+    const profileClients: Client[] = (profiles || []).map(p => ({
+      id: p.id,
+      full_name: p.full_name,
+      email: p.email,
+      phone: p.phone,
+      created_at: p.created_at,
+      source: 'account' as const,
+    }));
+
+    // Add unique guest clients from orders
+    const guestEmailsAdded = new Set<string>();
+    const guestClients: Client[] = [];
+
+    for (const order of (orders || [])) {
+      const email = order.email.toLowerCase();
+      if (!profileEmails.has(email) && !guestEmailsAdded.has(email)) {
+        guestEmailsAdded.add(email);
+        guestClients.push({
+          id: `guest-${email}`,
+          full_name: order.customer_name,
+          email: order.email,
+          phone: order.phone,
+          created_at: order.created_at,
+          source: 'guest',
+        });
+      }
     }
+
+    // Count orders per email
+    const orderCounts: Record<string, number> = {};
+    for (const order of (orders || [])) {
+      const email = order.email.toLowerCase();
+      orderCounts[email] = (orderCounts[email] || 0) + 1;
+    }
+
+    const allClients = [...profileClients, ...guestClients].map(c => ({
+      ...c,
+      order_count: orderCounts[c.email.toLowerCase()] || 0,
+    }));
+
+    setClients(allClients);
     setLoading(false);
   };
 
@@ -52,6 +101,9 @@ export default function AdminClients() {
     client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (client.phone && client.phone.includes(searchTerm))
   );
+
+  const registeredCount = clients.filter(c => c.source === 'account').length;
+  const guestCount = clients.filter(c => c.source === 'guest').length;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -69,35 +121,30 @@ export default function AdminClients() {
       return;
     }
 
-    // CSV headers
-    const headers = ['Nom complet', 'Email', 'Téléphone', 'Date inscription'];
-    
-    // CSV rows
+    const headers = ['Nom complet', 'Email', 'Téléphone', 'Type', 'Commandes', 'Date'];
     const rows = filteredClients.map(client => [
       client.full_name,
       client.email,
       client.phone || '',
+      client.source === 'account' ? 'Inscrit' : 'Invité',
+      (client.order_count || 0).toString(),
       formatDate(client.created_at)
     ]);
 
-    // Combine headers and rows
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
 
-    // Create blob and download
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
     link.setAttribute('href', url);
     link.setAttribute('download', `clients_kayna_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
     toast.success(`${filteredClients.length} clients exportés !`);
   };
 
@@ -109,7 +156,7 @@ export default function AdminClients() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-secondary">Clients</h1>
-              <p className="text-sm md:text-base text-secondary/60">Gestion des comptes clients</p>
+              <p className="text-sm md:text-base text-secondary/60">Tous les clients (inscrits + commandes invités)</p>
             </div>
             <div className="flex items-center gap-3 px-3 md:px-4 py-2 bg-accent/20 text-accent rounded-xl w-fit">
               <Users className="w-4 md:w-5 h-4 md:h-5" />
@@ -117,7 +164,6 @@ export default function AdminClients() {
             </div>
           </div>
           
-          {/* Export Button */}
           <button
             onClick={exportToCSV}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-primary rounded-xl font-bold hover:shadow-gold hover:scale-[1.02] transition-all w-full sm:w-auto sm:self-start"
@@ -131,7 +177,7 @@ export default function AdminClients() {
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-secondary/40" />
           <Input
-            placeholder="Rechercher..."
+            placeholder="Rechercher par nom, email ou téléphone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-secondary/5 border-secondary/10 text-sm md:text-base"
@@ -139,7 +185,7 @@ export default function AdminClients() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
           <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
@@ -147,14 +193,36 @@ export default function AdminClients() {
               </div>
               <div className="min-w-0">
                 <p className="text-xl md:text-2xl font-bold text-secondary">{clients.length}</p>
-                <p className="text-secondary/50 text-xs md:text-sm truncate">Total clients</p>
+                <p className="text-secondary/50 text-xs md:text-sm truncate">Total</p>
               </div>
             </div>
           </div>
           <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-3 md:p-4">
             <div className="flex items-center gap-3">
               <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 md:w-5 h-4 md:h-5 text-green-400" />
+                <UserCheck className="w-4 md:w-5 h-4 md:h-5 text-green-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl md:text-2xl font-bold text-secondary">{registeredCount}</p>
+                <p className="text-secondary/50 text-xs md:text-sm truncate">Inscrits</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-3 md:p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <ShoppingBag className="w-4 md:w-5 h-4 md:h-5 text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl md:text-2xl font-bold text-secondary">{guestCount}</p>
+                <p className="text-secondary/50 text-xs md:text-sm truncate">Invités</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-3 md:p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-4 md:w-5 h-4 md:h-5 text-purple-400" />
               </div>
               <div className="min-w-0">
                 <p className="text-xl md:text-2xl font-bold text-secondary">
@@ -168,22 +236,9 @@ export default function AdminClients() {
               </div>
             </div>
           </div>
-          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-3 md:p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 md:w-10 h-9 md:h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                <Phone className="w-4 md:w-5 h-4 md:h-5 text-purple-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl md:text-2xl font-bold text-secondary">
-                  {clients.filter(c => c.phone).length}
-                </p>
-                <p className="text-secondary/50 text-xs md:text-sm truncate">Avec téléphone</p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Clients List - Mobile Cards / Desktop Table */}
+        {/* Clients List */}
         <div className="bg-secondary/5 border border-secondary/10 rounded-2xl overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20">
@@ -193,7 +248,7 @@ export default function AdminClients() {
             <div className="text-center py-16 md:py-20">
               <UserCircle className="w-12 md:w-16 h-12 md:h-16 text-secondary/20 mx-auto mb-4" />
               <p className="text-secondary/50 text-sm md:text-base">
-                {searchTerm ? 'Aucun client trouvé' : 'Aucun client inscrit'}
+                {searchTerm ? 'Aucun client trouvé' : 'Aucun client'}
               </p>
             </div>
           ) : (
@@ -203,13 +258,26 @@ export default function AdminClients() {
                 {filteredClients.map((client) => (
                   <div key={client.id} className="p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-accent font-bold">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        client.source === 'account' ? 'bg-accent/20' : 'bg-orange-500/20'
+                      }`}>
+                        <span className={`font-bold ${
+                          client.source === 'account' ? 'text-accent' : 'text-orange-400'
+                        }`}>
                           {client.full_name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-secondary truncate">{client.full_name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-secondary truncate">{client.full_name}</p>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            client.source === 'account' 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-orange-500/20 text-orange-400'
+                          }`}>
+                            {client.source === 'account' ? 'Inscrit' : 'Invité'}
+                          </span>
+                        </div>
                         <p className="text-secondary/50 text-xs">{formatDate(client.created_at)}</p>
                       </div>
                     </div>
@@ -229,6 +297,12 @@ export default function AdminClients() {
                           Non renseigné
                         </span>
                       )}
+                      {(client.order_count || 0) > 0 && (
+                        <span className="text-secondary/60 flex items-center gap-2">
+                          <ShoppingBag className="w-4 h-4 flex-shrink-0" />
+                          {client.order_count} commande{(client.order_count || 0) > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -242,7 +316,9 @@ export default function AdminClients() {
                       <th className="text-left text-secondary/60 font-medium px-4 py-3">Client</th>
                       <th className="text-left text-secondary/60 font-medium px-4 py-3">Email</th>
                       <th className="text-left text-secondary/60 font-medium px-4 py-3">Téléphone</th>
-                      <th className="text-left text-secondary/60 font-medium px-4 py-3">Inscrit le</th>
+                      <th className="text-left text-secondary/60 font-medium px-4 py-3">Type</th>
+                      <th className="text-left text-secondary/60 font-medium px-4 py-3">Commandes</th>
+                      <th className="text-left text-secondary/60 font-medium px-4 py-3">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-secondary/10">
@@ -250,8 +326,12 @@ export default function AdminClients() {
                       <tr key={client.id} className="hover:bg-secondary/5 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                              <span className="text-accent font-bold">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              client.source === 'account' ? 'bg-accent/20' : 'bg-orange-500/20'
+                            }`}>
+                              <span className={`font-bold ${
+                                client.source === 'account' ? 'text-accent' : 'text-orange-400'
+                              }`}>
                                 {client.full_name.charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -273,6 +353,18 @@ export default function AdminClients() {
                           ) : (
                             <span className="text-secondary/40">—</span>
                           )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            client.source === 'account' 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-orange-500/20 text-orange-400'
+                          }`}>
+                            {client.source === 'account' ? 'Inscrit' : 'Invité'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-secondary/60">{client.order_count || 0}</span>
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-secondary/60 text-sm">
