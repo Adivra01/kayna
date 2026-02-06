@@ -171,7 +171,7 @@ serve(async (req) => {
       }
     }
 
-    const shippingCost = 5000;
+    const shippingCost = 0; // Shipping included in product prices
     const total = subtotal - discountAmount + shippingCost;
 
     // Create order

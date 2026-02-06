@@ -618,12 +618,11 @@ const ProductDetail = () => {
                         </div>
                       </div>
                       
-                      {/* Livraison gratuite */}
+                      {/* Livraison incluse */}
                       <div className="flex items-start gap-3 text-secondary/70">
                         <Shield className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="font-semibold text-secondary">{t.product.freeShipping}</p>
-                          <p className="text-sm">100 000 FCFA</p>
                         </div>
                       </div>
                       

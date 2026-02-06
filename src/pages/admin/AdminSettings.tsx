@@ -32,7 +32,7 @@ export default function AdminSettings() {
   const [showPasswords, setShowPasswords] = useState(false);
   const [newEmail, setNewEmail] = useState("");
 
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(100000);
+  
   const [cartTimeout, setCartTimeout] = useState(10);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function AdminSettings() {
 
     if (data) {
       setSettings(data);
-      setFreeShippingThreshold(data.free_shipping_threshold || 100000);
+      
       setCartTimeout(data.cart_timeout_minutes || 10);
     }
     setLoading(false);
@@ -119,7 +119,6 @@ export default function AdminSettings() {
     const { error } = await supabase
       .from("site_settings")
       .update({
-        free_shipping_threshold: freeShippingThreshold,
         cart_timeout_minutes: cartTimeout,
       })
       .eq("id", settings.id);
@@ -161,20 +160,12 @@ export default function AdminSettings() {
             </div>
 
             <div className="space-y-5">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-secondary mb-2">
-                  <Truck className="w-4 h-4 text-accent" />
-                  Seuil de livraison gratuite (FCFA)
-                </label>
-                <input
-                  type="number"
-                  value={freeShippingThreshold}
-                  onChange={(e) => setFreeShippingThreshold(parseInt(e.target.value) || 0)}
-                  className="w-full px-4 py-3 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary focus:outline-none focus:border-accent"
-                />
-                <p className="text-xs text-secondary/50 mt-1">
-                  Les commandes supérieures à ce montant bénéficient de la livraison gratuite
-                </p>
+              <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                <Truck className="w-5 h-5 text-green-400" />
+                <div>
+                  <p className="text-sm font-medium text-green-400">Livraison incluse dans les prix</p>
+                  <p className="text-xs text-secondary/50">Les frais de livraison sont déjà intégrés aux prix régionaux</p>
+                </div>
               </div>
 
               <div>

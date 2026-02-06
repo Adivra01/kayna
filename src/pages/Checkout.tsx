@@ -63,7 +63,7 @@ const Checkout = () => {
   
   // Calculations
   const subtotal = getTotalPrice();
-  const shippingCost = 5000; // 5000 FCFA flat
+  const shippingCost = 0; // Shipping included in price
   const discount = appliedCoupon 
     ? appliedCoupon.discount_type === "percentage" 
       ? subtotal * (appliedCoupon.discount_value / 100)
@@ -605,7 +605,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Livraison</span>
-                    <span className="text-foreground">{formatAmount(shippingCost)}</span>
+                    <span className="text-green-500 font-medium">Incluse</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
