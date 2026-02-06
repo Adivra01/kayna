@@ -294,15 +294,17 @@ export default function AdminDrop() {
     const { error } = await supabase
       .from("site_settings")
       .update({
+        site_status: "open",
         drop_opening_time: null,
         drop_end_time: null,
+        shop_just_opened: false,
       })
       .eq("id", settings.id);
 
     if (error) {
       showToast.error("Erreur lors de l'annulation");
     } else {
-      showToast.success("Programmation annulée");
+      showToast.success("Programmation annulée — boutique ouverte");
       fetchSettings();
     }
     setSaving(false);
