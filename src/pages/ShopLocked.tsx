@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ShoppingBag, Bell, CheckCircle2, ArrowLeft, User, Sparkles } from "lucide-react";
 import { showToast } from "@/lib/toast";
-import gsap from "gsap";
 import Footer from "@/components/Footer";
 import { useLocalization } from "@/hooks/useLocalization";
 import SEOHead from "@/components/SEOHead";
@@ -40,22 +39,8 @@ export default function ShopLocked() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  useEffect(() => {
-    if (!loading && containerRef.current) {
-      gsap.fromTo(containerRef.current.children, { opacity: 0, y: 40 }, { opacity: 1, y: 0, stagger: 0.12, duration: 0.8, ease: "power3.out" });
-    }
-  }, [loading]);
 
-  // Animate countdown boxes
-  useEffect(() => {
-    if (countdownRef.current) {
-      gsap.fromTo(
-        countdownRef.current.querySelectorAll(".countdown-box"),
-        { scale: 0.8, opacity: 0 },
-        { scale: 1, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)", delay: 0.3 }
-      );
-    }
-  }, [countdown]);
+
 
   const fetchSettings = async () => {
     const { data, error } = await supabase
@@ -108,9 +93,6 @@ export default function ShopLocked() {
     } else {
       setSubmitted(true);
       showToast.success("Inscription réussie !", { description: "Vous serez notifié de l'ouverture" });
-      if (formRef.current) {
-        gsap.to(formRef.current, { scale: 1.02, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" });
-      }
     }
     setSubmitting(false);
   };
@@ -276,15 +258,13 @@ export default function ShopLocked() {
 }
 
 // Countdown box component
-function CountdownBox({ value, label, pulse }: { value: number; label: string; pulse?: boolean }) {
+function CountdownBox({ value, label }: { value: number; label: string; pulse?: boolean }) {
   return (
-    <div className={`countdown-box bg-primary border border-accent/20 rounded-2xl px-4 sm:px-7 py-4 sm:py-6 min-w-[72px] sm:min-w-[100px] relative overflow-hidden group hover:border-accent/40 transition-colors`}>
-      <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      
-      <span className="relative text-4xl sm:text-6xl lg:text-7xl font-bold text-accent block leading-none tabular-nums">
+    <div className="countdown-box bg-primary rounded-2xl px-5 sm:px-8 py-5 sm:py-7 min-w-[80px] sm:min-w-[110px]">
+      <span className="text-4xl sm:text-6xl lg:text-7xl font-bold text-accent block leading-none tabular-nums">
         {value.toString().padStart(2, "0")}
       </span>
-      <p className="relative text-[10px] sm:text-xs text-secondary/40 mt-2 uppercase tracking-[0.2em] font-medium">
+      <p className="text-[10px] sm:text-xs text-secondary/40 mt-2 uppercase tracking-[0.2em] font-medium">
         {label}
       </p>
     </div>
