@@ -98,7 +98,7 @@ const TermsOfSale = () => {
                 <Truck className="w-6 h-6 text-accent" />
                 Article 3 - Livraison
               </h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <div className="p-4 bg-accent/10 rounded-xl border border-accent/20 mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <Clock className="w-5 h-5 text-accent" />
@@ -109,13 +109,18 @@ const TermsOfSale = () => {
                     24 à 48 heures suivant la confirmation du paiement.
                   </p>
                 </div>
+                <div className="p-4 bg-accent/10 rounded-xl border border-accent/20 mb-4">
+                  <div className="flex items-center gap-3">
+                    <Truck className="w-5 h-5 text-accent" />
+                    <span className="font-bold text-foreground">Livraison incluse dans le prix</span>
+                  </div>
+                  <p className="text-sm mt-1">
+                    Les frais de livraison sont inclus dans le prix affiché de chaque produit. Aucun frais supplémentaire ne sera ajouté lors du paiement.
+                  </p>
+                </div>
                 <p>
                   Les produits sont livrés à l'adresse indiquée par le client lors de la commande. Il est de la responsabilité 
                   du client de fournir une adresse de livraison exacte et complète.
-                </p>
-                <p>
-                  Les frais de livraison sont calculés en fonction du pays de destination et du poids de la commande. 
-                  Ils sont indiqués avant la validation finale de la commande.
                 </p>
                 <p>
                   En cas d'absence lors de la livraison, le client sera contacté par le transporteur pour convenir d'une 
