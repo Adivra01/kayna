@@ -39,6 +39,7 @@ const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminClients = lazy(() => import("./pages/admin/AdminClients"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminContent = lazy(() => import("./pages/admin/AdminContent"));
+const AdminTrainings = lazy(() => import("./pages/admin/AdminTrainings"));
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,7 @@ function AppContent() {
             <Route path="/admin/drop" element={<AdminDrop />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/content" element={<AdminContent />} />
+            <Route path="/admin/trainings" element={<AdminTrainings />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -16,7 +16,8 @@ import {
   Mail,
   ExternalLink,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  GraduationCap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ interface Order {
   payment_status: string;
   created_at: string;
   shipped_at: string | null;
+  training_id: string | null;
 }
 
 const STATUS_CONFIG = {
@@ -93,6 +95,7 @@ export default function AdminOrders() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [submittingToPrintful, setSubmittingToPrintful] = useState(false);
+  const [trainingName, setTrainingName] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -113,8 +116,10 @@ export default function AdminOrders() {
     setLoading(false);
   };
 
-  const fetchOrderDetails = async (orderId: string) => {
+  const fetchOrderDetails = async (orderId: string, trainingId: string | null) => {
     setLoadingDetails(true);
+    setTrainingName(null);
+    
     const { data, error } = await (supabase as any)
       .from('order_items')
       .select('*')
@@ -125,6 +130,20 @@ export default function AdminOrders() {
     } else {
       setOrderItems((data || []) as OrderItem[]);
     }
+
+    // Fetch training name if exists
+    if (trainingId) {
+      const { data: trainingData } = await (supabase as any)
+        .from('trainings')
+        .select('name, url')
+        .eq('id', trainingId)
+        .maybeSingle();
+      
+      if (trainingData) {
+        setTrainingName(trainingData.name);
+      }
+    }
+
     setLoadingDetails(false);
   };
 
@@ -166,7 +185,7 @@ export default function AdminOrders() {
         toast.success('Commande envoyée à Printful !');
         fetchOrders();
         if (selectedOrder?.id === orderId) {
-          fetchOrderDetails(orderId);
+          fetchOrderDetails(orderId, selectedOrder?.training_id || null);
         }
       } else if (result.requires_manual_processing) {
         toast.info('Commande marquée pour traitement manuel');
@@ -182,7 +201,7 @@ export default function AdminOrders() {
 
   const openOrderDetails = (order: Order) => {
     setSelectedOrder(order);
-    fetchOrderDetails(order.id);
+    fetchOrderDetails(order.id, order.training_id);
   };
 
   const filteredOrders = orders.filter(order => {
@@ -415,6 +434,19 @@ export default function AdminOrders() {
                     <p>{selectedOrder.shipping_state && `${selectedOrder.shipping_state}, `}{selectedOrder.shipping_country}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Formation choisie */}
+              <div className="bg-accent/10 border border-accent/20 rounded-2xl p-5 mb-8">
+                <h3 className="font-bold text-secondary mb-3 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-accent" />
+                  Formation choisie
+                </h3>
+                {trainingName ? (
+                  <p className="text-accent font-medium">{trainingName}</p>
+                ) : (
+                  <p className="text-secondary/40 italic text-sm">Aucune formation sélectionnée</p>
+                )}
               </div>
 
               {/* Printful Integration */}
