@@ -79,8 +79,8 @@ export const homeTranslations: Record<Language, HomeTranslations> = {
     heroScroll: "Scroll",
 
     storyLabel: "Notre Histoire",
-    storyTitle1: "6 chapitres.",
-    storyTitle2: "Une vision.",
+    storyTitle1: "KAYNA.",
+    storyTitle2: "La certitude inébranlable.",
     chapters: [
       { number: "01", title: "Philosophie", subtitle: "Plus qu'un mot", keywords: ["Confiance", "Dépassement", "Persévérance"] },
       { number: "02", title: "La Bataille", subtitle: "Silencieuse", keywords: ["Doute", "Combat", "Résilience"] },
@@ -153,8 +153,8 @@ export const homeTranslations: Record<Language, HomeTranslations> = {
     heroScroll: "Scroll",
 
     storyLabel: "Our Story",
-    storyTitle1: "6 chapters.",
-    storyTitle2: "One vision.",
+    storyTitle1: "KAYNA.",
+    storyTitle2: "The unshakeable certainty.",
     chapters: [
       { number: "01", title: "Philosophy", subtitle: "More than a word", keywords: ["Confidence", "Transcendence", "Perseverance"] },
       { number: "02", title: "The Battle", subtitle: "Silent", keywords: ["Doubt", "Fight", "Resilience"] },
@@ -227,8 +227,8 @@ export const homeTranslations: Record<Language, HomeTranslations> = {
     heroScroll: "Scroll",
 
     storyLabel: "Nuestra Historia",
-    storyTitle1: "6 capítulos.",
-    storyTitle2: "Una visión.",
+    storyTitle1: "KAYNA.",
+    storyTitle2: "La certeza inquebrantable.",
     chapters: [
       { number: "01", title: "Filosofía", subtitle: "Más que una palabra", keywords: ["Confianza", "Superación", "Perseverancia"] },
       { number: "02", title: "La Batalla", subtitle: "Silenciosa", keywords: ["Duda", "Lucha", "Resiliencia"] },
@@ -301,8 +301,8 @@ export const homeTranslations: Record<Language, HomeTranslations> = {
     heroScroll: "تمرير",
 
     storyLabel: "قصتنا",
-    storyTitle1: "6 فصول.",
-    storyTitle2: "رؤية واحدة.",
+    storyTitle1: "KAYNA.",
+    storyTitle2: "اليقين الراسخ.",
     chapters: [
       { number: "01", title: "الفلسفة", subtitle: "أكثر من كلمة", keywords: ["ثقة", "تجاوز", "مثابرة"] },
       { number: "02", title: "المعركة", subtitle: "الصامتة", keywords: ["شك", "قتال", "صمود"] },
@@ -375,8 +375,8 @@ export const homeTranslations: Record<Language, HomeTranslations> = {
     heroScroll: "Scroll",
 
     storyLabel: "Nossa História",
-    storyTitle1: "6 capítulos.",
-    storyTitle2: "Uma visão.",
+    storyTitle1: "KAYNA.",
+    storyTitle2: "A certeza inabalável.",
     chapters: [
       { number: "01", title: "Filosofia", subtitle: "Mais que uma palavra", keywords: ["Confiança", "Superação", "Perseverança"] },
       { number: "02", title: "A Batalha", subtitle: "Silenciosa", keywords: ["Dúvida", "Luta", "Resiliência"] },
