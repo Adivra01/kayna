@@ -78,9 +78,10 @@ serve(async (req) => {
     // --- Printful API proxy ---
     const PRINTFUL_API_KEY = Deno.env.get("PRINTFUL_API_KEY");
     if (!PRINTFUL_API_KEY) {
+      console.error("Missing PRINTFUL_API_KEY configuration");
       return new Response(
-        JSON.stringify({ error: "Printful API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Service temporarily unavailable" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -236,9 +237,8 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     console.error("Printful API error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "An error occurred processing your request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
