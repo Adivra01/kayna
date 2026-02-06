@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { translations, Language, Translations } from '@/lib/i18n/translations';
+import { homeTranslations, HomeTranslations } from '@/lib/i18n/homeTranslations';
 import { 
   PricingRegion, 
+  Currency,
   getRegionFromCountry, 
   getRegionPricing, 
   detectProductCategory,
@@ -20,13 +22,12 @@ interface LocalizationContextType {
   country: string;
   countryName: string;
   t: Translations;
+  home: HomeTranslations;
   setLanguage: (lang: Language) => void;
-  // Price formatting based on region (fixed prices, not conversion)
   formatPrice: (product: { category?: string; title?: string }) => string;
-  // Format a raw amount (for totals, cart sums, etc.)
   formatAmount: (amount: number) => string;
   getPrice: (product: { category?: string; title?: string }) => number;
-  getCurrency: () => 'USD' | 'EUR';
+  getCurrency: () => Currency;
   isRTL: boolean;
   isLoading: boolean;
 }
@@ -50,8 +51,74 @@ const countryNames: Record<string, string> = {
   ES: 'Espagne', PT: 'Portugal', GB: 'United Kingdom', NL: 'Pays-Bas',
   US: 'United States', CA: 'Canada',
   SA: 'Arabie Saoudite', AE: 'Émirats Arabes Unis', QA: 'Qatar', KW: 'Koweït',
-  JO: 'Jordanie', LB: 'Liban',
+  JO: 'Jordanie', LB: 'Liban', TR: 'Turquie', BR: 'Brésil', MX: 'Mexique',
+  AU: 'Australie', NZ: 'Nouvelle-Zélande',
 };
+
+// Multiple fallback IP detection APIs
+async function detectIPLocation(): Promise<GeoResponse | null> {
+  const apis = [
+    {
+      url: 'https://ipapi.co/json/',
+      parse: (data: any): GeoResponse => ({
+        country_code: data.country_code || data.country,
+        country_name: data.country_name,
+        city: data.city,
+        region: data.region,
+      }),
+    },
+    {
+      url: 'https://ip-api.com/json/?fields=countryCode,country,city,regionName',
+      parse: (data: any): GeoResponse => ({
+        country_code: data.countryCode,
+        country_name: data.country,
+        city: data.city,
+        region: data.regionName,
+      }),
+    },
+    {
+      url: 'https://ipwho.is/',
+      parse: (data: any): GeoResponse => ({
+        country_code: data.country_code,
+        country_name: data.country,
+        city: data.city,
+        region: data.region,
+      }),
+    },
+    {
+      url: 'https://freeipapi.com/api/json',
+      parse: (data: any): GeoResponse => ({
+        country_code: data.countryCode,
+        country_name: data.countryName,
+        city: data.cityName,
+        region: data.regionName,
+      }),
+    },
+  ];
+
+  for (const api of apis) {
+    try {
+      const response = await fetch(api.url, {
+        signal: AbortSignal.timeout(4000),
+      });
+      
+      if (!response.ok) continue;
+      
+      const data = await response.json();
+      const parsed = api.parse(data);
+      
+      if (parsed.country_code) {
+        console.log(`[Localization] IP detected via ${new URL(api.url).hostname}: ${parsed.country_code}`);
+        return parsed;
+      }
+    } catch (error) {
+      console.warn(`[Localization] API ${api.url} failed, trying next...`);
+      continue;
+    }
+  }
+  
+  return null;
+}
 
 export function LocalizationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('fr');
@@ -60,12 +127,10 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
   const [countryName, setCountryName] = useState<string>('Mali');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Detect user's location via IP
+  // Detect user's location via IP with fallback APIs
   const detectLocation = useCallback(async () => {
-    // Check if we've already detected location this session
     const alreadyDetected = sessionStorage.getItem(STORAGE_KEY_GEO_DETECTED);
     
-    // Check for saved preferences first
     const savedLang = localStorage.getItem(STORAGE_KEY_LANG) as Language;
     const savedCountry = localStorage.getItem(STORAGE_KEY_COUNTRY);
     const savedRegion = localStorage.getItem(STORAGE_KEY_REGION) as PricingRegion;
@@ -80,35 +145,27 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Use free IP geolocation API
-      const response = await fetch('https://ipapi.co/json/', {
-        signal: AbortSignal.timeout(5000),
-      });
+      const geoData = await detectIPLocation();
       
-      if (!response.ok) throw new Error('Geo API failed');
+      if (!geoData) throw new Error('All geo APIs failed');
       
-      const data: GeoResponse = await response.json();
-      const countryCode = data.country_code || 'ML';
-      
-      // Get region and language based on country
+      const countryCode = geoData.country_code || 'ML';
       const detectedRegion = getRegionFromCountry(countryCode);
       const detectedLanguage = getLanguageFromCountry(countryCode);
 
       setCountryState(countryCode);
-      setCountryName(countryNames[countryCode] || data.country_name || 'International');
+      setCountryName(countryNames[countryCode] || geoData.country_name || 'International');
       setLanguageState(detectedLanguage);
       setRegion(detectedRegion);
 
-      // Save to localStorage for persistence
       localStorage.setItem(STORAGE_KEY_LANG, detectedLanguage);
       localStorage.setItem(STORAGE_KEY_COUNTRY, countryCode);
       localStorage.setItem(STORAGE_KEY_REGION, detectedRegion);
       sessionStorage.setItem(STORAGE_KEY_GEO_DETECTED, 'true');
 
-      console.log(`[Localization] Detected: ${countryCode} → ${detectedLanguage} / ${detectedRegion}`);
+      console.log(`[Localization] Detected: ${countryCode} → lang=${detectedLanguage}, region=${detectedRegion}, currency=${getRegionPricing(detectedRegion).currency}`);
     } catch (error) {
       console.warn('[Localization] Could not detect location, using defaults:', error);
-      // Use defaults or saved values
       if (savedLang) setLanguageState(savedLang);
       if (savedCountry) {
         setCountryState(savedCountry);
@@ -124,29 +181,23 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     detectLocation();
   }, [detectLocation]);
 
-  // Update language (user can change language, but NOT price/region)
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem(STORAGE_KEY_LANG, lang);
-    
-    // Update document direction for RTL languages
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }, []);
 
-  // Get the region-based price for a product (fixed price, NOT conversion)
   const getPrice = useCallback((product: { category?: string; title?: string }): number => {
     const productCategory = detectProductCategory(product);
     const regionInfo = getRegionPricing(region);
     return regionInfo.prices[productCategory];
   }, [region]);
 
-  // Get the current currency for the region
-  const getCurrency = useCallback((): 'USD' | 'EUR' => {
+  const getCurrency = useCallback((): Currency => {
     const regionInfo = getRegionPricing(region);
     return regionInfo.currency;
   }, [region]);
 
-  // Format price for display (using fixed regional pricing)
   const formatPriceLocal = useCallback((product: { category?: string; title?: string }): string => {
     const productCategory = detectProductCategory(product);
     const regionInfo = getRegionPricing(region);
@@ -154,19 +205,15 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     return formatRegionPrice(price, regionInfo.currency);
   }, [region]);
 
-  // Format a raw amount (for totals, cart sums, shipping costs, etc.)
   const formatAmountLocal = useCallback((amount: number): string => {
     const regionInfo = getRegionPricing(region);
     return formatRegionPrice(amount, regionInfo.currency);
   }, [region]);
 
-  // Check if current language is RTL
   const isRTL = language === 'ar';
-
-  // Get translations
   const t = translations[language];
+  const home = homeTranslations[language];
 
-  // Update document direction on mount
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
   }, [isRTL]);
@@ -177,6 +224,7 @@ export function LocalizationProvider({ children }: { children: ReactNode }) {
     country,
     countryName,
     t,
+    home,
     setLanguage,
     formatPrice: formatPriceLocal,
     formatAmount: formatAmountLocal,
@@ -201,5 +249,4 @@ export function useLocalization() {
   return context;
 }
 
-// Export context for use in React.createElement
 export { LocalizationContext };
