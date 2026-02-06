@@ -271,8 +271,8 @@ export default function ShopLocked() {
 // Countdown box component
 function CountdownBox({ value, label }: { value: number; label: string; pulse?: boolean }) {
   return (
-    <div className="countdown-box bg-primary rounded-2xl px-5 sm:px-8 py-5 sm:py-7 min-w-[80px] sm:min-w-[110px]">
-      <span className="text-4xl sm:text-6xl lg:text-7xl font-bold text-accent block leading-none tabular-nums">
+    <div className="countdown-box bg-primary rounded-2xl px-4 sm:px-6 py-4 sm:py-6 min-w-[70px] sm:min-w-[100px] overflow-hidden">
+      <span className="text-3xl sm:text-5xl lg:text-6xl font-bold text-accent block leading-none tabular-nums">
         {value.toString().padStart(2, "0")}
       </span>
       <p className="text-[10px] sm:text-xs text-secondary/40 mt-2 uppercase tracking-[0.2em] font-medium">
