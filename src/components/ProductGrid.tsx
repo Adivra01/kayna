@@ -96,6 +96,7 @@ const ProductGrid = () => {
                       muted
                       loop
                       playsInline
+                      preload="none"
                       poster={product.image}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent opacity-70 group-hover:opacity-50 transition-opacity duration-300" />

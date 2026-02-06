@@ -51,25 +51,39 @@ const CustomCursor = () => {
     document.addEventListener("mouseleave", handleMouseLeave);
     document.addEventListener("mouseenter", handleMouseEnter);
 
-    const addListeners = () => {
-      const interactiveElements = document.querySelectorAll("a, button, [data-cursor]");
-      interactiveElements.forEach((el) => {
-        el.addEventListener("mouseenter", handleElementEnter as EventListener);
-        el.addEventListener("mouseleave", handleElementLeave);
-      });
+    // Use event delegation instead of MutationObserver
+    const handleDelegatedEnter = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest("a") || 
+        target.closest("button:not([disabled])") || 
+        target.closest("[data-cursor]")
+      ) {
+        setIsHovering(true);
+      }
     };
-    
-    addListeners();
 
-    const observer = new MutationObserver(addListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    const handleDelegatedLeave = (e: MouseEvent) => {
+      const relatedTarget = e.relatedTarget as HTMLElement | null;
+      if (
+        !relatedTarget?.closest("a") && 
+        !relatedTarget?.closest("button:not([disabled])") && 
+        !relatedTarget?.closest("[data-cursor]")
+      ) {
+        setIsHovering(false);
+      }
+    };
+
+    document.addEventListener("mouseover", handleDelegatedEnter);
+    document.addEventListener("mouseout", handleDelegatedLeave);
 
     return () => {
       cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseenter", handleMouseEnter);
-      observer.disconnect();
+      document.removeEventListener("mouseover", handleDelegatedEnter);
+      document.removeEventListener("mouseout", handleDelegatedLeave);
     };
   }, [isVisible]);
 
