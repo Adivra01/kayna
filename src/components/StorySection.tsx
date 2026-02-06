@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 
-import chapterPhilosophy from "@/assets/kayna-hero.jpg";
-import chapterBattle from "@/assets/kayna-battle.jpg";
-import chapterChoice from "@/assets/about-confidence.jpg";
-import chapterTransmission from "@/assets/value-development.jpg";
+import chapterPhilosophy from "@/assets/story-philosophy.jpg";
+import chapterBattle from "@/assets/story-battle.jpg";
+import chapterChoice from "@/assets/story-choice.jpg";
+import chapterTransmission from "@/assets/story-transmission.jpg";
 import chapterCommunity from "@/assets/hero-group.jpg";
-import chapterHeritage from "@/assets/kayna-heritage.jpg";
+import chapterHeritage from "@/assets/story-heritage.jpg";
 
 const chapterImages = [
   chapterPhilosophy,
