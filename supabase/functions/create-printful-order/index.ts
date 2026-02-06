@@ -1,43 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const PRINTFUL_API_URL = "https://api.printful.com";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface OrderItem {
-  product_id: string;
-  product_title: string;
-  product_image: string;
-  size: string;
-  color: string;
-  quantity: number;
-  unit_price: number;
-  printful_variant_id?: string;
-  printful_sync_product_id?: string;
+// Input sanitization helpers
+function sanitizeString(input: unknown, maxLength: number): string {
+  if (typeof input !== "string") return "";
+  return input.trim().slice(0, maxLength).replace(/[<>]/g, "");
 }
 
-interface CreateOrderRequest {
-  customer: {
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  shipping: {
-    address1: string;
-    address2?: string;
-    city: string;
-    state?: string;
-    country: string;
-    zip: string;
-  };
-  items: OrderItem[];
-  discount_code?: string;
-  affiliate_code?: string;
-  payment_method?: string;
+function sanitizeEmail(input: unknown): string | null {
+  const email = sanitizeString(input, 255).toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) ? email : null;
+}
+
+function sanitizePhone(input: unknown): string | null {
+  if (!input || typeof input !== "string") return null;
+  const cleaned = input.replace(/[^0-9+\-() ]/g, "").slice(0, 20);
+  return cleaned || null;
+}
+
+function sanitizeNumber(input: unknown): number {
+  const num = Number(input);
+  return isFinite(num) && num >= 0 ? num : 0;
 }
 
 serve(async (req) => {
@@ -47,56 +37,100 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const printfulApiKey = Deno.env.get("PRINTFUL_API_KEY");
-  
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Get user from auth header if present
+    // Get user from auth header (required for authenticated users, optional for guest checkout)
     const authHeader = req.headers.get("Authorization");
     let userId: string | null = null;
-    
+
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "");
       const { data: userData } = await supabase.auth.getUser(token);
       userId = userData.user?.id || null;
     }
 
-    const orderRequest: CreateOrderRequest = await req.json();
+    const body = await req.json();
 
-    // Validate required fields
-    if (!orderRequest.customer?.name || !orderRequest.customer?.email) {
+    // --- Sanitize and validate all inputs ---
+    const customerName = sanitizeString(body.customer?.name, 100);
+    const customerEmail = sanitizeEmail(body.customer?.email);
+    const customerPhone = sanitizePhone(body.customer?.phone);
+
+    if (!customerName || customerName.length < 2) {
       return new Response(
-        JSON.stringify({ error: "Customer name and email required" }),
+        JSON.stringify({ error: "Valid customer name required (2-100 characters)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!orderRequest.shipping?.address1 || !orderRequest.shipping?.city || !orderRequest.shipping?.country || !orderRequest.shipping?.zip) {
+    if (!customerEmail) {
       return new Response(
-        JSON.stringify({ error: "Complete shipping address required" }),
+        JSON.stringify({ error: "Valid customer email required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!orderRequest.items?.length) {
+    const shippingAddress1 = sanitizeString(body.shipping?.address1, 200);
+    const shippingAddress2 = sanitizeString(body.shipping?.address2, 200) || null;
+    const shippingCity = sanitizeString(body.shipping?.city, 100);
+    const shippingState = sanitizeString(body.shipping?.state, 100) || null;
+    const shippingCountry = sanitizeString(body.shipping?.country, 5);
+    const shippingZip = sanitizeString(body.shipping?.zip, 20);
+
+    if (!shippingAddress1 || !shippingCity || !shippingCountry || !shippingZip) {
       return new Response(
-        JSON.stringify({ error: "Order must contain at least one item" }),
+        JSON.stringify({ error: "Complete shipping address required (address, city, country, zip)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Validate items
+    if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Order must contain 1-50 items" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Sanitize items
+    const sanitizedItems = body.items.map((item: Record<string, unknown>) => ({
+      product_id: sanitizeString(item.product_id, 50),
+      product_title: sanitizeString(item.product_title, 200),
+      product_image: sanitizeString(item.product_image, 500),
+      size: sanitizeString(item.size, 10),
+      color: sanitizeString(item.color, 30),
+      quantity: Math.min(Math.max(Math.floor(sanitizeNumber(item.quantity)), 1), 100),
+      unit_price: sanitizeNumber(item.unit_price),
+      printful_variant_id: item.printful_variant_id ? sanitizeString(item.printful_variant_id, 50) : null,
+      printful_sync_product_id: item.printful_sync_product_id ? sanitizeString(item.printful_sync_product_id, 50) : null,
+    }));
+
+    // Validate each item has required fields
+    for (const item of sanitizedItems) {
+      if (!item.product_title || item.unit_price <= 0 || item.quantity <= 0) {
+        return new Response(
+          JSON.stringify({ error: "Each item must have a title, valid price, and quantity" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Calculate totals
-    const subtotal = orderRequest.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+    const subtotal = sanitizedItems.reduce(
+      (sum: number, item: { unit_price: number; quantity: number }) => sum + item.unit_price * item.quantity,
+      0
+    );
     let discountAmount = 0;
     let affiliateId: string | null = null;
 
     // Check discount code
-    if (orderRequest.discount_code) {
+    const discountCode = sanitizeString(body.discount_code, 50).toUpperCase();
+    if (discountCode) {
       const { data: coupon } = await supabase
         .from("discount_coupons")
         .select("*")
-        .eq("code", orderRequest.discount_code.toUpperCase())
+        .eq("code", discountCode)
         .eq("is_active", true)
         .single();
 
@@ -104,7 +138,6 @@ serve(async (req) => {
         const now = new Date();
         const startDate = coupon.start_date ? new Date(coupon.start_date) : null;
         const endDate = coupon.end_date ? new Date(coupon.end_date) : null;
-        
         const isValidDate = (!startDate || now >= startDate) && (!endDate || now <= endDate);
         const hasUsesLeft = !coupon.max_uses || coupon.current_uses < coupon.max_uses;
 
@@ -115,7 +148,6 @@ serve(async (req) => {
             discountAmount = Math.min(coupon.discount_value, subtotal);
           }
 
-          // Increment coupon usage
           await supabase
             .from("discount_coupons")
             .update({ current_uses: (coupon.current_uses || 0) + 1 })
@@ -125,11 +157,12 @@ serve(async (req) => {
     }
 
     // Check affiliate code
-    if (orderRequest.affiliate_code) {
+    const affiliateCode = sanitizeString(body.affiliate_code, 20);
+    if (affiliateCode) {
       const { data: affiliate } = await supabase
         .from("affiliates")
         .select("id")
-        .eq("affiliate_code", orderRequest.affiliate_code)
+        .eq("affiliate_code", affiliateCode)
         .eq("status", "approved")
         .single();
 
@@ -138,35 +171,33 @@ serve(async (req) => {
       }
     }
 
-    // Shipping cost (flat rate for now)
     const shippingCost = 5000;
-
     const total = subtotal - discountAmount + shippingCost;
 
-    // Create order in database
+    // Create order
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: userId,
-        email: orderRequest.customer.email,
-        phone: orderRequest.customer.phone,
-        customer_name: orderRequest.customer.name,
-        shipping_address_1: orderRequest.shipping.address1,
-        shipping_address_2: orderRequest.shipping.address2,
-        shipping_city: orderRequest.shipping.city,
-        shipping_state: orderRequest.shipping.state,
-        shipping_country: orderRequest.shipping.country,
-        shipping_zip: orderRequest.shipping.zip,
+        email: customerEmail,
+        phone: customerPhone,
+        customer_name: customerName,
+        shipping_address_1: shippingAddress1,
+        shipping_address_2: shippingAddress2,
+        shipping_city: shippingCity,
+        shipping_state: shippingState,
+        shipping_country: shippingCountry,
+        shipping_zip: shippingZip,
         subtotal,
         shipping_cost: shippingCost,
         discount_amount: discountAmount,
         total,
-        discount_code: orderRequest.discount_code,
+        discount_code: discountCode || null,
         affiliate_id: affiliateId,
-        affiliate_code: orderRequest.affiliate_code,
+        affiliate_code: affiliateCode || null,
         status: "pending",
         payment_status: "pending",
-        payment_method: orderRequest.payment_method,
+        payment_method: sanitizeString(body.payment_method, 30) || null,
       })
       .select()
       .single();
@@ -180,49 +211,21 @@ serve(async (req) => {
     }
 
     // Create order items
-    const orderItems = orderRequest.items.map(item => ({
+    const orderItems = sanitizedItems.map((item: Record<string, unknown>) => ({
       order_id: order.id,
-      product_id: item.product_id,
+      product_id: item.product_id || null,
       product_title: item.product_title,
-      product_image: item.product_image,
-      size: item.size,
-      color: item.color,
-      printful_variant_id: item.printful_variant_id,
-      printful_sync_product_id: item.printful_sync_product_id,
+      product_image: item.product_image || null,
+      size: item.size || null,
+      color: item.color || null,
+      printful_variant_id: item.printful_variant_id || null,
+      printful_sync_product_id: item.printful_sync_product_id || null,
       quantity: item.quantity,
       unit_price: item.unit_price,
-      total_price: item.unit_price * item.quantity,
+      total_price: (item.unit_price as number) * (item.quantity as number),
     }));
 
     await supabase.from("order_items").insert(orderItems);
-
-    // Capture client info in profiles table (for both registered and guest users)
-    // If user is logged in, update their profile; if guest, check if email exists
-    const clientEmail = orderRequest.customer.email.toLowerCase().trim();
-    
-    // Check if a profile already exists with this email
-    const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", clientEmail)
-      .maybeSingle();
-
-    if (!existingProfile) {
-      // Create a new profile entry for this client (guest or new)
-      await supabase.from("profiles").insert({
-        user_id: userId || crypto.randomUUID(), // Use auth user_id if available, otherwise generate one
-        full_name: orderRequest.customer.name,
-        email: clientEmail,
-        phone: orderRequest.customer.phone || null,
-      });
-    } else if (orderRequest.customer.phone) {
-      // Update phone if not set and we have it from the order
-      await supabase
-        .from("profiles")
-        .update({ phone: orderRequest.customer.phone })
-        .eq("id", existingProfile.id)
-        .is("phone", null);
-    }
 
     // Log initial status
     await supabase.from("order_status_history").insert({
@@ -231,7 +234,6 @@ serve(async (req) => {
       message: "Commande créée, en attente de paiement",
     });
 
-    // Return order info (payment will be handled separately)
     return new Response(
       JSON.stringify({
         success: true,
@@ -247,7 +249,6 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error: unknown) {
     console.error("Create order error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
