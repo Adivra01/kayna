@@ -145,7 +145,7 @@ export default function AdminProducts() {
     category: "tshirts",
     tag: "",
     sizes: ["S", "M", "L", "XL"],
-    colors: ["noir", "blanc", "beige"],
+    colors: [],
     details: [""],
     is_active: true,
     stock_quantity: null as number | null,

@@ -73,12 +73,19 @@ const ProductDetail = () => {
     return tshirtVideo;
   };
 
-  // Colors available
-  const colors = [
+  // All possible colors with hex values
+  const allColors = [
     { name: "Noir", hex: "#0A0A0A" },
     { name: "Blanc", hex: "#F5F5F0" },
     { name: "Beige", hex: "#C9A86C" },
   ];
+
+  // Filter colors to only show those selected for this product
+  const colors = product
+    ? allColors.filter(c => 
+        product.colors.some(pc => pc.toLowerCase() === c.name.toLowerCase())
+      )
+    : allColors;
 
   // Fetch product from Supabase
   useEffect(() => {
@@ -122,7 +129,11 @@ const ProductDetail = () => {
       };
 
       setProduct(productData);
-      setSelectedColor(colors[0].name);
+      // Set default selected color based on product's available colors
+      const productAvailableColors = allColors.filter(c => 
+        productData.colors.some(pc => pc.toLowerCase() === c.name.toLowerCase())
+      );
+      setSelectedColor(productAvailableColors.length > 0 ? productAvailableColors[0].name : "");
       
       // Track product view
       trackProductView(productData.id);
