@@ -187,7 +187,7 @@ const Hero = () => {
       <CartDrawer />
       
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 lg:py-5 flex items-center justify-between">
+      <header className="fixed left-0 right-0 z-50 px-4 sm:px-6 lg:px-12 py-4 lg:py-5 flex items-center justify-between" style={{ top: 'var(--banner-height, 0px)' }}>
         <div className="absolute inset-0 backdrop-blur-xl bg-primary/40" />
         
         <Link to="/" className="relative text-2xl sm:text-3xl font-bold tracking-tight text-secondary">
