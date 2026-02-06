@@ -43,18 +43,21 @@ export type Database = {
           created_at: string
           id: string
           lock_password: string | null
+          lock_password_hash: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           lock_password?: string | null
+          lock_password_hash?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           lock_password?: string | null
+          lock_password_hash?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1086,6 +1089,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      verify_lock_password: {
+        Args: { input_password: string }
         Returns: boolean
       }
     }

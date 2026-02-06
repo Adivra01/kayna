@@ -112,51 +112,31 @@ const Checkout = () => {
     setCouponError("");
     
     try {
-      const { data, error } = await supabase
-        .from("discount_coupons")
-        .select("*")
-        .eq("code", couponCode.toUpperCase())
-        .eq("is_active", true)
-        .single();
+      // Secure server-side coupon validation via RPC
+      const { data, error } = await supabase.rpc('validate_coupon' as any, {
+        coupon_code: couponCode.trim()
+      });
       
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         setCouponError("Code promo invalide");
         setCouponLoading(false);
         return;
       }
       
+      const coupon = data[0];
+      
       // Check min order amount
-      if (data.min_order_amount && subtotal < data.min_order_amount) {
-        setCouponError(`Commande minimum: ${formatAmount(data.min_order_amount)}`);
-        setCouponLoading(false);
-        return;
-      }
-      
-      // Check usage limit
-      if (data.max_uses && data.current_uses >= data.max_uses) {
-        setCouponError("Ce code a atteint sa limite d'utilisation");
-        setCouponLoading(false);
-        return;
-      }
-      
-      // Check dates
-      const now = new Date();
-      if (data.start_date && new Date(data.start_date) > now) {
-        setCouponError("Ce code n'est pas encore actif");
-        setCouponLoading(false);
-        return;
-      }
-      if (data.end_date && new Date(data.end_date) < now) {
-        setCouponError("Ce code a expiré");
+      if (coupon.min_order_amount && subtotal < coupon.min_order_amount) {
+        setCouponError(`Commande minimum: ${formatAmount(coupon.min_order_amount)}`);
         setCouponLoading(false);
         return;
       }
       
       setAppliedCoupon({
-        code: data.code,
-        discount_type: data.discount_type,
-        discount_value: data.discount_value,
-        min_order_amount: data.min_order_amount || 0,
+        code: coupon.code,
+        discount_type: coupon.discount_type,
+        discount_value: coupon.discount_value,
+        min_order_amount: coupon.min_order_amount || 0,
       });
       showToast.success("Code promo appliqué !");
     } catch (err) {

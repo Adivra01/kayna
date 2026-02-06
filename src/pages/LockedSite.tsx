@@ -8,13 +8,9 @@ interface SiteSettings {
   lock_message: string | null;
 }
 
-interface AdminSettings {
-  lock_password: string | null;
-}
-
 export default function LockedSite() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [adminSettings, setAdminSettings] = useState<AdminSettings | null>(null);
+  const [hasPassword, setHasPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -57,16 +53,14 @@ export default function LockedSite() {
       setSettings(siteData);
     }
     
-    // Fetch admin settings (check if password exists - admins only can see actual value)
+    // Check if a lock password exists (admin only - non-admins get null)
     const { data: adminData } = await (supabase as any)
       .from("admin_settings")
-      .select("lock_password")
+      .select("id")
       .limit(1)
       .maybeSingle();
 
-    if (adminData) {
-      setAdminSettings(adminData);
-    }
+    setHasPassword(!!adminData);
     
     setLoading(false);
   };
@@ -116,23 +110,35 @@ export default function LockedSite() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password === adminSettings?.lock_password) {
-      // Unlock animation
-      gsap.to(".lock-container", {
-        opacity: 0,
-        y: -50,
-        duration: 0.5,
-        onComplete: () => {
-          window.location.reload();
-        }
+    try {
+      // Server-side password verification via RPC
+      const { data: isValid, error } = await supabase.rpc('verify_lock_password' as any, {
+        input_password: password
       });
-    } else {
-      showToast.error("Mot de passe incorrect");
-      // Shake animation for wrong password
-      gsap.fromTo(".password-input", 
-        { x: 0 },
-        { x: 10, duration: 0.1, repeat: 5, yoyo: true, ease: "power1.inOut" }
-      );
+      
+      if (error) {
+        showToast.error("Erreur de vérification");
+        return;
+      }
+      
+      if (isValid) {
+        gsap.to(".lock-container", {
+          opacity: 0,
+          y: -50,
+          duration: 0.5,
+          onComplete: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        showToast.error("Mot de passe incorrect");
+        gsap.fromTo(".password-input", 
+          { x: 0 },
+          { x: 10, duration: 0.1, repeat: 5, yoyo: true, ease: "power1.inOut" }
+        );
+      }
+    } catch (err) {
+      showToast.error("Erreur de vérification");
     }
   };
 
@@ -250,7 +256,7 @@ export default function LockedSite() {
               </button>
             </form>
 
-            {adminSettings?.lock_password && (
+            {hasPassword && (
               <div className="mt-6 pt-6 border-t border-secondary/10">
                 {!showPasswordInput ? (
                   <button
