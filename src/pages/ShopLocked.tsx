@@ -21,6 +21,7 @@ export default function ShopLocked() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
+  const [country, setCountry] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -80,11 +81,11 @@ export default function ShopLocked() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !fullName || !phone || !country) return;
     setSubmitting(true);
 
     const { error } = await supabase.from("subscribers").insert({
-      email, phone: phone || null, full_name: fullName || null,
+      email, phone, full_name: fullName, country,
     });
 
     if (error) {
@@ -217,7 +218,8 @@ export default function ShopLocked() {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Votre nom complet"
+                    placeholder="Votre nom complet *"
+                    required
                     className="w-full px-5 py-4 bg-primary border border-secondary/15 rounded-2xl text-secondary placeholder:text-secondary/30 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition-all"
                   />
                   <input
@@ -232,12 +234,21 @@ export default function ShopLocked() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Votre téléphone (optionnel)"
+                    placeholder="Votre téléphone *"
+                    required
+                    className="w-full px-5 py-4 bg-primary border border-secondary/15 rounded-2xl text-secondary placeholder:text-secondary/30 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition-all"
+                  />
+                  <input
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Votre pays *"
+                    required
                     className="w-full px-5 py-4 bg-primary border border-secondary/15 rounded-2xl text-secondary placeholder:text-secondary/30 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition-all"
                   />
                   <button
                     type="submit"
-                    disabled={submitting || !email}
+                    disabled={submitting || !email || !fullName || !phone || !country}
                     className="w-full px-6 py-4 bg-accent text-primary font-bold rounded-2xl hover:shadow-gold hover:scale-[1.02] transition-all disabled:opacity-50 active:scale-[0.98] text-lg"
                   >
                     {submitting ? "Inscription..." : "M'inscrire à la liste d'attente"}
