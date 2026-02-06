@@ -14,6 +14,7 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { showToast } from "@/lib/toast";
 import ShopLocked from "./ShopLocked";
+import SEOHead, { generateBreadcrumbJsonLd } from "@/components/SEOHead";
 
 // Import rotating videos
 import tshirtVideo from "@/assets/videos/tshirt-rotate.mp4";
@@ -198,6 +199,13 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
+      <SEOHead
+        title="KAYNA Shop — Collection Streetwear Développement Personnel"
+        description="Découvrez la collection KAYNA : t-shirts, hoodies et sweaters premium en coton bio 240 GSM. Vêtements streetwear orientés développement personnel, confiance en soi et dépassement."
+        canonicalUrl="/shop"
+        keywords="acheter KAYNA, boutique KAYNA, t-shirt développement personnel, hoodie streetwear premium, sweater coton bio, vêtements motivation achat, buy KAYNA clothing, shop personal development clothing"
+        jsonLd={generateBreadcrumbJsonLd([{ name: "Accueil", url: "/" }, { name: "Boutique", url: "/shop" }])}
+      />
       <CartDrawer />
       
       {/* Header */}
