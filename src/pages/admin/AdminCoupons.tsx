@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2, Tag, Percent, DollarSign, Calendar, Package } from "lucide-react";
+import { Plus, Edit, Trash2, Tag, Percent, DollarSign, Calendar, Package, Search, Copy, BarChart3, Users, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { showToast } from "@/lib/toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -42,6 +42,8 @@ export default function AdminCoupons() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "expired">("all");
   
   // Form state
   const [code, setCode] = useState("");
@@ -195,113 +197,280 @@ export default function AdminCoupons() {
     }
   };
 
+  const copyCode = (couponCode: string) => {
+    navigator.clipboard.writeText(couponCode);
+    showToast.success(`Code "${couponCode}" copié !`);
+  };
+
+  const generateCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "KAYNA";
+    for (let i = 0; i < 5; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCode(result);
+  };
+
+  // Coupon status helpers
+  const isCouponExpired = (coupon: Coupon) => {
+    if (!coupon.end_date) return false;
+    return new Date(coupon.end_date) < new Date();
+  };
+
+  const isCouponMaxed = (coupon: Coupon) => {
+    if (!coupon.max_uses) return false;
+    return coupon.current_uses >= coupon.max_uses;
+  };
+
+  const getCouponStatus = (coupon: Coupon): { label: string; color: string; icon: typeof CheckCircle2 } => {
+    if (isCouponExpired(coupon)) return { label: "Expiré", color: "text-secondary/50 bg-secondary/10", icon: Clock };
+    if (isCouponMaxed(coupon)) return { label: "Épuisé", color: "text-orange-400 bg-orange-500/10", icon: XCircle };
+    if (!coupon.is_active) return { label: "Inactif", color: "text-red-400 bg-red-500/10", icon: XCircle };
+    return { label: "Actif", color: "text-green-400 bg-green-500/10", icon: CheckCircle2 };
+  };
+
+  // Filter logic
+  const filteredCoupons = coupons.filter((coupon) => {
+    const matchesSearch = coupon.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (coupon.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    switch (filterStatus) {
+      case "active":
+        return coupon.is_active && !isCouponExpired(coupon) && !isCouponMaxed(coupon);
+      case "inactive":
+        return !coupon.is_active;
+      case "expired":
+        return isCouponExpired(coupon) || isCouponMaxed(coupon);
+      default:
+        return true;
+    }
+  });
+
+  // Stats
+  const activeCoupons = coupons.filter(c => c.is_active && !isCouponExpired(c) && !isCouponMaxed(c));
+  const totalUses = coupons.reduce((sum, c) => sum + c.current_uses, 0);
+  const expiredCoupons = coupons.filter(c => isCouponExpired(c) || isCouponMaxed(c));
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="p-6 lg:p-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-secondary">Coupons de réduction</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-secondary">Coupons de réduction</h1>
             <p className="text-secondary/60">Gérer les codes promo et réductions</p>
           </div>
-          <Button onClick={() => openForm()} className="gap-2">
+          <Button onClick={() => openForm()} className="gap-2 bg-accent text-primary hover:bg-accent/90">
             <Plus className="w-4 h-4" />
             Nouveau coupon
           </Button>
         </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Tag className="w-5 h-5 text-accent" />
+              </div>
+              <span className="text-2xl font-bold text-secondary">{coupons.length}</span>
+            </div>
+            <p className="text-secondary/50 text-sm">Total coupons</p>
+          </div>
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-green-400" />
+              </div>
+              <span className="text-2xl font-bold text-secondary">{activeCoupons.length}</span>
+            </div>
+            <p className="text-secondary/50 text-sm">Actifs</p>
+          </div>
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-400" />
+              </div>
+              <span className="text-2xl font-bold text-secondary">{totalUses}</span>
+            </div>
+            <p className="text-secondary/50 text-sm">Utilisations totales</p>
+          </div>
+          <div className="bg-secondary/5 border border-secondary/10 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-orange-400" />
+              </div>
+              <span className="text-2xl font-bold text-secondary">{expiredCoupons.length}</span>
+            </div>
+            <p className="text-secondary/50 text-sm">Expirés / Épuisés</p>
+          </div>
+        </div>
+
+        {/* Search & Filter */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary/40" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher un coupon..."
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            {(["all", "active", "inactive", "expired"] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  filterStatus === status
+                    ? "bg-accent text-primary"
+                    : "bg-secondary/10 text-secondary/60 hover:bg-secondary/20"
+                }`}
+              >
+                {status === "all" ? "Tous" : status === "active" ? "Actifs" : status === "inactive" ? "Inactifs" : "Expirés"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Coupons List */}
         {loading ? (
-          <div className="text-center py-12 text-secondary/60">Chargement...</div>
-        ) : coupons.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-secondary/20 rounded-xl">
-            <Tag className="w-12 h-12 mx-auto text-secondary/30 mb-4" />
-            <p className="text-secondary/60">Aucun coupon créé</p>
-            <Button onClick={() => openForm()} variant="outline" className="mt-4">
-              Créer un coupon
-            </Button>
+          <div className="text-center py-12 text-secondary/60">
+            <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4" />
+            Chargement...
+          </div>
+        ) : filteredCoupons.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-secondary/20 rounded-2xl bg-secondary/5">
+            <Tag className="w-16 h-16 mx-auto text-secondary/20 mb-4" />
+            <p className="text-secondary/60 text-lg mb-2">
+              {searchQuery || filterStatus !== "all" ? "Aucun coupon trouvé" : "Aucun coupon créé"}
+            </p>
+            <p className="text-secondary/40 text-sm mb-6">
+              {searchQuery || filterStatus !== "all" ? "Essayez avec d'autres filtres" : "Créez votre premier code promo"}
+            </p>
+            {!searchQuery && filterStatus === "all" && (
+              <Button onClick={() => openForm()} variant="outline" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Créer un coupon
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid gap-4">
-            {coupons.map((coupon) => (
-              <div
-                key={coupon.id}
-                className={`p-4 rounded-xl border ${
-                  coupon.is_active ? "border-secondary/20 bg-secondary/5" : "border-secondary/10 bg-secondary/5 opacity-60"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-3 py-1 bg-accent text-primary font-mono font-bold rounded-lg text-sm">
-                        {coupon.code}
-                      </span>
-                      <span className={`px-2 py-0.5 text-xs rounded-full ${
-                        coupon.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
-                      }`}>
-                        {coupon.is_active ? "Actif" : "Inactif"}
-                      </span>
-                      <span className="flex items-center gap-1 text-sm text-secondary/60">
-                        {coupon.discount_type === "percentage" ? (
-                          <>
-                            <Percent className="w-3 h-3" />
-                            {coupon.discount_value}%
-                          </>
-                        ) : (
-                          <>
-                            <DollarSign className="w-3 h-3" />
-                            {coupon.discount_value}€
-                          </>
+            {filteredCoupons.map((coupon) => {
+              const status = getCouponStatus(coupon);
+              const StatusIcon = status.icon;
+              const usagePercent = coupon.max_uses 
+                ? Math.min((coupon.current_uses / coupon.max_uses) * 100, 100) 
+                : null;
+
+              return (
+                <div
+                  key={coupon.id}
+                  className={`rounded-2xl border transition-all hover:border-accent/20 ${
+                    coupon.is_active && !isCouponExpired(coupon) 
+                      ? "border-secondary/15 bg-secondary/5" 
+                      : "border-secondary/10 bg-secondary/[0.03] opacity-75"
+                  }`}
+                >
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      {/* Left: Code + Discount */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-3 flex-wrap">
+                          {/* Code badge */}
+                          <button
+                            onClick={() => copyCode(coupon.code)}
+                            className="group flex items-center gap-2 px-4 py-1.5 bg-accent/10 border border-accent/30 hover:bg-accent/20 rounded-lg transition-all"
+                          >
+                            <span className="font-mono font-bold text-accent text-sm tracking-wider">{coupon.code}</span>
+                            <Copy className="w-3 h-3 text-accent/60 group-hover:text-accent transition-colors" />
+                          </button>
+
+                          {/* Discount pill */}
+                          <span className="flex items-center gap-1 px-3 py-1 bg-secondary/10 rounded-lg text-sm font-semibold text-secondary">
+                            {coupon.discount_type === "percentage" ? (
+                              <><Percent className="w-3.5 h-3.5 text-accent" />{coupon.discount_value}%</>
+                            ) : (
+                              <><DollarSign className="w-3.5 h-3.5 text-accent" />{coupon.discount_value}€</>
+                            )}
+                          </span>
+
+                          {/* Status */}
+                          <span className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg ${status.color}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {status.label}
+                          </span>
+                        </div>
+
+                        {coupon.description && (
+                          <p className="text-sm text-secondary/60 mb-3">{coupon.description}</p>
                         )}
-                      </span>
+
+                        {/* Info tags */}
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-secondary/50">
+                          <span className="flex items-center gap-1.5">
+                            <Package className="w-3.5 h-3.5" />
+                            {coupon.scope === "all" ? "Tout le site" : `${coupon.product_ids?.length || 0} produit(s)`}
+                          </span>
+                          
+                          {coupon.max_uses && (
+                            <span className="flex items-center gap-1.5">
+                              <BarChart3 className="w-3.5 h-3.5" />
+                              {coupon.current_uses}/{coupon.max_uses} utilisations
+                            </span>
+                          )}
+
+                          {(coupon.start_date || coupon.end_date) && (
+                            <span className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {coupon.start_date && format(new Date(coupon.start_date), "dd MMM yyyy", { locale: fr })}
+                              {coupon.start_date && coupon.end_date && " → "}
+                              {coupon.end_date && format(new Date(coupon.end_date), "dd MMM yyyy", { locale: fr })}
+                            </span>
+                          )}
+
+                          {coupon.min_order_amount > 0 && (
+                            <span>Min. {coupon.min_order_amount}€</span>
+                          )}
+                        </div>
+
+                        {/* Usage progress bar */}
+                        {usagePercent !== null && (
+                          <div className="mt-3 max-w-xs">
+                            <div className="h-1.5 bg-secondary/10 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  usagePercent >= 90 ? "bg-red-400" : usagePercent >= 60 ? "bg-orange-400" : "bg-accent"
+                                }`}
+                                style={{ width: `${usagePercent}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Actions */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Switch
+                          checked={coupon.is_active}
+                          onCheckedChange={() => toggleCouponActive(coupon)}
+                        />
+                        <Button variant="ghost" size="icon" onClick={() => openForm(coupon)} className="text-secondary/60 hover:text-accent">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteCoupon(coupon.id)} className="text-secondary/60 hover:text-red-400">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-
-                    {coupon.description && (
-                      <p className="text-sm text-secondary/70 mb-2">{coupon.description}</p>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-secondary/50">
-                      <span className="flex items-center gap-1">
-                        <Package className="w-3 h-3" />
-                        {coupon.scope === "all" ? "Tout le site" : `${coupon.product_ids?.length || 0} produits`}
-                      </span>
-                      {coupon.max_uses && (
-                        <span>
-                          Utilisations: {coupon.current_uses}/{coupon.max_uses}
-                        </span>
-                      )}
-                      {coupon.start_date && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Du {format(new Date(coupon.start_date), "dd/MM/yyyy", { locale: fr })}
-                        </span>
-                      )}
-                      {coupon.end_date && (
-                        <span>
-                          au {format(new Date(coupon.end_date), "dd/MM/yyyy", { locale: fr })}
-                        </span>
-                      )}
-                      {coupon.min_order_amount > 0 && (
-                        <span>Min. {coupon.min_order_amount}€</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={coupon.is_active}
-                      onCheckedChange={() => toggleCouponActive(coupon)}
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => openForm(coupon)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => deleteCoupon(coupon.id)}>
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -310,74 +479,92 @@ export default function AdminCoupons() {
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-xl">
               {editingCoupon ? "Modifier le coupon" : "Nouveau coupon"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Code + Status */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Code du coupon *</Label>
-                <Input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="PROMO20"
-                  required
-                  className="font-mono uppercase"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
+                    placeholder="PROMO20"
+                    required
+                    className="font-mono uppercase flex-1"
+                  />
+                  <Button type="button" variant="outline" onClick={generateCode} className="px-3 text-xs whitespace-nowrap">
+                    Générer
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Statut</Label>
-                <div className="flex items-center gap-2 h-10">
+                <div className="flex items-center gap-3 h-10">
                   <Switch checked={isActive} onCheckedChange={setIsActive} />
-                  <span className="text-sm text-secondary/70">
+                  <span className={`text-sm font-medium ${isActive ? "text-green-400" : "text-secondary/50"}`}>
                     {isActive ? "Actif" : "Inactif"}
                   </span>
                 </div>
               </div>
             </div>
 
+            {/* Description */}
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>Description (interne)</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description interne du coupon..."
+                placeholder="Ex: Promo de lancement pour les 50 premiers clients..."
                 rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Type de réduction *</Label>
-                <Select value={discountType} onValueChange={(v: "percentage" | "fixed") => setDiscountType(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">Pourcentage (%)</SelectItem>
-                    <SelectItem value="fixed">Montant fixe (€)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Valeur *</Label>
-                <Input
-                  type="number"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                  placeholder={discountType === "percentage" ? "20" : "10"}
-                  min="0"
-                  max={discountType === "percentage" ? "100" : undefined}
-                  step="0.01"
-                  required
-                />
+            {/* Discount type + value */}
+            <div className="p-4 bg-secondary/5 border border-secondary/10 rounded-xl space-y-4">
+              <h3 className="text-sm font-semibold text-secondary flex items-center gap-2">
+                <Percent className="w-4 h-4 text-accent" />
+                Réduction
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Type</Label>
+                  <Select value={discountType} onValueChange={(v: "percentage" | "fixed") => setDiscountType(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Pourcentage (%)</SelectItem>
+                      <SelectItem value="fixed">Montant fixe (€)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Valeur</Label>
+                  <Input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    placeholder={discountType === "percentage" ? "20" : "10"}
+                    min="0"
+                    max={discountType === "percentage" ? "100" : undefined}
+                    step="0.01"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Appliquer à</Label>
+            {/* Scope */}
+            <div className="p-4 bg-secondary/5 border border-secondary/10 rounded-xl space-y-4">
+              <h3 className="text-sm font-semibold text-secondary flex items-center gap-2">
+                <Package className="w-4 h-4 text-accent" />
+                Application
+              </h3>
               <Select value={scope} onValueChange={(v: "all" | "specific") => setScope(v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -387,11 +574,8 @@ export default function AdminCoupons() {
                   <SelectItem value="specific">Produits spécifiques</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            {scope === "specific" && (
-              <div className="space-y-2">
-                <Label>Sélectionner les produits</Label>
+              {scope === "specific" && (
                 <div className="max-h-48 overflow-y-auto border border-secondary/20 rounded-lg p-3 space-y-2">
                   {products.map((product) => (
                     <div key={product.id} className="flex items-center gap-2">
@@ -412,57 +596,71 @@ export default function AdminCoupons() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Nombre max d'utilisations</Label>
-                <Input
-                  type="number"
-                  value={maxUses}
-                  onChange={(e) => setMaxUses(e.target.value)}
-                  placeholder="Illimité"
-                  min="1"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Montant minimum de commande (€)</Label>
-                <Input
-                  type="number"
-                  value={minOrderAmount}
-                  onChange={(e) => setMinOrderAmount(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
+            {/* Limits */}
+            <div className="p-4 bg-secondary/5 border border-secondary/10 rounded-xl space-y-4">
+              <h3 className="text-sm font-semibold text-secondary flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-accent" />
+                Limites
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Nombre max d'utilisations</Label>
+                  <Input
+                    type="number"
+                    value={maxUses}
+                    onChange={(e) => setMaxUses(e.target.value)}
+                    placeholder="Illimité"
+                    min="1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Commande minimum (€)</Label>
+                  <Input
+                    type="number"
+                    value={minOrderAmount}
+                    onChange={(e) => setMinOrderAmount(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Date de début</Label>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Date de fin</Label>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
+            {/* Dates */}
+            <div className="p-4 bg-secondary/5 border border-secondary/10 rounded-xl space-y-4">
+              <h3 className="text-sm font-semibold text-secondary flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-accent" />
+                Période de validité
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Date de début</Label>
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-secondary/60">Date de fin</Label>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
                 Annuler
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="bg-accent text-primary hover:bg-accent/90">
                 {saving ? "Enregistrement..." : editingCoupon ? "Mettre à jour" : "Créer le coupon"}
               </Button>
             </DialogFooter>

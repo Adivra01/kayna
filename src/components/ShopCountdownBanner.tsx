@@ -12,40 +12,53 @@ export default function ShopCountdownBanner() {
   const [targetTimestamp, setTargetTimestamp] = useState<number | null>(null);
 
   const fetchSettings = useCallback(async () => {
-    const { data } = await supabase
-      .from("site_settings")
-      .select("site_status, drop_opening_time, drop_end_time")
-      .limit(1)
-      .maybeSingle();
+    try {
+      const { data, error } = await (supabase as any)
+        .from("site_settings")
+        .select("site_status, drop_opening_time, drop_end_time")
+        .limit(1)
+        .maybeSingle();
 
-    if (!data) {
+      if (error) {
+        console.error("[CountdownBanner] Error:", error);
+        setMode(null);
+        setTargetTimestamp(null);
+        return;
+      }
+
+      if (!data) {
+        setMode(null);
+        setTargetTimestamp(null);
+        return;
+      }
+
+      console.log("[CountdownBanner] Settings:", data.site_status, "opening:", data.drop_opening_time, "end:", data.drop_end_time);
+
+      const now = Date.now();
+
+      if (data.site_status === "locked" && data.drop_opening_time) {
+        const openTime = new Date(data.drop_opening_time).getTime();
+        if (openTime > now) {
+          setMode("opening");
+          setTargetTimestamp(openTime);
+          return;
+        }
+      }
+
+      if (data.site_status === "open" && data.drop_end_time) {
+        const closeTime = new Date(data.drop_end_time).getTime();
+        if (closeTime > now) {
+          setMode("closing");
+          setTargetTimestamp(closeTime);
+          return;
+        }
+      }
+
       setMode(null);
       setTargetTimestamp(null);
-      return;
+    } catch (err) {
+      console.error("[CountdownBanner] Fetch failed:", err);
     }
-
-    const now = Date.now();
-
-    if (data.site_status === "locked" && data.drop_opening_time) {
-      const openTime = new Date(data.drop_opening_time).getTime();
-      if (openTime > now) {
-        setMode("opening");
-        setTargetTimestamp(openTime);
-        return;
-      }
-    }
-
-    if (data.site_status === "open" && data.drop_end_time) {
-      const closeTime = new Date(data.drop_end_time).getTime();
-      if (closeTime > now) {
-        setMode("closing");
-        setTargetTimestamp(closeTime);
-        return;
-      }
-    }
-
-    setMode(null);
-    setTargetTimestamp(null);
   }, []);
 
   useEffect(() => {
@@ -65,7 +78,7 @@ export default function ShopCountdownBanner() {
     };
   }, [fetchSettings]);
 
-  // Local countdown tick (no DB calls per second)
+  // Local countdown tick
   useEffect(() => {
     if (!mode || !targetTimestamp) {
       setCountdown(null);
@@ -135,7 +148,6 @@ export default function ShopCountdownBanner() {
 
   return (
     <>
-      {/* Fixed banner */}
       <div
         className={`fixed top-0 left-0 right-0 z-[60] flex items-center justify-center gap-2 sm:gap-3 px-3 ${
           isUrgent
@@ -146,14 +158,12 @@ export default function ShopCountdownBanner() {
         }`}
         style={{ height: `${BANNER_HEIGHT}px` }}
       >
-        {/* Icon */}
         {isClosing ? (
           <Timer className={`w-3.5 h-3.5 flex-shrink-0 ${isUrgent ? "text-white" : "text-primary"}`} />
         ) : (
           <Sparkles className="w-3.5 h-3.5 text-accent flex-shrink-0" />
         )}
 
-        {/* Message */}
         <span
           className={`text-xs sm:text-sm font-medium whitespace-nowrap ${
             isUrgent ? "text-white" : isClosing ? "text-primary" : "text-secondary"
@@ -162,7 +172,6 @@ export default function ShopCountdownBanner() {
           {message}
         </span>
 
-        {/* Countdown digits */}
         <div className="flex items-center gap-0.5 sm:gap-1">
           {countdown.days > 0 && (
             <>
@@ -184,7 +193,6 @@ export default function ShopCountdownBanner() {
         </div>
       </div>
 
-      {/* Spacer to push non-fixed content down */}
       <div style={{ height: `${BANNER_HEIGHT}px` }} />
     </>
   );
