@@ -152,7 +152,7 @@ export default function ShopLocked() {
   return (
     <div className="min-h-screen bg-primary flex flex-col">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/10">
+      <header className="fixed left-0 right-0 z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/10" style={{ top: 'var(--banner-height, 0px)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold text-secondary tracking-wider">
             KAYNA

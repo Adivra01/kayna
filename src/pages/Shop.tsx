@@ -201,7 +201,7 @@ const Shop = () => {
       <CartDrawer />
       
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-background/80 border-b border-border">
+      <header className="fixed left-0 right-0 z-50 px-6 lg:px-12 py-5 flex items-center justify-between backdrop-blur-md bg-background/80 border-b border-border" style={{ top: 'var(--banner-height, 0px)' }}>
         <Link to="/" className="text-2xl font-bold italic text-foreground">KAYNA</Link>
         
         <nav className="hidden lg:flex items-center gap-8 text-sm text-muted-foreground">

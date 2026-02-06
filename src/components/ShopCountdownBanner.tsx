@@ -1,12 +1,52 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Timer, Sparkles } from "lucide-react";
 
 type BannerMode = "opening" | "closing" | null;
 
+const BANNER_HEIGHT = 40; // px
+
 export default function ShopCountdownBanner() {
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
   const [mode, setMode] = useState<BannerMode>(null);
+  const [targetTimestamp, setTargetTimestamp] = useState<number | null>(null);
+
+  const fetchSettings = useCallback(async () => {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("site_status, drop_opening_time, drop_end_time")
+      .limit(1)
+      .maybeSingle();
+
+    if (!data) {
+      setMode(null);
+      setTargetTimestamp(null);
+      return;
+    }
+
+    const now = Date.now();
+
+    if (data.site_status === "locked" && data.drop_opening_time) {
+      const openTime = new Date(data.drop_opening_time).getTime();
+      if (openTime > now) {
+        setMode("opening");
+        setTargetTimestamp(openTime);
+        return;
+      }
+    }
+
+    if (data.site_status === "open" && data.drop_end_time) {
+      const closeTime = new Date(data.drop_end_time).getTime();
+      if (closeTime > now) {
+        setMode("closing");
+        setTargetTimestamp(closeTime);
+        return;
+      }
+    }
+
+    setMode(null);
+    setTargetTimestamp(null);
+  }, []);
 
   useEffect(() => {
     fetchSettings();
@@ -23,179 +63,129 @@ export default function ShopCountdownBanner() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchSettings]);
 
-  const fetchSettings = async () => {
-    const { data } = await supabase
-      .from("site_settings")
-      .select("site_status, drop_opening_time, drop_end_time")
-      .limit(1)
-      .maybeSingle();
-
-    if (!data) {
-      setMode(null);
-      return;
-    }
-
-    const now = Date.now();
-
-    // Priority 1: Opening countdown (shop is locked, waiting to open)
-    if (data.site_status === "locked" && data.drop_opening_time) {
-      const openTime = new Date(data.drop_opening_time).getTime();
-      if (openTime > now) {
-        setMode("opening");
-        return;
-      }
-    }
-
-    // Priority 2: Closing countdown (shop is open, countdown to close)
-    if (data.site_status === "open" && data.drop_end_time) {
-      const closeTime = new Date(data.drop_end_time).getTime();
-      if (closeTime > now) {
-        setMode("closing");
-        return;
-      }
-    }
-
-    setMode(null);
-  };
-
-  // Countdown timer
+  // Local countdown tick (no DB calls per second)
   useEffect(() => {
-    if (!mode) {
+    if (!mode || !targetTimestamp) {
       setCountdown(null);
       return;
     }
 
-    const updateCountdown = async () => {
-      const { data } = await supabase
-        .from("site_settings")
-        .select("drop_opening_time, drop_end_time, site_status")
-        .limit(1)
-        .maybeSingle();
-
-      if (!data) {
-        setCountdown(null);
-        setMode(null);
-        return;
-      }
-
-      const targetTime = mode === "opening" 
-        ? data.drop_opening_time 
-        : data.drop_end_time;
-
-      if (!targetTime) {
-        setCountdown(null);
-        setMode(null);
-        return;
-      }
-
-      const now = Date.now();
-      const end = new Date(targetTime).getTime();
-      const diff = end - now;
+    const tick = () => {
+      const diff = targetTimestamp - Date.now();
 
       if (diff <= 0) {
         setCountdown(null);
-        // Reload page to trigger state change
+        setMode(null);
         window.location.reload();
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setCountdown({ days, hours, minutes, seconds });
+      setCountdown({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      });
     };
 
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [mode]);
+  }, [mode, targetTimestamp]);
+
+  // Set CSS variable for header offset
+  useEffect(() => {
+    const isActive = mode && countdown;
+    document.documentElement.style.setProperty(
+      '--banner-height', 
+      isActive ? `${BANNER_HEIGHT}px` : '0px'
+    );
+    return () => {
+      document.documentElement.style.setProperty('--banner-height', '0px');
+    };
+  }, [mode, countdown]);
 
   if (!mode || !countdown) return null;
 
   const isClosing = mode === "closing";
-  const isUrgent = isClosing && (countdown.days === 0 && countdown.hours < 1);
+  const isUrgent = isClosing && countdown.days === 0 && countdown.hours < 1;
 
-  const getMessage = () => {
-    if (isClosing) {
-      if (isUrgent) return "⚡ Édition limitée — fermeture imminente";
-      return "Édition limitée — la boutique ferme dans";
-    }
-    return "✨ Accès exclusif — la boutique ouvre dans";
-  };
+  const message = isClosing
+    ? isUrgent
+      ? "⚡ La boutique ferme bientôt"
+      : "La boutique ferme dans"
+    : "La boutique ouvre dans";
+
+  const timeStyle = (base: string) =>
+    `px-1.5 sm:px-2 py-0.5 rounded font-mono text-xs sm:text-sm font-bold ${
+      isUrgent
+        ? "bg-white/20 text-white"
+        : isClosing
+          ? "bg-primary/20 text-primary"
+          : "bg-accent/20 text-accent"
+    } ${base}`;
+
+  const sepColor = isUrgent
+    ? "text-white/50"
+    : isClosing
+      ? "text-primary/50"
+      : "text-accent/50";
 
   return (
-    <div 
-      className={`w-full py-2.5 px-4 text-center ${
-        isUrgent 
-          ? "bg-gradient-to-r from-red-600 via-red-500 to-orange-500" 
-          : isClosing
-            ? "bg-gradient-to-r from-accent via-accent-light to-accent"
-            : "bg-gradient-to-r from-primary via-primary/90 to-primary border-b border-accent/30"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          {isClosing ? (
-            <Timer className={`w-4 h-4 ${isUrgent ? "text-white" : "text-primary"}`} />
-          ) : (
-            <Sparkles className="w-4 h-4 text-accent" />
-          )}
-          <span className={`text-xs sm:text-sm font-medium tracking-wide ${
-            isUrgent ? "text-white" : isClosing ? "text-primary" : "text-secondary"
-          }`}>
-            {getMessage()}
-          </span>
-        </div>
+    <>
+      {/* Fixed banner */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] flex items-center justify-center gap-2 sm:gap-3 px-3 ${
+          isUrgent
+            ? "bg-gradient-to-r from-red-600 via-red-500 to-orange-500"
+            : isClosing
+              ? "bg-gradient-to-r from-accent via-accent-light to-accent"
+              : "bg-gradient-to-r from-primary via-primary/95 to-primary border-b border-accent/30"
+        }`}
+        style={{ height: `${BANNER_HEIGHT}px` }}
+      >
+        {/* Icon */}
+        {isClosing ? (
+          <Timer className={`w-3.5 h-3.5 flex-shrink-0 ${isUrgent ? "text-white" : "text-primary"}`} />
+        ) : (
+          <Sparkles className="w-3.5 h-3.5 text-accent flex-shrink-0" />
+        )}
 
-        <div className="flex items-center gap-1">
+        {/* Message */}
+        <span
+          className={`text-xs sm:text-sm font-medium whitespace-nowrap ${
+            isUrgent ? "text-white" : isClosing ? "text-primary" : "text-secondary"
+          }`}
+        >
+          {message}
+        </span>
+
+        {/* Countdown digits */}
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {countdown.days > 0 && (
             <>
-              <div className={`px-2 py-1 rounded font-mono text-xs sm:text-sm font-bold ${
-                isUrgent 
-                  ? "bg-white/20 text-white" 
-                  : isClosing 
-                    ? "bg-primary/20 text-primary"
-                    : "bg-accent/20 text-accent"
-              }`}>
-                {countdown.days}j
-              </div>
-              <span className={`text-sm font-bold ${isUrgent ? "text-white/60" : isClosing ? "text-primary/60" : "text-accent/60"}`}>:</span>
+              <span className={timeStyle("")}>{countdown.days}j</span>
+              <span className={`text-xs font-bold ${sepColor}`}>:</span>
             </>
           )}
-          <div className={`px-2 py-1 rounded font-mono text-xs sm:text-sm font-bold ${
-            isUrgent 
-              ? "bg-white/20 text-white" 
-              : isClosing 
-                ? "bg-primary/20 text-primary"
-                : "bg-accent/20 text-accent"
-          }`}>
+          <span className={timeStyle("")}>
             {countdown.hours.toString().padStart(2, "0")}h
-          </div>
-          <span className={`text-sm font-bold ${isUrgent ? "text-white/60" : isClosing ? "text-primary/60" : "text-accent/60"}`}>:</span>
-          <div className={`px-2 py-1 rounded font-mono text-xs sm:text-sm font-bold ${
-            isUrgent 
-              ? "bg-white/20 text-white" 
-              : isClosing 
-                ? "bg-primary/20 text-primary"
-                : "bg-accent/20 text-accent"
-          }`}>
+          </span>
+          <span className={`text-xs font-bold ${sepColor}`}>:</span>
+          <span className={timeStyle("")}>
             {countdown.minutes.toString().padStart(2, "0")}m
-          </div>
-          <span className={`text-sm font-bold ${isUrgent ? "text-white/60" : isClosing ? "text-primary/60" : "text-accent/60"}`}>:</span>
-          <div className={`px-2 py-1 rounded font-mono text-xs sm:text-sm font-bold ${
-            isUrgent 
-              ? "bg-white/20 text-white" 
-              : isClosing 
-                ? "bg-primary/20 text-primary"
-                : "bg-accent/20 text-accent"
-          }`}>
+          </span>
+          <span className={`text-xs font-bold ${sepColor}`}>:</span>
+          <span className={timeStyle("")}>
             {countdown.seconds.toString().padStart(2, "0")}s
-          </div>
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* Spacer to push non-fixed content down */}
+      <div style={{ height: `${BANNER_HEIGHT}px` }} />
+    </>
   );
 }
