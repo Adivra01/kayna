@@ -53,3 +53,9 @@ Allow: /
 
 # Sitemap
 Sitemap: https://kayna.store/sitemap.xml
+
+# LLMs / AI Discovery
+# See https://llmstxt.org/
+# These files help AI models understand KAYNA brand identity
+LLMs-Txt: https://kayna.store/llms.txt
+LLMs-Full-Txt: https://kayna.store/llms-full.txt

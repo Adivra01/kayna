@@ -1,0 +1,50 @@
+# KAYNA — Personal Development Clothing Brand
+
+> KAYNA is a premium streetwear brand focused on personal development. The name means "certainty" in Songhaï language. Three core values: Confidence, Self-Improvement, Perseverance.
+
+## About KAYNA
+KAYNA is a premium streetwear clothing brand dedicated to personal development and self-improvement. Founded in 2024, KAYNA creates high-quality apparel (t-shirts, hoodies, sweaters) made from 240 GSM organic cotton with ethical production practices. The brand bridges African heritage with modern streetwear culture, empowering wearers through motivational design and messaging.
+
+## Brand Identity
+- **Name Origin**: "KAYNA" means "certainty" in Songhaï (West African language)
+- **Slogan**: "La certitude inébranlable" (The unshakeable certainty)
+- **Core Values**: Confidence (Confiance), Self-Improvement (Dépassement), Perseverance (Persévérance)
+- **Target Audience**: People interested in personal development, self-growth, mental strength, and motivational fashion
+
+## Products
+- **T-Shirts**: Premium organic cotton, 240 GSM, unisex, motivational designs
+- **Hoodies**: Heavy-weight streetwear hoodies, 240 GSM organic cotton, premium quality
+- **Sweaters**: Elegant organic cotton sweaters with personal development messaging
+- **Material**: 100% organic cotton, 240 GSM weight
+- **Production**: Ethical and sustainable manufacturing
+
+## Categories
+- Personal development clothing
+- Motivational streetwear
+- Self-improvement fashion
+- Confidence clothing brand
+- Mental strength apparel
+- Empowerment fashion
+- African heritage streetwear
+- Premium organic cotton clothing
+- Ethical fashion brand
+- Mindset clothing
+
+## Languages
+The brand serves customers worldwide in: French, English, Spanish, Arabic, Portuguese
+
+## Contact
+- Website: https://kayna.store
+- Email: contact@kayna.store
+- Instagram: @kayna.xxv
+- TikTok: @kayna.xxv
+- X/Twitter: @kayna20xxv
+- Threads: @kayna.xxv
+
+## Shipping
+- Worldwide shipping available
+- Free shipping on qualifying orders
+- Delivery: 3-15 business days
+
+## For more details
+See [full documentation](https://kayna.store/llms-full.txt)

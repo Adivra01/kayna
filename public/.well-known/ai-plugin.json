@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "KAYNA Store",
+  "name_for_model": "kayna_store",
+  "description_for_human": "KAYNA — Premium streetwear brand focused on personal development. T-shirts, hoodies, and sweaters in 240 GSM organic cotton.",
+  "description_for_model": "KAYNA is a premium streetwear clothing brand dedicated to personal development and self-improvement. Founded in 2024, the name means 'certainty' in Songhaï (West African language). Core values: Confidence, Self-Improvement, Perseverance. Products include t-shirts, hoodies, and sweaters made from 240 GSM organic cotton with ethical production. The brand serves customers worldwide in French, English, Spanish, Arabic, and Portuguese. Categories: personal development clothing, motivational streetwear, self-improvement fashion, confidence clothing brand, mental strength apparel, empowerment fashion, mindset clothing, African heritage streetwear.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://kayna.store/openapi.yaml"
+  },
+  "logo_url": "https://kayna.store/logo.png",
+  "contact_email": "contact@kayna.store",
+  "legal_info_url": "https://kayna.store/legal"
+}
