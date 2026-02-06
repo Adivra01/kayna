@@ -11,7 +11,7 @@ export type PricingRegion =
 
 export type ProductCategory = 'tshirt' | 'sweater' | 'hoodie';
 
-export type Currency = 'USD' | 'EUR' | 'GBP';
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'XOF';
 
 // Region-specific pricing (shipping included, no conversion)
 export const regionPricing: Record<PricingRegion, {
@@ -19,11 +19,11 @@ export const regionPricing: Record<PricingRegion, {
   prices: Record<ProductCategory, number>;
 }> = {
   subsaharan_africa: {
-    currency: 'USD',
+    currency: 'XOF',
     prices: {
-      tshirt: 70,
-      sweater: 80,
-      hoodie: 85,
+      tshirt: 45000,
+      sweater: 50000,
+      hoodie: 55000,
     },
   },
   north_africa: {
@@ -200,12 +200,15 @@ export function detectProductCategory(product: {
 // Format price with currency symbol
 export function formatRegionPrice(price: number, currency: Currency): string {
   if (currency === 'EUR') {
-    return `${price} €`;
+    return `${price.toLocaleString('fr-FR')} €`;
   }
   if (currency === 'GBP') {
-    return `£${price}`;
+    return `£${price.toLocaleString('en-GB')}`;
   }
-  return `$${price}`;
+  if (currency === 'XOF') {
+    return `${price.toLocaleString('fr-FR')} FCFA`;
+  }
+  return `$${price.toLocaleString('en-US')}`;
 }
 
 // Get the display price for a product in a specific region

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const REGIONS = [
-  { key: "subsaharan_africa", label: "Afrique subsaharienne", currency: "USD", symbol: "$" },
+  { key: "subsaharan_africa", label: "Afrique subsaharienne", currency: "XOF", symbol: "FCFA" },
   { key: "north_africa", label: "Afrique du Nord", currency: "USD", symbol: "$" },
   { key: "europe", label: "Europe", currency: "EUR", symbol: "€" },
   { key: "uk", label: "Royaume-Uni", currency: "GBP", symbol: "£" },
@@ -26,13 +26,13 @@ interface RegionalPricingEditorProps {
 // Default prices by category (fallback)
 const defaultPrices: Record<string, Record<string, number>> = {
   tshirts: {
-    subsaharan_africa: 70, north_africa: 85, europe: 95, uk: 80, usa_canada: 105, middle_east: 120,
+    subsaharan_africa: 45000, north_africa: 85, europe: 95, uk: 80, usa_canada: 105, middle_east: 120,
   },
   hoodies: {
-    subsaharan_africa: 85, north_africa: 100, europe: 120, uk: 105, usa_canada: 135, middle_east: 150,
+    subsaharan_africa: 55000, north_africa: 100, europe: 120, uk: 105, usa_canada: 135, middle_east: 150,
   },
   sweaters: {
-    subsaharan_africa: 80, north_africa: 95, europe: 115, uk: 100, usa_canada: 125, middle_east: 140,
+    subsaharan_africa: 50000, north_africa: 95, europe: 115, uk: 100, usa_canada: 125, middle_east: 140,
   },
 };
 
