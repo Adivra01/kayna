@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Smartphone, ShieldCheck, Truck, AlertTriangle, Tag, X, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Smartphone, ShieldCheck, Truck, AlertTriangle, Tag, X, Loader2, Gift, Sparkles } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useLocalization } from "@/hooks/useLocalization";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +57,7 @@ const Checkout = () => {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState("");
-  
+  const [showCouponPopup, setShowCouponPopup] = useState(false);
   // Payment method
   const [paymentMethod, setPaymentMethod] = useState<"card" | "mobile_money">("card");
   
@@ -138,7 +138,7 @@ const Checkout = () => {
         discount_value: coupon.discount_value,
         min_order_amount: coupon.min_order_amount || 0,
       });
-      showToast.success("Code promo appliqué !");
+      setShowCouponPopup(true);
     } catch (err) {
       setCouponError("Erreur lors de la vérification");
     } finally {
@@ -623,6 +623,107 @@ const Checkout = () => {
           </div>
         </div>
       </main>
+      {/* Coupon Success Popup */}
+      {showCouponPopup && appliedCoupon && (
+        <CouponPopup 
+          coupon={appliedCoupon} 
+          discount={discount}
+          formatAmount={formatAmount}
+          onClose={() => setShowCouponPopup(false)} 
+        />
+      )}
+    </div>
+  );
+};
+
+// Coupon success popup card
+const CouponPopup = ({ 
+  coupon, 
+  discount, 
+  formatAmount, 
+  onClose 
+}: { 
+  coupon: Coupon; 
+  discount: number; 
+  formatAmount: (n: number) => string; 
+  onClose: () => void;
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current && overlayRef.current) {
+      gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+      gsap.fromTo(cardRef.current, 
+        { scale: 0.5, opacity: 0, y: 40, rotateX: 15 }, 
+        { scale: 1, opacity: 1, y: 0, rotateX: 0, duration: 0.5, ease: "back.out(1.7)", delay: 0.1 }
+      );
+      // Sparkle particles
+      gsap.fromTo(".coupon-sparkle", 
+        { scale: 0, opacity: 0 }, 
+        { scale: 1, opacity: 1, duration: 0.4, stagger: 0.08, delay: 0.4, ease: "back.out(2)" }
+      );
+    }
+  }, []);
+
+  const handleClose = () => {
+    if (cardRef.current && overlayRef.current) {
+      gsap.to(cardRef.current, { scale: 0.8, opacity: 0, y: -20, duration: 0.25, ease: "power2.in" });
+      gsap.to(overlayRef.current, { opacity: 0, duration: 0.2, delay: 0.1, onComplete: onClose });
+    } else {
+      onClose();
+    }
+  };
+
+  const discountLabel = coupon.discount_type === "percentage" 
+    ? `-${coupon.discount_value}%` 
+    : `-${formatAmount(coupon.discount_value)}`;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div ref={overlayRef} className="absolute inset-0 bg-primary/70 backdrop-blur-sm" onClick={handleClose} />
+      <div ref={cardRef} className="relative w-full max-w-sm">
+        {/* Sparkle decorations */}
+        <Sparkles className="coupon-sparkle absolute -top-4 -left-4 w-8 h-8 text-accent opacity-0" />
+        <Sparkles className="coupon-sparkle absolute -top-2 -right-6 w-6 h-6 text-accent/70 opacity-0" />
+        <Sparkles className="coupon-sparkle absolute -bottom-3 left-8 w-5 h-5 text-accent/60 opacity-0" />
+
+        <div className="relative overflow-hidden rounded-3xl border-2 border-accent/50 bg-gradient-to-br from-primary via-primary to-accent/10 shadow-2xl">
+          {/* Top accent bar */}
+          <div className="h-2 bg-gradient-to-r from-accent via-accent/80 to-accent" />
+          
+          {/* Decorative circles */}
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background" />
+          <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background" />
+          
+          <div className="px-8 py-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center border-2 border-accent/40">
+              <Gift className="w-8 h-8 text-accent" />
+            </div>
+
+            <h3 className="text-2xl font-bold text-secondary mb-1">Coupon appliqué !</h3>
+            <p className="text-secondary/60 text-sm mb-6">Votre réduction a été appliquée avec succès</p>
+            
+            {/* Dashed separator */}
+            <div className="border-t-2 border-dashed border-accent/30 my-4 mx-4" />
+
+            <div className="py-4">
+              <div className="inline-block px-5 py-1.5 bg-accent/20 rounded-full border border-accent/40 mb-3">
+                <span className="text-accent font-mono font-bold tracking-wider text-sm">{coupon.code}</span>
+              </div>
+              <div className="text-4xl font-black text-accent mb-1">{discountLabel}</div>
+              <p className="text-secondary/50 text-sm">Vous économisez {formatAmount(discount)}</p>
+            </div>
+
+            <button 
+              onClick={handleClose}
+              className="mt-6 w-full py-3.5 bg-accent text-primary rounded-full font-bold hover:scale-[1.02] transition-transform shadow-gold"
+            >
+              Continuer la commande
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
