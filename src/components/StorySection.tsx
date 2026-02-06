@@ -5,15 +5,15 @@ import { useLocalization } from "@/hooks/useLocalization";
 import chapterPhilosophy from "@/assets/story-philosophy.jpg";
 import chapterBattle from "@/assets/story-battle.jpg";
 import chapterChoice from "@/assets/story-choice.jpg";
-import chapterTransmission from "@/assets/story-transmission.jpg";
+import chapterTransmission from "@/assets/story-heritage.jpg";
 import chapterCommunity from "@/assets/hero-group.jpg";
-import chapterHeritage from "@/assets/story-heritage.jpg";
+import chapterHeritage from "@/assets/story-transmission.jpg";
 
 const chapterImages = [
   { src: chapterPhilosophy, position: "object-[center_20%]" },
   { src: chapterBattle, position: "object-[center_15%]" },
   { src: chapterChoice, position: "object-[center_20%]" },
-  { src: chapterTransmission, position: "object-[center_15%]" },
+  { src: chapterTransmission, position: "object-[center_30%]" },
   { src: chapterCommunity, position: "object-[center_25%]" },
   { src: chapterHeritage, position: "object-[center_20%]" },
 ];
