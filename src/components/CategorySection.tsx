@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -8,8 +6,6 @@ import { useLocalization } from "@/hooks/useLocalization";
 import categoryTshirt from "@/assets/category-tshirt-new.jpg";
 import categoryHoodie from "@/assets/category-hoodie-new.jpg";
 import categorySweater from "@/assets/category-sweater-new.jpg";
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface Category {
   id: string;
@@ -20,12 +16,6 @@ interface Category {
 }
 
 const CategorySection = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const categoriesRef = useRef<(HTMLDivElement | null)[]>([]);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { t, home, isRTL } = useLocalization();
 
   const categories: Category[] = [
@@ -36,68 +26,12 @@ const CategorySection = () => {
 
   const [activeCategory, setActiveCategory] = useState<Category>(categories[0]);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = imageContainerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      setMousePosition({ x: x * 20, y: y * 20 });
-    };
-
-    const container = imageContainerRef.current;
-    container?.addEventListener("mousemove", handleMouseMove);
-    return () => container?.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(imageContainerRef.current, {
-        x: isRTL ? -80 : 80, opacity: 0, rotateY: isRTL ? 10 : -10, duration: 1.2, ease: "power3.out",
-        scrollTrigger: { trigger: sectionRef.current, start: "top center", toggleActions: "play none none reverse" },
-      });
-
-      categoriesRef.current.forEach((cat, index) => {
-        if (!cat) return;
-        gsap.from(cat, {
-          x: isRTL ? 60 : -60, opacity: 0, duration: 0.8, delay: index * 0.15, ease: "power3.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top center", toggleActions: "play none none reverse" },
-        });
-        cat.addEventListener("mouseenter", () => gsap.to(cat, { x: isRTL ? -12 : 12, duration: 0.3, ease: "power2.out" }));
-        cat.addEventListener("mouseleave", () => gsap.to(cat, { x: 0, duration: 0.3, ease: "power2.out" }));
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, [isRTL]);
-
-  const handleCategoryClick = (category: Category) => {
-    if (category.id === activeCategory.id || isTransitioning) return;
-    setIsTransitioning(true);
-    gsap.timeline({
-      onComplete: () => setActiveCategory(category),
-    }).to(imageRef.current, { scale: 0.9, opacity: 0, rotateY: 10, duration: 0.4, ease: "power2.in" });
-  };
-
-  useEffect(() => {
-    if (!isTransitioning) return;
-    gsap.fromTo(imageRef.current,
-      { scale: 0.9, opacity: 0, rotateY: -10 },
-      { scale: 1, opacity: 1, rotateY: 0, duration: 0.5, ease: "power2.out", onComplete: () => setIsTransitioning(false) }
-    );
-  }, [activeCategory, isTransitioning]);
-
   const getCatDescription = (slug: string) => {
     return home.catDescriptions[slug] || slug;
   };
 
   return (
-    <section ref={sectionRef} id="categories" className="py-28 lg:py-40 bg-primary relative overflow-hidden scroll-mt-20" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/8 rounded-full blur-[200px]" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[150px]" />
-      </div>
-
+    <section id="categories" className="py-28 lg:py-40 bg-primary relative overflow-hidden scroll-mt-20" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <div>
@@ -107,12 +41,11 @@ const CategorySection = () => {
             </h2>
 
             <div className="space-y-2">
-              {categories.map((category, index) => (
+              {categories.map((category) => (
                 <div
                   key={category.id}
-                  ref={(el) => (categoriesRef.current[index] = el)}
                   className="group cursor-pointer relative"
-                  onClick={() => handleCategoryClick(category)}
+                  onClick={() => setActiveCategory(category)}
                 >
                   <div className={`flex items-center justify-between py-6 lg:py-8 border-b transition-all duration-300 ${
                     activeCategory.id === category.id ? 'border-accent/50' : 'border-secondary/10 hover:border-accent/30'
@@ -154,49 +87,35 @@ const CategorySection = () => {
 
             <Link
               to={`/shop?category=${activeCategory.slug}`}
-              className="inline-flex items-center gap-3 mt-12 px-8 py-4 bg-accent text-primary rounded-full font-bold hover:scale-105 transition-all shadow-gold group"
+              className="inline-flex items-center gap-3 mt-12 px-8 py-4 bg-accent text-primary rounded-full font-bold hover:scale-105 transition-transform shadow-gold"
             >
               <span>{home.catSee} {activeCategory.name}</span>
-              <ArrowRight className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
+              <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
             </Link>
           </div>
 
-          <div ref={imageContainerRef} className="relative" style={{ perspective: "1500px" }}>
-            <div
-              className="relative rounded-[2.5rem] overflow-hidden aspect-[3/4] group cursor-pointer shadow-dark-lg"
-              style={{
-                transform: `rotateY(${mousePosition.x * 0.3}deg) rotateX(${mousePosition.y * -0.3}deg)`,
-                transition: "transform 0.3s ease-out",
-                transformStyle: "preserve-3d",
-              }}
-            >
-              <img ref={imageRef} src={activeCategory.image} alt={activeCategory.name} loading="lazy" className="w-full h-full object-cover" />
+          {/* Image */}
+          <div className="relative">
+            <div className="relative rounded-[2.5rem] overflow-hidden aspect-[3/4] shadow-dark-lg">
+              <img
+                src={activeCategory.image}
+                alt={activeCategory.name}
+                loading="lazy"
+                className="w-full h-full object-cover transition-opacity duration-500"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent" />
-              <div className="absolute inset-0 opacity-40" style={{
-                background: `radial-gradient(circle at ${50 + mousePosition.x}% ${50 + mousePosition.y}%, hsla(40, 45%, 60%, 0.3) 0%, transparent 60%)`
-              }} />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-accent" />
                   <span className="text-secondary/80 text-sm">{home.catActiveCollection}</span>
                 </div>
                 <h3 className="text-secondary text-3xl lg:text-4xl font-bold mb-2">{activeCategory.name}</h3>
                 <p className="text-secondary/70 text-lg">{getCatDescription(activeCategory.slug)}</p>
               </div>
-              <div className="absolute inset-0 pointer-events-none" style={{
-                background: `linear-gradient(${105 + mousePosition.x * 2}deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%)`
-              }} />
             </div>
-            <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-gold-glow animate-float" style={{
-              transform: `translate(${mousePosition.x * -0.5}px, ${mousePosition.y * -0.5}px)`,
-              transition: "transform 0.3s ease-out"
-            }}>
+            <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-accent flex items-center justify-center shadow-gold">
               <span className="text-primary font-bold text-center text-sm leading-tight">{activeCategory.count}<br/>{home.catArticles}</span>
             </div>
-            <div className="absolute -z-10 -bottom-6 -left-6 w-full h-full rounded-[2.5rem] border border-accent/20" style={{
-              transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
-              transition: "transform 0.4s ease-out"
-            }} />
           </div>
         </div>
       </div>

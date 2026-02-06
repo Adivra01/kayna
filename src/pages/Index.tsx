@@ -24,12 +24,12 @@ const Index = () => {
         jsonLd={[jsonLdOrganization, jsonLdWebSite, jsonLdBrand]}
       />
       <Hero />
-      <StorySection />
-      <AboutSection />
       <MarqueeText />
+      <AboutSection />
       <ProductGrid />
-      <CategorySection />
       <QualitySection />
+      <CategorySection />
+      <StorySection />
       <TestimonialSection />
       <CollectionSection />
       <BrandPromiseSection />
