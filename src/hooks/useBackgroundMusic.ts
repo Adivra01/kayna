@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-
-const AMBIENT_MUSIC_URL = "https://cdn.pixabay.com/audio/2024/11/29/audio_5db2dfe3fb.mp3";
+import ambientMusicSrc from "@/assets/audio/ambient-music.mp3";
 
 export const useBackgroundMusic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -10,7 +9,7 @@ export const useBackgroundMusic = () => {
 
   // Initialize audio on mount
   useEffect(() => {
-    const audio = new Audio(AMBIENT_MUSIC_URL);
+    const audio = new Audio(ambientMusicSrc);
     audio.loop = true;
     audio.volume = 0;
     audio.preload = "auto";
